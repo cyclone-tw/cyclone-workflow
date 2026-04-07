@@ -28,7 +28,8 @@ const CYCLONE_BUTLER_SYSTEM = `你是「Cyclone 管家」，Cyclone 隊長的專
 - 使用適當的表情符號讓對話更親切
 - 記住之前的對話內容，展現長期記憶的價值`;
 
-let cachedAgentId: string | null = null;
+// Use the agent created in Letta web UI
+let cachedAgentId: string | null = 'agent-0f132a48-c65e-4e26-b974-969f6dd5bb91';
 
 async function lettaRequest<T>(path: string, apiKey: string, options: RequestInit = {}): Promise<T> {
   const res = await fetch(`${LETTA_BASE_URL}${path}`, {
@@ -62,7 +63,7 @@ async function getOrCreateAgent(apiKey: string): Promise<string> {
       name: 'cyclone-butler',
       description: 'Cyclone 管家 — 共學團專屬 AI 管家（女性）',
       system: CYCLONE_BUTLER_SYSTEM,
-      llm: 'anthropic/claude-sonnet-4-20250514',
+      llm: 'dar-mini-code/MiniMax-M2.7',
       embedding: 'openai/text-embedding-ada-002',
       memory_blocks: [
         { label: 'human', value: '共學團成員', limit: 5000 },
@@ -98,19 +99,19 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     const data = await lettaRequest<{
       messages: Array<{
         message_type: string;
-        assistant_message?: string;
-        internal_monologue?: string;
+        content?: string;
+        reasoning?: string;
       }>;
     }>(`/v1/agents/${agentId}/messages`, apiKey, {
       method: 'POST',
-      body: JSON.stringify({ role: 'user', content: message }),
+      body: JSON.stringify({ messages: [{ role: 'user', content: message }] }),
     });
 
     const thoughts: string[] = [];
     let reply = '';
     for (const msg of data.messages) {
-      if (msg.internal_monologue) thoughts.push(msg.internal_monologue);
-      if (msg.assistant_message) reply += msg.assistant_message;
+      if (msg.message_type === 'reasoning_message' && msg.reasoning) thoughts.push(msg.reasoning);
+      if (msg.message_type === 'assistant_message' && msg.content) reply += msg.content;
     }
 
     return new Response(
