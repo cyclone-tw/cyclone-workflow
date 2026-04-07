@@ -1,0 +1,236 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import BugForm from '@/components/bug/BugForm';
+---
+
+<Layout title="Bug 回報" description="發現網站問題？請填寫以下表單告訴我們">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+    <!-- Header -->
+    <div class="text-center mb-10">
+      <h1 class="text-3xl sm:text-4xl font-bold mb-3">
+        <span class="gradient-text">🐛 Bug 回報</span>
+      </h1>
+      <p class="text-[var(--color-text-secondary)] max-w-lg mx-auto">
+        發現網站問題？請填寫以下表單告訴我們
+      </p>
+    </div>
+
+    <!-- Main layout: form + sidebar -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+      <!-- Left: Form (2/3) -->
+      <div class="lg:col-span-2 space-y-6">
+        <BugForm client:load />
+
+        <!-- Screenshot Guide -->
+        <div class="glass rounded-xl p-6">
+          <h2 class="text-lg font-bold text-[var(--color-text-primary)] mb-1">
+            📸 如何附上截圖？
+          </h2>
+          <p class="text-sm text-[var(--color-text-secondary)] mb-4">
+            本表單以文字為主，圖片請上傳到以下平台後附上連結
+          </p>
+
+          <div class="space-y-3">
+            <!-- Notion -->
+            <a
+              href="https://www.notion.so/"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="flex items-start gap-3 p-3 rounded-lg bg-[var(--color-bg-card)] border border-[var(--color-border)] card-hover block no-underline"
+            >
+              <span class="text-xl mt-0.5">📝</span>
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-sm font-semibold text-[var(--color-text-primary)]">Notion</span>
+                  <span class="text-xs px-1.5 py-0.5 rounded-full font-medium" style="background: rgba(0,245,160,0.15); color: #00F5A0;">推薦！</span>
+                </div>
+                <p class="text-xs text-[var(--color-text-muted)] mt-0.5">上傳圖片後右鍵複製連結</p>
+              </div>
+            </a>
+
+            <!-- Imgur -->
+            <a
+              href="https://imgur.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="flex items-start gap-3 p-3 rounded-lg bg-[var(--color-bg-card)] border border-[var(--color-border)] card-hover block no-underline"
+            >
+              <span class="text-xl mt-0.5">🖼️</span>
+              <div>
+                <span class="text-sm font-semibold text-[var(--color-text-primary)]">Imgur</span>
+                <p class="text-xs text-[var(--color-text-muted)] mt-0.5">免費圖片託管，無需登入即可上傳</p>
+              </div>
+            </a>
+
+            <!-- Google Drive -->
+            <a
+              href="https://drive.google.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="flex items-start gap-3 p-3 rounded-lg bg-[var(--color-bg-card)] border border-[var(--color-border)] card-hover block no-underline"
+            >
+              <span class="text-xl mt-0.5">☁️</span>
+              <div>
+                <span class="text-sm font-semibold text-[var(--color-text-primary)]">Google Drive</span>
+                <p class="text-xs text-[var(--color-text-muted)] mt-0.5">設定公開分享連結後貼上</p>
+              </div>
+            </a>
+          </div>
+
+          <!-- Notion tip -->
+          <div class="mt-4 p-3 rounded-lg border" style="background: rgba(108,99,255,0.08); border-color: rgba(108,99,255,0.3);">
+            <p class="text-xs text-[var(--color-text-secondary)]">
+              💡 不知道怎麼用 Notion？推薦去上
+              <a
+                href="https://hahow.in/courses/676d13cdbf1ecc2823515f6a"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="font-semibold"
+                style="color: #6C63FF;"
+              >雷蒙老師的 Notion 課程！</a>
+              從零開始系統性地學會這個強大工具。
+            </p>
+          </div>
+        </div>
+
+        <!-- Discord contact -->
+        <div class="glass rounded-xl p-4 flex items-center gap-3">
+          <span class="text-2xl">💬</span>
+          <p class="text-sm text-[var(--color-text-secondary)]">
+            緊急問題也可以直接在
+            <span class="font-semibold text-[var(--color-primary)]">Discord 頻道</span>
+            回報，我們會盡快處理！
+          </p>
+        </div>
+      </div>
+
+      <!-- Right: Resources sidebar (1/3) -->
+      <div class="space-y-5">
+
+        <!-- Learning Resources -->
+        <div class="glass rounded-xl p-5">
+          <h2 class="text-base font-bold text-[var(--color-text-primary)] mb-4">
+            📚 推薦學習資源
+          </h2>
+          <div class="space-y-3">
+
+            <!-- Raymond Notion Course on Hahow -->
+            <a
+              href="https://hahow.in/courses/676d13cdbf1ecc2823515f6a"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="block p-3 rounded-lg bg-[var(--color-bg-card)] border border-[var(--color-border)] card-hover no-underline group"
+            >
+              <div class="flex items-start gap-2.5">
+                <span class="text-lg">🎓</span>
+                <div>
+                  <p class="text-sm font-semibold text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)] transition-colors">
+                    雷蒙三十 Notion 課程
+                  </p>
+                  <p class="text-xs text-[var(--color-text-muted)] mt-0.5">
+                    Hahow — 3小時快速上手，打造個人數位工作站
+                  </p>
+                </div>
+              </div>
+            </a>
+
+            <!-- Raymond's Course Platform -->
+            <a
+              href="https://lifehacker.tw/"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="block p-3 rounded-lg bg-[var(--color-bg-card)] border border-[var(--color-border)] card-hover no-underline group"
+            >
+              <div class="flex items-start gap-2.5">
+                <span class="text-lg">⚡</span>
+                <div>
+                  <p class="text-sm font-semibold text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)] transition-colors">
+                    雷蒙三十 生活黑客研究院
+                  </p>
+                  <p class="text-xs text-[var(--color-text-muted)] mt-0.5">
+                    課程活動站，全系列生產力課程
+                  </p>
+                </div>
+              </div>
+            </a>
+
+            <!-- Raymond's main site -->
+            <a
+              href="https://raymondhouch.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="block p-3 rounded-lg bg-[var(--color-bg-card)] border border-[var(--color-border)] card-hover no-underline group"
+            >
+              <div class="flex items-start gap-2.5">
+                <span class="text-lg">🌐</span>
+                <div>
+                  <p class="text-sm font-semibold text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)] transition-colors">
+                    雷蒙三十 官方部落格
+                  </p>
+                  <p class="text-xs text-[var(--color-text-muted)] mt-0.5">
+                    AI 自動化、Notion、ChatGPT 完整教學文章
+                  </p>
+                </div>
+              </div>
+            </a>
+
+            <!-- Notion Resources page -->
+            <a
+              href="https://raymondhouch.com/notionhacker/"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="block p-3 rounded-lg bg-[var(--color-bg-card)] border border-[var(--color-border)] card-hover no-underline group"
+            >
+              <div class="flex items-start gap-2.5">
+                <span class="text-lg">📖</span>
+                <div>
+                  <p class="text-sm font-semibold text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)] transition-colors">
+                    Notion 完整中文學習資源
+                  </p>
+                  <p class="text-xs text-[var(--color-text-muted)] mt-0.5">
+                    最完整的 Notion 入門到進階指南
+                  </p>
+                </div>
+              </div>
+            </a>
+
+            <!-- Beginner tutorial -->
+            <a
+              href="https://leadingmrk.com/the-most-complete-guide-to-notion/"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="block p-3 rounded-lg bg-[var(--color-bg-card)] border border-[var(--color-border)] card-hover no-underline group"
+            >
+              <div class="flex items-start gap-2.5">
+                <span class="text-lg">🚀</span>
+                <div>
+                  <p class="text-sm font-semibold text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)] transition-colors">
+                    Notion 入門完整教學
+                  </p>
+                  <p class="text-xs text-[var(--color-text-muted)] mt-0.5">
+                    1小時快速上手懶人包（免費）
+                  </p>
+                </div>
+              </div>
+            </a>
+
+          </div>
+        </div>
+
+        <!-- Tip card -->
+        <div class="rounded-xl p-5 border" style="background: rgba(233,69,96,0.07); border-color: rgba(233,69,96,0.25);">
+          <h3 class="text-sm font-bold mb-2" style="color: #FF6B81;">💡 回報小訣竅</h3>
+          <ul class="text-xs space-y-1.5 text-[var(--color-text-muted)]">
+            <li>• 描述越詳細，修復越快速</li>
+            <li>• 附上截圖可以大幅縮短排查時間</li>
+            <li>• 重現步驟讓工程師能快速重現問題</li>
+            <li>• 說明你使用的裝置（手機/電腦）也有幫助</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</Layout>

@@ -1,0 +1,583 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import { WEEKS } from '@/lib/constants';
+
+const pages = [
+  {
+    href: '/',
+    icon: '🏠',
+    title: '首頁',
+    color: 'var(--color-primary)',
+    description: '共學團介紹、成員列表、四週時程總覽。第一次來訪從這裡開始，掌握整個計畫的全貌。',
+    tips: ['了解共學目標', '認識隊員', '查看四週時程'],
+  },
+  {
+    href: '/dashboard',
+    icon: '📊',
+    title: '個人儀表板',
+    color: 'var(--color-neon-blue)',
+    description: '追蹤你的每週進度、完成任務打卡、查看個人統計數據。每週更新你的工作流成果。',
+    tips: ['每週任務打卡', '進度視覺化', '個人成果記錄'],
+  },
+  {
+    href: '/team',
+    icon: '👥',
+    title: '團隊頁面',
+    color: 'var(--color-neon-green)',
+    description: '六位成員的個人頁面、Project 交換計畫、成果展示牆。第三週用這裡抽籤交換 Project。',
+    tips: ['成員個人頁', 'Project 抽籤', '成果展示'],
+  },
+  {
+    href: '/knowledge',
+    icon: '📚',
+    title: '知識庫',
+    color: 'var(--color-primary)',
+    description: '共學過程中沉澱的工作流模板、最佳實踐、問答精華。有好資源歡迎投稿！',
+    tips: ['工作流模板', '最佳實踐', '投稿分享'],
+  },
+  {
+    href: '/qa',
+    icon: '❓',
+    title: 'QA 知識集',
+    color: 'var(--color-accent)',
+    description: '密碼保護的私密 Q&A 記錄。使用 AES-GCM 加密，只有知道密碼的成員才能查看完整內容。',
+    tips: ['需要密碼才能解鎖', '加密保護隱私', '成員私密記錄'],
+  },
+  {
+    href: '/agent',
+    icon: '🤖',
+    title: 'Cyclone 管家',
+    color: 'var(--color-neon-blue)',
+    description: '你的專屬 AI 助理，由 Letta 提供長期記憶。管家記得你說過的話，每次對話都有連貫上下文。',
+    tips: ['長期記憶 AI', '個人化對話', '跨對話連貫'],
+  },
+  {
+    href: '/wishlist',
+    icon: '🌳',
+    title: '許願樹',
+    color: 'var(--color-neon-green)',
+    description: '互助共學的核心機制。許下你需要的幫助，或認領他人的願望，累積點數互相成就。',
+    tips: ['許願/認領', '點數系統', '互助共學'],
+  },
+  {
+    href: '/bug',
+    icon: '🐛',
+    title: 'Bug 回報',
+    color: 'var(--color-text-muted)',
+    description: '發現網站問題？在這裡回報 Bug。功能即將上線，讓整個共學體驗持續改善。',
+    tips: ['即將開放', '回報問題', '共同維護'],
+  },
+];
+
+const howToItems = [
+  {
+    icon: '🤖',
+    title: '如何跟 Cyclone 管家對話',
+    color: 'var(--color-neon-blue)',
+    steps: [
+      '前往 /agent 頁面',
+      '直接輸入你的問題或需求，例如「幫我規劃本週的 AI 工作流學習計畫」',
+      '管家有長期記憶，可以直接說「上次我提到的 Notion 工作流，繼續幫我優化」',
+      '可以問工具使用、工作流設計、學習建議等各類問題',
+    ],
+  },
+  {
+    icon: '🔐',
+    title: '如何使用 QA 知識集',
+    color: 'var(--color-accent)',
+    steps: [
+      '前往 /qa 頁面',
+      '輸入共學團提供的密碼（向 Cyclone 隊長索取）',
+      '解鎖後可查看所有私密 Q&A 記錄',
+      '密碼採 AES-GCM 加密，不會在伺服器端儲存',
+    ],
+  },
+  {
+    icon: '🌳',
+    title: '如何在許願樹許願或認領',
+    color: 'var(--color-neon-green)',
+    steps: [
+      '前往 /wishlist 頁面',
+      '點擊「許個願」新增你需要的幫助，描述清楚需求',
+      '瀏覽他人的願望，點擊「認領」表示你願意協助',
+      '完成後雙方確認，獲得點數獎勵',
+    ],
+  },
+  {
+    icon: '📊',
+    title: '如何記錄每週進度',
+    color: 'var(--color-primary)',
+    steps: [
+      '前往 /dashboard 個人儀表板',
+      '每週完成任務後點擊對應的打卡項目',
+      '填寫本週學習心得與工作流成果',
+      '查看個人進度圖表，對比團隊整體進度',
+    ],
+  },
+];
+
+const resources = [
+  {
+    category: '雷蒙三十・生活黑客',
+    color: 'var(--color-primary)',
+    icon: '⚡',
+    items: [
+      {
+        title: '雷蒙三十官方網站',
+        description: '聰明工作、好好生活的生產力指南。AI 自動化、Notion、ChatGPT 應用，超過 20,000 位學員推薦。',
+        url: 'https://raymondhouch.com/',
+        tag: '官方網站',
+      },
+      {
+        title: '生活黑客研究院・課程站',
+        description: '雷蒙三十所有課程的入口，包含 Notion 訓練營、AI 自動化工作術等完整課程。',
+        url: 'https://lifehacker.tw/',
+        tag: '課程平台',
+      },
+      {
+        title: '生活黑客研究院・Academy',
+        description: 'AI 與數位工作術進階學習平台，提供系統化的工作流學習資源。',
+        url: 'https://academy.lifehacker.tw/',
+        tag: 'Academy',
+      },
+      {
+        title: '生活黑客訂閱服務',
+        description: '〈生活黑客之路〉Lifehacker Premium 訂閱，持續獲取最新的生產力升級方法。',
+        url: 'https://raymondhouch.com/go-subscribe/',
+        tag: '訂閱服務',
+      },
+      {
+        title: '雷蒙三十 Podcast',
+        description: '幫助忙碌現代人快樂工作、品質生活的 Podcast，討論個人事業、自我成長、數位生活。',
+        url: 'https://raymond30.firstory.io/',
+        tag: 'Podcast',
+      },
+    ],
+  },
+  {
+    category: 'Notion 學習資源',
+    color: 'var(--color-neon-green)',
+    icon: '📝',
+    items: [
+      {
+        title: '第十屆 Notion 線上訓練營',
+        description: '40 天訓練營，超過 10 堂直播教學，每週作業有助教引導，建立個人數位大腦系統。',
+        url: 'https://lifehacker.tw/courses/notion10',
+        tag: '旗艦課程',
+      },
+      {
+        title: '所有 Notion 中文課程',
+        description: '從入門到進階的完整 Notion 中文課程列表，包含 Notion AI 應用、專案管理等主題。',
+        url: 'https://lifehacker.tw/categories/cbcs',
+        tag: '課程列表',
+      },
+      {
+        title: '生活黑客筆記・Notion 週報',
+        description: '定期更新的 Notion 主題週報與會員社群心得，實用技巧與案例分享。',
+        url: 'https://blog.lifehacker.tw/',
+        tag: '部落格',
+      },
+      {
+        title: 'Notion 官方文件',
+        description: 'Notion 官方說明文件，功能說明、API 參考、整合教學一應俱全。',
+        url: 'https://www.notion.so/help',
+        tag: '官方文件',
+      },
+    ],
+  },
+  {
+    category: 'Claude Code 學習',
+    color: 'var(--color-neon-blue)',
+    icon: '💻',
+    items: [
+      {
+        title: 'Claude Code 官方文件',
+        description: 'Anthropic 官方 Claude Code 說明文件，涵蓋安裝、設定、常用指令、CLAUDE.md 配置。',
+        url: 'https://code.claude.com/docs/en/overview',
+        tag: '官方文件',
+      },
+      {
+        title: 'Claude Code in Action（Anthropic 課程）',
+        description: 'Anthropic 官方推出的 Claude Code 實戰課程，從入門到進階的系統化學習。',
+        url: 'https://anthropic.skilljar.com/claude-code-in-action',
+        tag: '官方課程',
+      },
+      {
+        title: 'Claude Code 完整初學者教學（2026）',
+        description: '涵蓋安裝、基本指令、Plan Mode、CLAUDE.md 設定、實際工作流範例的完整教學。',
+        url: 'https://www.nxcode.io/resources/news/claude-code-tutorial-beginners-guide-2026',
+        tag: '教學文章',
+      },
+      {
+        title: 'DataCamp：Claude Code 實踐指南',
+        description: '附帶實際範例的 Claude Code 教學，適合想快速上手的開發者。',
+        url: 'https://www.datacamp.com/tutorial/claude-code',
+        tag: '教學文章',
+      },
+    ],
+  },
+  {
+    category: 'n8n 自動化',
+    color: 'var(--color-accent)',
+    icon: '⚙️',
+    items: [
+      {
+        title: 'n8n 官方文件',
+        description: 'n8n 完整說明文件，工作流建立、節點設定、觸發器使用的完整參考資料。',
+        url: 'https://docs.n8n.io/workflows/',
+        tag: '官方文件',
+      },
+      {
+        title: 'n8n 初學者快速入門',
+        description: '快速上手 n8n，建立第一個自動化工作流，了解介面與核心功能。',
+        url: 'https://docs.n8n.io/try-it-out/quickstart/',
+        tag: '快速入門',
+      },
+      {
+        title: 'n8n Level One 課程',
+        description: '系統化介紹 n8n 概念，實際示範工作流建構，不需要任何先備知識。',
+        url: 'https://docs.n8n.io/courses/level-one/',
+        tag: '入門課程',
+      },
+      {
+        title: '用 n8n 建立 AI 工作流教學',
+        description: '教你如何在 n8n 中整合 AI 模型（OpenAI、Claude 等），建立智能自動化流程。',
+        url: 'https://docs.n8n.io/advanced-ai/intro-tutorial/',
+        tag: 'AI 整合',
+      },
+      {
+        title: 'n8n 部落格教學合集',
+        description: '涵蓋各類自動化情境的實戰教學文章，從 Gmail 自動化到複雜的多步驟工作流。',
+        url: 'https://blog.n8n.io/tag/tutorial/',
+        tag: '教學文章',
+      },
+    ],
+  },
+  {
+    category: '生活黑客工具推薦',
+    color: 'var(--color-neon-green)',
+    icon: '🛠️',
+    items: [
+      {
+        title: 'Anthropic Claude',
+        description: '最強大的 AI 助理之一，本共學團的核心工具。Claude 3.5 Sonnet / Opus 支援複雜推理與長文件處理。',
+        url: 'https://claude.ai/',
+        tag: 'AI 助理',
+      },
+      {
+        title: 'Notion',
+        description: '全能工作空間，整合筆記、資料庫、專案管理。本共學團推薦用來建立個人知識管理系統。',
+        url: 'https://www.notion.so/',
+        tag: '生產力工具',
+      },
+      {
+        title: 'n8n（自架版）',
+        description: '開源自動化平台，可自架部署保護資料隱私，支援 250+ 整合，對開發者最友善。',
+        url: 'https://n8n.io/',
+        tag: '自動化',
+      },
+      {
+        title: 'Make.com',
+        description: '視覺化拖拉工作流設計，適合非技術人員。支援 1000+ 應用整合，建立多步驟自動化流程。',
+        url: 'https://www.make.com/',
+        tag: '自動化',
+      },
+      {
+        title: '2026 最佳 AI 工作流自動化工具',
+        description: 'n8n 部落格整理的 2026 年最值得關注的 AI 工作流工具比較，找到最適合你的工具。',
+        url: 'https://blog.n8n.io/best-ai-workflow-automation-tools/',
+        tag: '工具比較',
+      },
+    ],
+  },
+];
+
+const faqs = [
+  {
+    q: '忘記 QA 知識集的密碼怎麼辦？',
+    a: '密碼由 Cyclone 隊長管理，直接在 Discord 共學頻道詢問即可。密碼採 AES-GCM 加密，不存在伺服器，只要你知道正確密碼就能在任何裝置解鎖。',
+  },
+  {
+    q: '如何加入這個共學團？',
+    a: '本次共學團（2026 Q2）已於 4/7 啟動，為封閉制小團體（6 人）。若有興趣參與下一期，請關注雷蒙三十的社群公告，或直接聯絡 Cyclone 隊長。',
+  },
+  {
+    q: 'Cyclone 管家跟一般 ChatGPT 有什麼不同？',
+    a: 'Cyclone 管家使用 Letta 框架，具備跨對話的長期記憶。它記得你之前說過的事、你的工作流偏好、你的學習進度，每次對話都有完整的個人上下文，不需要重複說明背景。',
+  },
+  {
+    q: '許願樹的點數可以做什麼？',
+    a: '點數是共學互助的象徵指標，記錄你對團隊的貢獻。完成願望可獲得點數，許願時消耗點數。點數高的成員在成果發表時會特別被表揚！',
+  },
+  {
+    q: '知識庫的資料是公開的嗎？',
+    a: '知識庫對共學團成員完全開放。部分頁面（如 QA 知識集）需要密碼才能查看，確保私密討論不外流。工作流模板等非敏感內容則全部公開。',
+  },
+  {
+    q: '每週的任務怎麼算完成？',
+    a: '每週任務在儀表板（/dashboard）定義，完成後自己打卡即可。共學精神是誠信自評，重點是讓你自己知道哪些做到、哪些還有進步空間。',
+  },
+  {
+    q: '網站是用什麼技術建的？',
+    a: '網站使用 Bun + Astro + Tailwind CSS v4 建置，部署在 Cloudflare Pages，資料庫使用 Turso（SQLite edge），AI 管家使用 Letta 框架。原始碼由 Cyclone 隊長維護。',
+  },
+];
+---
+
+<Layout title="使用說明" description="Cyclone 隊長 × 生活黑客共學團 — 網站使用說明與學習資源">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+    <!-- Header -->
+    <div class="mb-14 text-center">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium mb-5 border"
+        style="background: rgba(108,99,255,0.1); border-color: rgba(108,99,255,0.3); color: var(--color-primary-light);">
+        2026 Q2・四週共學計畫
+      </div>
+      <h1 class="text-4xl sm:text-5xl font-bold mb-4">
+        <span class="text-4xl sm:text-5xl mr-3">📖</span>
+        <span class="gradient-text">使用說明</span>
+      </h1>
+      <p class="text-[var(--color-text-secondary)] text-lg max-w-xl mx-auto leading-relaxed">
+        歡迎加入 <span class="text-[var(--color-text-primary)] font-medium">Cyclone 隊長 × 生活黑客共學團</span>！<br />
+        這份說明幫你快速上手所有功能，開啟四週的 AI 工作流旅程。
+      </p>
+    </div>
+
+    <!-- What is this site -->
+    <section class="mb-16">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-1 h-6 rounded-full" style="background: var(--color-primary);"></span>
+        <h2 class="text-xl font-bold text-[var(--color-text-primary)]">這個網站是什麼？</h2>
+      </div>
+      <div class="glass rounded-2xl p-7 mb-5" style="background: linear-gradient(135deg, rgba(108,99,255,0.08) 0%, rgba(0,217,255,0.05) 100%); border-color: rgba(108,99,255,0.25);">
+        <p class="text-[var(--color-text-secondary)] leading-relaxed mb-5 text-base">
+          這是一個專為 <strong class="text-[var(--color-text-primary)]">六人小型共學團</strong> 設計的專屬平台。六位成員將在四週內，從零開始打造屬於自己的 AI 工作流，互相學習、互相督促、互相幫助。
+        </p>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {[
+            { icon: '🌀', title: '打造個人 AI 工作流', desc: '四週從環境建置到成果發表，每人產出一套可實際運用的個人工作流。' },
+            { icon: '🤖', title: '專屬 AI 管家', desc: '每位成員都有專屬的 Cyclone 管家，具備長期記憶，記得你的偏好與進度。' },
+            { icon: '🌳', title: '互助共學機制', desc: '透過許願樹、Project 交換、知識庫，把個人學習變成集體智慧。' },
+          ].map((item) => (
+            <div class="rounded-xl p-4 border" style="background: rgba(18,18,42,0.6); border-color: var(--color-border);">
+              <div class="text-2xl mb-2">{item.icon}</div>
+              <h3 class="text-sm font-semibold text-[var(--color-text-primary)] mb-1">{item.title}</h3>
+              <p class="text-xs text-[var(--color-text-secondary)] leading-relaxed">{item.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- Page Guide -->
+    <section class="mb-16">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-1 h-6 rounded-full" style="background: var(--color-neon-blue);"></span>
+        <h2 class="text-xl font-bold text-[var(--color-text-primary)]">頁面導覽</h2>
+        <span class="text-xs px-2 py-0.5 rounded-full font-medium border"
+          style="background: rgba(0,217,255,0.1); color: var(--color-neon-blue); border-color: rgba(0,217,255,0.2);">
+          {pages.length} 個頁面
+        </span>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {pages.map((page) => (
+          <a href={page.href} class="glass rounded-xl p-5 card-hover flex flex-col gap-3 group" style={`border-left: 3px solid ${page.color};`}>
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex items-center gap-2.5">
+                <span class="text-2xl">{page.icon}</span>
+                <span class="font-semibold text-[var(--color-text-primary)] group-hover:text-white transition-colors">{page.title}</span>
+              </div>
+              <code class="text-[10px] px-2 py-0.5 rounded font-mono shrink-0" style={`background: ${page.color}15; color: ${page.color};`}>
+                {page.href}
+              </code>
+            </div>
+            <p class="text-sm text-[var(--color-text-secondary)] leading-relaxed">{page.description}</p>
+            <div class="flex flex-wrap gap-1.5 pt-1">
+              {page.tips.map((tip) => (
+                <span class="text-xs px-2 py-0.5 rounded-full border" style={`background: ${page.color}10; color: ${page.color}CC; border-color: ${page.color}25;`}>
+                  {tip}
+                </span>
+              ))}
+            </div>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <!-- How to Interact -->
+    <section class="mb-16">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-1 h-6 rounded-full" style="background: var(--color-neon-green);"></span>
+        <h2 class="text-xl font-bold text-[var(--color-text-primary)]">功能使用方式</h2>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {howToItems.map((item) => (
+          <div class="glass rounded-xl p-6 flex flex-col gap-4">
+            <div class="flex items-center gap-3">
+              <span class="text-2xl">{item.icon}</span>
+              <h3 class="font-semibold text-[var(--color-text-primary)] text-sm leading-snug">{item.title}</h3>
+            </div>
+            <ol class="flex flex-col gap-2">
+              {item.steps.map((step, i) => (
+                <li class="flex items-start gap-3 text-sm text-[var(--color-text-secondary)]">
+                  <span class="shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold mt-0.5"
+                    style={`background: ${item.color}20; color: ${item.color};`}>
+                    {i + 1}
+                  </span>
+                  <span class="leading-relaxed">{step}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- Four-Week Journey -->
+    <section class="mb-16">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-1 h-6 rounded-full" style="background: var(--color-accent);"></span>
+        <h2 class="text-xl font-bold text-[var(--color-text-primary)]">四週共學旅程</h2>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        {WEEKS.map((week, i) => {
+          const colors = [
+            'var(--color-primary)',
+            'var(--color-neon-blue)',
+            'var(--color-neon-green)',
+            'var(--color-accent)',
+          ];
+          const color = colors[i] ?? colors[0];
+          const dateObj = new Date(week.start);
+          const dateStr = `${dateObj.getMonth() + 1}/${dateObj.getDate()}`;
+          return (
+            <div class="glass rounded-xl p-5 flex flex-col gap-3 text-center" style={`border-top: 3px solid ${color};`}>
+              <div class="text-xs font-medium" style={`color: ${color};`}>Week {week.num}</div>
+              <div class="text-2xl font-bold text-[var(--color-text-primary)]">{week.title}</div>
+              <div class="text-xs text-[var(--color-text-secondary)] leading-relaxed">{week.subtitle}</div>
+              <div class="text-xs text-[var(--color-text-muted)] mt-auto pt-2 border-t border-[var(--color-border)]">
+                {dateStr} 啟動
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div class="mt-4 glass rounded-xl p-4 flex items-start gap-3">
+        <span class="text-xl shrink-0">💡</span>
+        <p class="text-sm text-[var(--color-text-secondary)] leading-relaxed">
+          每週一為新的一週開始。第三週（4/21）會進行 <strong class="text-[var(--color-text-primary)]">Project 抽籤交換</strong>，你的工作流會換給隊友繼續發展，你也會接手別人的成果——這是共學精華！
+        </p>
+      </div>
+    </section>
+
+    <!-- Learning Resources -->
+    <section class="mb-16">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-1 h-6 rounded-full" style="background: var(--color-primary);"></span>
+        <h2 class="text-xl font-bold text-[var(--color-text-primary)]">學習資源</h2>
+        <span class="text-xs text-[var(--color-text-muted)]">精選外部學習連結</span>
+      </div>
+
+      <div class="flex flex-col gap-10">
+        {resources.map((group) => (
+          <div>
+            <div class="flex items-center gap-2.5 mb-4">
+              <span class="text-xl">{group.icon}</span>
+              <h3 class="text-base font-bold text-[var(--color-text-primary)]">{group.category}</h3>
+              <span class="w-full h-px ml-2" style={`background: linear-gradient(90deg, ${group.color}40, transparent);`}></span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {group.items.map((item) => (
+                <a
+                  href={item.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="glass rounded-xl p-4 card-hover flex flex-col gap-2.5 group"
+                >
+                  <div class="flex items-start justify-between gap-2">
+                    <span class="text-sm font-semibold text-[var(--color-text-primary)] group-hover:text-white transition-colors leading-snug">
+                      {item.title}
+                    </span>
+                    <span class="text-xs px-2 py-0.5 rounded-full shrink-0 font-medium border"
+                      style={`background: ${group.color}12; color: ${group.color}; border-color: ${group.color}25;`}>
+                      {item.tag}
+                    </span>
+                  </div>
+                  <p class="text-xs text-[var(--color-text-secondary)] leading-relaxed">{item.description}</p>
+                  <div class="flex items-center gap-1 text-xs mt-auto" style={`color: ${group.color};`}>
+                    <span class="truncate max-w-[220px] opacity-70">{item.url.replace(/^https?:\/\//, '')}</span>
+                    <svg class="w-3 h-3 shrink-0 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="mb-16">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-1 h-6 rounded-full" style="background: var(--color-neon-green);"></span>
+        <h2 class="text-xl font-bold text-[var(--color-text-primary)]">常見問題 FAQ</h2>
+      </div>
+      <div class="flex flex-col gap-3">
+        {faqs.map((faq, i) => (
+          <details class="glass rounded-xl group">
+            <summary class="flex items-center justify-between px-5 py-4 cursor-pointer list-none select-none">
+              <div class="flex items-center gap-3">
+                <span class="text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center shrink-0"
+                  style="background: rgba(0,245,160,0.15); color: var(--color-neon-green);">
+                  Q
+                </span>
+                <span class="text-sm font-medium text-[var(--color-text-primary)]">{faq.q}</span>
+              </div>
+              <svg class="w-4 h-4 text-[var(--color-text-muted)] transition-transform group-open:rotate-180 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </summary>
+            <div class="px-5 pb-5 pt-1">
+              <div class="flex items-start gap-3">
+                <span class="text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5"
+                  style="background: rgba(108,99,255,0.15); color: var(--color-primary-light);">
+                  A
+                </span>
+                <p class="text-sm text-[var(--color-text-secondary)] leading-relaxed">{faq.a}</p>
+              </div>
+            </div>
+          </details>
+        ))}
+      </div>
+    </section>
+
+    <!-- CTA Banner -->
+    <div class="relative overflow-hidden rounded-2xl p-8 text-center"
+      style="background: linear-gradient(135deg, rgba(108,99,255,0.15) 0%, rgba(0,245,160,0.08) 100%); border: 1px solid rgba(108,99,255,0.3);">
+      <div class="absolute inset-0 pointer-events-none"
+        style="background: radial-gradient(ellipse at 50% 0%, rgba(108,99,255,0.12) 0%, transparent 70%);"></div>
+      <div class="relative z-10">
+        <div class="text-4xl mb-3">🌀</div>
+        <h3 class="text-xl font-bold text-[var(--color-text-primary)] mb-2">準備好了嗎？</h3>
+        <p class="text-[var(--color-text-secondary)] mb-6 text-sm">四週後，你將擁有一套真正屬於自己的 AI 工作流。</p>
+        <div class="flex flex-wrap items-center justify-center gap-3">
+          <a href="/dashboard"
+            class="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm text-white transition-all hover:opacity-90 active:scale-95"
+            style="background: linear-gradient(135deg, var(--color-primary), var(--color-neon-blue));">
+            <span>📊</span>
+            前往儀表板
+          </a>
+          <a href="/agent"
+            class="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all hover:bg-white/10 active:scale-95 border"
+            style="border-color: var(--color-border); color: var(--color-text-secondary);">
+            <span>🤖</span>
+            找管家聊聊
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</Layout>
