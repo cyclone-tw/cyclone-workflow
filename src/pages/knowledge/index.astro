@@ -1,0 +1,188 @@
+---
+import Layout from '@/layouts/Layout.astro';
+
+const workflowTemplates = [
+  {
+    icon: '⚙️',
+    title: 'n8n 自動化入門模板',
+    description: '用 n8n 串接 Gmail + Notion 的基本流程，適合初學者快速上手自動化。',
+    contributor: { name: 'βenben', avatar: '🧪' },
+    category: '工作流模板',
+    categoryColor: 'var(--color-neon-green)',
+  },
+  {
+    icon: '💻',
+    title: 'Claude Code 開發流程',
+    description: '用 Claude Code 輔助開發的標準流程，涵蓋從需求拆解到程式碼審查的完整步驟。',
+    contributor: { name: 'Dar', avatar: '⚡' },
+    category: '工作流模板',
+    categoryColor: 'var(--color-neon-green)',
+  },
+  {
+    icon: '🎙️',
+    title: '語音筆記工作流',
+    description: '語音輸入→轉文字→自動整理的完整流程，讓靈感不再因為懶得打字而流失。',
+    contributor: { name: 'Cyclone', avatar: '🌀' },
+    category: '工作流模板',
+    categoryColor: 'var(--color-neon-green)',
+  },
+];
+
+const bestPractices = [
+  {
+    icon: '✍️',
+    title: 'Prompt 設計最佳實踐',
+    description: '如何寫出好的系統提示詞——從角色設定、情境約束到輸出格式的完整指南。',
+    contributor: { name: 'Benson', avatar: '🎯' },
+    category: '最佳實踐',
+    categoryColor: 'var(--color-primary)',
+  },
+  {
+    icon: '🧠',
+    title: 'Agent Memory 設計原則',
+    description: '建立有效的 AI 記憶系統，讓你的 Agent 具備跨對話的連貫性與上下文感知。',
+    contributor: { name: 'βenben', avatar: '🧪' },
+    category: '最佳實踐',
+    categoryColor: 'var(--color-primary)',
+  },
+];
+---
+
+<Layout title="知識庫" description="團隊共享的 AI 工作流知識庫">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+    <!-- Header -->
+    <div class="mb-10">
+      <h1 class="text-4xl sm:text-5xl font-bold mb-3">
+        <span class="text-3xl sm:text-4xl mr-2">📚</span>
+        <span class="gradient-text">知識庫</span>
+      </h1>
+      <p class="text-[var(--color-text-secondary)] text-lg">團隊共享的 AI 工作流知識</p>
+    </div>
+
+    <!-- Category Tabs -->
+    <div class="flex flex-wrap gap-2 mb-10">
+      {[
+        { label: '全部', active: true },
+        { label: '工作流模板', active: false },
+        { label: '最佳實踐', active: false },
+        { label: '問答精華', active: false },
+      ].map((tab) => (
+        <button
+          class:list={[
+            'px-4 py-2 rounded-full text-sm font-medium transition-colors border',
+            tab.active
+              ? 'bg-[var(--color-primary)] border-[var(--color-primary)] text-white'
+              : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[var(--color-primary)] hover:text-[var(--color-text-primary)] bg-transparent',
+          ]}
+        >
+          {tab.label}
+        </button>
+      ))}
+    </div>
+
+    <!-- Workflow Templates Section -->
+    <section class="mb-14">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-1 h-6 rounded-full bg-[var(--color-neon-green)]"></span>
+        <h2 class="text-xl font-bold text-[var(--color-text-primary)]">工作流模板</h2>
+        <span class="text-xs px-2 py-0.5 rounded-full bg-[var(--color-neon-green)]/10 text-[var(--color-neon-green)] font-medium border border-[var(--color-neon-green)]/20">
+          {workflowTemplates.length}
+        </span>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        {workflowTemplates.map((card) => (
+          <article class="glass rounded-xl p-5 card-hover border-l-4 flex flex-col gap-4 cursor-pointer" style={`border-left-color: ${card.categoryColor};`}>
+            <div class="flex items-start justify-between gap-3">
+              <div class="text-3xl leading-none">{card.icon}</div>
+              <span
+                class="text-xs px-2 py-1 rounded-full font-medium shrink-0"
+                style={`background: ${card.categoryColor}18; color: ${card.categoryColor}; border: 1px solid ${card.categoryColor}30;`}
+              >
+                {card.category}
+              </span>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-base font-semibold text-[var(--color-text-primary)] mb-2 leading-snug">{card.title}</h3>
+              <p class="text-sm text-[var(--color-text-secondary)] leading-relaxed">{card.description}</p>
+            </div>
+            <div class="flex items-center gap-2 pt-2 border-t border-[var(--color-border)]">
+              <span class="text-lg">{card.contributor.avatar}</span>
+              <span class="text-xs text-[var(--color-text-muted)]">由 <span class="text-[var(--color-text-secondary)]">{card.contributor.name}</span> 貢獻</span>
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <!-- Best Practices Section -->
+    <section class="mb-14">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-1 h-6 rounded-full bg-[var(--color-primary)]"></span>
+        <h2 class="text-xl font-bold text-[var(--color-text-primary)]">最佳實踐</h2>
+        <span class="text-xs px-2 py-0.5 rounded-full bg-[var(--color-primary)]/10 text-[var(--color-primary-light)] font-medium border border-[var(--color-primary)]/20">
+          {bestPractices.length}
+        </span>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {bestPractices.map((card) => (
+          <article class="glass rounded-xl p-5 card-hover border-l-4 flex flex-col gap-4 cursor-pointer" style={`border-left-color: ${card.categoryColor};`}>
+            <div class="flex items-start justify-between gap-3">
+              <div class="text-3xl leading-none">{card.icon}</div>
+              <span
+                class="text-xs px-2 py-1 rounded-full font-medium shrink-0"
+                style={`background: ${card.categoryColor}18; color: ${card.categoryColor}; border: 1px solid ${card.categoryColor}30;`}
+              >
+                {card.category}
+              </span>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-base font-semibold text-[var(--color-text-primary)] mb-2 leading-snug">{card.title}</h3>
+              <p class="text-sm text-[var(--color-text-secondary)] leading-relaxed">{card.description}</p>
+            </div>
+            <div class="flex items-center gap-2 pt-2 border-t border-[var(--color-border)]">
+              <span class="text-lg">{card.contributor.avatar}</span>
+              <span class="text-xs text-[var(--color-text-muted)]">由 <span class="text-[var(--color-text-secondary)]">{card.contributor.name}</span> 貢獻</span>
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <!-- Q&A Section (Empty State) -->
+    <section class="mb-14">
+      <div class="flex items-center gap-3 mb-6">
+        <span class="w-1 h-6 rounded-full bg-[var(--color-accent)]"></span>
+        <h2 class="text-xl font-bold text-[var(--color-text-primary)]">問答精華</h2>
+        <span class="text-xs px-2 py-0.5 rounded-full bg-[var(--color-accent)]/10 text-[var(--color-accent-light)] font-medium border border-[var(--color-accent)]/20">
+          0
+        </span>
+      </div>
+      <div class="glass rounded-xl p-10 flex flex-col items-center justify-center text-center gap-5">
+        <div class="text-5xl opacity-40">💬</div>
+        <div>
+          <p class="text-[var(--color-text-secondary)] mb-1">還沒有問答精華，參與共學後一起累積！</p>
+          <p class="text-sm text-[var(--color-text-muted)]">精彩的問答會在這裡沉澱成共享知識</p>
+        </div>
+        <button class="px-5 py-2.5 rounded-lg text-sm font-medium bg-[var(--color-accent)]/10 text-[var(--color-accent-light)] border border-[var(--color-accent)]/30 hover:bg-[var(--color-accent)]/20 transition-colors">
+          提出你的第一個問題
+        </button>
+      </div>
+    </section>
+
+    <!-- Contribute CTA Banner -->
+    <div class="relative overflow-hidden rounded-2xl p-8 text-center" style="background: linear-gradient(135deg, rgba(108,99,255,0.15) 0%, rgba(0,217,255,0.10) 100%); border: 1px solid rgba(108,99,255,0.3);">
+      <div class="absolute inset-0 pointer-events-none" style="background: radial-gradient(ellipse at 50% 0%, rgba(108,99,255,0.12) 0%, transparent 70%);"></div>
+      <div class="relative z-10">
+        <div class="text-3xl mb-3">✨</div>
+        <h3 class="text-xl font-bold text-[var(--color-text-primary)] mb-2">有值得分享的知識嗎？</h3>
+        <p class="text-[var(--color-text-secondary)] mb-5">投稿到知識庫，讓整個團隊都能受益！</p>
+        <button class="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm text-white transition-all hover:opacity-90 active:scale-95" style="background: linear-gradient(135deg, var(--color-primary), var(--color-neon-blue));">
+          <span>📝</span>
+          投稿到知識庫
+        </button>
+      </div>
+    </div>
+
+  </div>
+</Layout>

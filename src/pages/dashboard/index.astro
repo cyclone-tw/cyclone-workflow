@@ -1,0 +1,225 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import { WEEKS } from '@/lib/constants';
+
+const currentWeek = 1;
+---
+
+<Layout title="我的儀表板" description="AI 工作流共學團個人儀表板">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+    <!-- Welcome Header -->
+    <div class="mb-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h1 class="text-3xl sm:text-4xl font-bold gradient-text mb-1">我的儀表板</h1>
+        <p class="text-[var(--color-text-secondary)] text-sm">歡迎回來！追蹤你的 AI 工作流學習進度。</p>
+      </div>
+      <div class="flex items-center gap-2 glass rounded-xl px-4 py-2 self-start sm:self-auto glow-primary">
+        <span class="text-[var(--color-neon-green)] text-lg">●</span>
+        <span class="text-sm font-semibold text-[var(--color-text-primary)]">第 {currentWeek} 週進行中</span>
+        <span class="text-xs text-[var(--color-text-secondary)] ml-1">啟動週</span>
+      </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+      <!-- 本週進度 -->
+      <div class="glass rounded-2xl p-5 card-hover border border-[var(--color-border)]">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-2xl">🎯</span>
+          <span class="text-xs text-[var(--color-text-muted)] bg-[var(--color-bg-surface)] rounded-full px-2 py-0.5">本週</span>
+        </div>
+        <div class="text-2xl font-bold text-[var(--color-text-primary)] mb-1">0<span class="text-[var(--color-text-muted)] text-base font-normal">/3</span></div>
+        <div class="text-xs text-[var(--color-text-secondary)]">目標完成</div>
+        <div class="mt-3 h-1.5 rounded-full bg-[var(--color-bg-surface)]">
+          <div class="h-1.5 rounded-full bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-accent)]" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- 工作流數量 -->
+      <div class="glass rounded-2xl p-5 card-hover border border-[var(--color-border)]">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-2xl">⚡</span>
+          <span class="text-xs text-[var(--color-text-muted)] bg-[var(--color-bg-surface)] rounded-full px-2 py-0.5">累計</span>
+        </div>
+        <div class="text-2xl font-bold text-[var(--color-text-primary)] mb-1">0 <span class="text-[var(--color-text-muted)] text-base font-normal">個</span></div>
+        <div class="text-xs text-[var(--color-text-secondary)]">工作流數量</div>
+        <div class="mt-3 text-xs text-[var(--color-neon-green)]">+ 開始建立第一個</div>
+      </div>
+
+      <!-- Agent 對話 -->
+      <div class="glass rounded-2xl p-5 card-hover border border-[var(--color-border)]">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-2xl">🤖</span>
+          <span class="text-xs text-[var(--color-text-muted)] bg-[var(--color-bg-surface)] rounded-full px-2 py-0.5">累計</span>
+        </div>
+        <div class="text-2xl font-bold text-[var(--color-text-primary)] mb-1">0 <span class="text-[var(--color-text-muted)] text-base font-normal">次</span></div>
+        <div class="text-xs text-[var(--color-text-secondary)]">Agent 對話</div>
+        <div class="mt-3 text-xs text-[var(--color-neon-blue)]">+ 啟動第一次對話</div>
+      </div>
+
+      <!-- 知識貢獻 -->
+      <div class="glass rounded-2xl p-5 card-hover border border-[var(--color-border)]">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-2xl">📚</span>
+          <span class="text-xs text-[var(--color-text-muted)] bg-[var(--color-bg-surface)] rounded-full px-2 py-0.5">累計</span>
+        </div>
+        <div class="text-2xl font-bold text-[var(--color-text-primary)] mb-1">0 <span class="text-[var(--color-text-muted)] text-base font-normal">篇</span></div>
+        <div class="text-xs text-[var(--color-text-secondary)]">知識貢獻</div>
+        <div class="mt-3 text-xs text-[var(--color-accent-light)]">+ 分享你的學習</div>
+      </div>
+    </div>
+
+    <!-- Two-column layout for workflows + voice notes -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+
+      <!-- My Workflow Section (wider) -->
+      <div class="lg:col-span-2">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-semibold text-[var(--color-text-primary)]">我的工作流</h2>
+          <a href="/workflows" class="text-xs text-[var(--color-primary)] hover:text-[var(--color-primary-light)] transition-colors">查看全部 →</a>
+        </div>
+        <!-- Empty state -->
+        <div class="glass rounded-2xl border border-dashed border-[var(--color-border-light)] p-10 flex flex-col items-center justify-center text-center min-h-[220px] card-hover">
+          <div class="text-5xl mb-4">🔧</div>
+          <p class="text-[var(--color-text-secondary)] mb-2 font-medium">還沒有工作流</p>
+          <p class="text-xs text-[var(--color-text-muted)] mb-6">開始設計第一個吧！</p>
+          <a
+            href="/workflows/new"
+            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold bg-[var(--color-primary)] hover:bg-[var(--color-primary-light)] text-white transition-colors glow-primary"
+          >
+            <span>+</span> 設計工作流
+          </a>
+        </div>
+      </div>
+
+      <!-- Voice Notes Section -->
+      <div class="lg:col-span-1">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-semibold text-[var(--color-text-primary)]">語音筆記</h2>
+        </div>
+        <div class="glass rounded-2xl border border-[var(--color-border)] p-6 flex flex-col items-center justify-center text-center min-h-[220px] card-hover">
+          <!-- Microphone icon -->
+          <div class="w-16 h-16 rounded-full bg-[var(--color-bg-surface)] border border-[var(--color-border-light)] flex items-center justify-center mb-4 glow-neon">
+            <svg class="w-8 h-8 text-[var(--color-neon-green)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
+            </svg>
+          </div>
+          <p class="text-sm font-medium text-[var(--color-text-secondary)] mb-1">語音輸入功能</p>
+          <p class="text-xs text-[var(--color-text-muted)]">即將推出</p>
+          <div class="mt-4 flex gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-[var(--color-neon-green)] opacity-60 animate-pulse"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-[var(--color-neon-green)] opacity-40 animate-pulse" style="animation-delay: 0.2s"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-[var(--color-neon-green)] opacity-20 animate-pulse" style="animation-delay: 0.4s"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Weekly Progress Section -->
+    <div class="mb-10">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-semibold text-[var(--color-text-primary)]">四週進度</h2>
+        <span class="text-xs text-[var(--color-text-muted)]">2026 Q2</span>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        {WEEKS.map((week) => {
+          const isCurrent = week.num === currentWeek;
+          const isPast = week.num < currentWeek;
+          return (
+            <div
+              class:list={[
+                'rounded-2xl p-5 border transition-all card-hover',
+                isCurrent
+                  ? 'bg-[var(--color-bg-surface)] border-[var(--color-primary)] glow-primary'
+                  : isPast
+                  ? 'glass border-[var(--color-neon-green)]/40'
+                  : 'glass border-[var(--color-border)]',
+              ]}
+            >
+              <div class="flex items-start justify-between mb-3">
+                <div>
+                  <span
+                    class:list={[
+                      'text-xs font-semibold rounded-full px-2.5 py-0.5',
+                      isCurrent
+                        ? 'bg-[var(--color-primary)]/20 text-[var(--color-primary-light)]'
+                        : isPast
+                        ? 'bg-[var(--color-neon-green)]/10 text-[var(--color-neon-green)]'
+                        : 'bg-[var(--color-bg-surface)] text-[var(--color-text-muted)]',
+                    ]}
+                  >
+                    Week {week.num}
+                  </span>
+                </div>
+                {isCurrent && (
+                  <span class="text-[var(--color-neon-green)] text-xs font-medium flex items-center gap-1">
+                    <span class="inline-block w-1.5 h-1.5 rounded-full bg-[var(--color-neon-green)] animate-pulse"></span>
+                    進行中
+                  </span>
+                )}
+                {isPast && (
+                  <span class="text-[var(--color-neon-green)] text-sm">✓</span>
+                )}
+              </div>
+              <div
+                class:list={[
+                  'text-base font-bold mb-0.5',
+                  isCurrent ? 'text-[var(--color-primary-light)]' : 'text-[var(--color-text-primary)]',
+                ]}
+              >
+                {week.title}
+              </div>
+              <div class="text-xs text-[var(--color-text-muted)] mb-3">{week.subtitle}</div>
+              <div class="text-xs text-[var(--color-text-secondary)]">{week.start}</div>
+              {isCurrent && (
+                <div class="mt-3 h-1 rounded-full bg-[var(--color-bg-dark)]">
+                  <div class="h-1 rounded-full bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-neon-blue)]" style="width: 5%"></div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div>
+      <h2 class="text-lg font-semibold text-[var(--color-text-primary)] mb-4">快速操作</h2>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <a
+          href="/workflows/new"
+          class="glass rounded-2xl p-5 flex flex-col items-center gap-3 text-center card-hover border border-[var(--color-border)] hover:border-[var(--color-primary)]/60 group transition-colors"
+        >
+          <span class="text-3xl group-hover:scale-110 transition-transform">⚡</span>
+          <span class="text-sm font-medium text-[var(--color-text-secondary)] group-hover:text-[var(--color-text-primary)] transition-colors">設計工作流</span>
+        </a>
+
+        <a
+          href="/notes/new"
+          class="glass rounded-2xl p-5 flex flex-col items-center gap-3 text-center card-hover border border-[var(--color-border)] hover:border-[var(--color-neon-green)]/60 group transition-colors"
+        >
+          <span class="text-3xl group-hover:scale-110 transition-transform">📝</span>
+          <span class="text-sm font-medium text-[var(--color-text-secondary)] group-hover:text-[var(--color-text-primary)] transition-colors">寫進度筆記</span>
+        </a>
+
+        <a
+          href="/knowledge"
+          class="glass rounded-2xl p-5 flex flex-col items-center gap-3 text-center card-hover border border-[var(--color-border)] hover:border-[var(--color-neon-blue)]/60 group transition-colors"
+        >
+          <span class="text-3xl group-hover:scale-110 transition-transform">📚</span>
+          <span class="text-sm font-medium text-[var(--color-text-secondary)] group-hover:text-[var(--color-text-primary)] transition-colors">瀏覽知識庫</span>
+        </a>
+
+        <a
+          href="/wishlist"
+          class="glass rounded-2xl p-5 flex flex-col items-center gap-3 text-center card-hover border border-[var(--color-border)] hover:border-[var(--color-accent)]/60 group transition-colors"
+        >
+          <span class="text-3xl group-hover:scale-110 transition-transform">🌳</span>
+          <span class="text-sm font-medium text-[var(--color-text-secondary)] group-hover:text-[var(--color-text-primary)] transition-colors">查看許願樹</span>
+        </a>
+      </div>
+    </div>
+
+  </div>
+</Layout>

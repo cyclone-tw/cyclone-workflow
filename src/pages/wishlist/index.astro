@@ -1,0 +1,308 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import { MEMBERS } from '@/lib/constants';
+
+const cyclone = MEMBERS.find((m) => m.id === 'cyclone')!;
+const tiffany = MEMBERS.find((m) => m.id === 'tiffanyhou')!;
+const benson = MEMBERS.find((m) => m.id === 'benson')!;
+const dar = MEMBERS.find((m) => m.id === 'dar')!;
+const benben = MEMBERS.find((m) => m.id === 'benben')!;
+
+const stats = [
+  { label: '願望總數', value: 3, icon: '🌳' },
+  { label: '已實現', value: 1, icon: '✅' },
+  { label: '進行中', value: 1, icon: '🔨' },
+  { label: '等待認領', value: 1, icon: '✨' },
+];
+
+const wishes = [
+  {
+    id: 1,
+    icon: '✨',
+    title: '幫我建一個 Notion 自動同步工作流',
+    description: '希望可以自動把 Notion 的資料同步到其他工具，節省手動複製的時間。',
+    wisher: cyclone,
+    status: '等待認領',
+    statusColor: 'neon-green',
+    claimer: null,
+  },
+  {
+    id: 2,
+    icon: '🔨',
+    title: '優化語音輸入的靜音偵測',
+    description: '目前語音輸入在靜音後還是會繼續錄音，希望加入智慧靜音偵測功能。',
+    wisher: tiffany,
+    status: '進行中',
+    statusColor: 'neon-blue',
+    claimer: dar,
+  },
+  {
+    id: 3,
+    icon: '✅',
+    title: '建立 n8n 入門教學文件',
+    description: '整理一份適合新手的 n8n 教學，包含常用 nodes 與範例工作流。',
+    wisher: benson,
+    status: '已完成',
+    statusColor: 'primary',
+    claimer: benben,
+  },
+];
+
+const leaderboard = [
+  { member: cyclone, wishXP: 20, grantXP: 10 },
+  { member: benben, wishXP: 5, grantXP: 30 },
+  { member: dar, wishXP: 10, grantXP: 25 },
+  { member: benson, wishXP: 20, grantXP: 5 },
+  { member: tiffany, wishXP: 15, grantXP: 0 },
+];
+
+const flowSteps = [
+  { icon: '✨', label: '許願' },
+  { icon: '🎯', label: '願望池' },
+  { icon: '🙋', label: '認領' },
+  { icon: '🔨', label: '實作' },
+  { icon: '👀', label: '檢視' },
+  { icon: '✅', label: '完成' },
+];
+
+const statusStyles: Record<string, { border: string; badge: string; text: string }> = {
+  'neon-green': {
+    border: 'border-[var(--color-neon-green)]/40',
+    badge: 'bg-[var(--color-neon-green)]/15 text-[var(--color-neon-green)]',
+    text: 'text-[var(--color-neon-green)]',
+  },
+  'neon-blue': {
+    border: 'border-[var(--color-neon-blue)]/40',
+    badge: 'bg-[var(--color-neon-blue)]/15 text-[var(--color-neon-blue)]',
+    text: 'text-[var(--color-neon-blue)]',
+  },
+  primary: {
+    border: 'border-[var(--color-primary)]/40',
+    badge: 'bg-[var(--color-primary)]/15 text-[var(--color-primary-light)]',
+    text: 'text-[var(--color-primary-light)]',
+  },
+};
+---
+
+<Layout title="許願樹" description="許下願望，等待夥伴來實現">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+    <!-- Header -->
+    <div class="text-center mb-12">
+      <div class="relative inline-block mb-4">
+        <span
+          class="text-8xl block leading-none select-none"
+          style="filter: drop-shadow(0 0 24px rgba(0,245,160,0.5)) drop-shadow(0 0 48px rgba(0,245,160,0.25));"
+        >🌳</span>
+      </div>
+      <h1 class="text-4xl sm:text-5xl font-bold mb-3">
+        <span style="background: linear-gradient(135deg, var(--color-neon-green), var(--color-neon-blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+          許願樹
+        </span>
+      </h1>
+      <p class="text-lg text-[var(--color-text-secondary)]">許下願望，等待夥伴來實現</p>
+    </div>
+
+    <!-- Stats Bar -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-10">
+      {stats.map((stat) => (
+        <div class="glass rounded-xl p-4 text-center card-hover">
+          <div class="text-2xl mb-1">{stat.icon}</div>
+          <div class="text-2xl font-bold" style="color: var(--color-neon-green);">{stat.value}</div>
+          <div class="text-xs text-[var(--color-text-secondary)] mt-0.5">{stat.label}</div>
+        </div>
+      ))}
+    </div>
+
+    <!-- Wish Cards -->
+    <section class="mb-12">
+      <h2 class="text-xl font-semibold mb-5 flex items-center gap-2">
+        <span>🌟</span>
+        <span class="text-[var(--color-text-primary)]">目前的願望</span>
+      </h2>
+      <div class="grid gap-4 sm:grid-cols-1 lg:grid-cols-3">
+        {wishes.map((wish) => {
+          const styles = statusStyles[wish.statusColor];
+          const isCompleted = wish.status === '已完成';
+          return (
+            <div
+              class:list={[
+                'glass rounded-2xl p-5 border card-hover flex flex-col gap-3',
+                styles.border,
+                isCompleted ? 'opacity-70' : '',
+              ]}
+            >
+              <!-- Card Header -->
+              <div class="flex items-start justify-between gap-2">
+                <div class="flex items-center gap-2">
+                  <span class="text-xl">{wish.icon}</span>
+                  <span
+                    class:list={['text-xs font-medium px-2 py-0.5 rounded-full', styles.badge]}
+                  >
+                    {wish.status}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Title -->
+              <h3 class="font-semibold text-[var(--color-text-primary)] leading-snug">
+                {wish.title}
+              </h3>
+
+              <!-- Description -->
+              <p class="text-sm text-[var(--color-text-secondary)] leading-relaxed flex-1">
+                {wish.description}
+              </p>
+
+              <!-- Footer: wisher + claimer -->
+              <div class="flex items-center justify-between pt-2 border-t border-[var(--color-border)]">
+                <div class="flex items-center gap-1.5 text-xs text-[var(--color-text-secondary)]">
+                  <span
+                    class="w-6 h-6 rounded-full flex items-center justify-center text-base"
+                    style={`background: ${wish.wisher.color}22;`}
+                  >
+                    {wish.wisher.avatar}
+                  </span>
+                  <span>{wish.wisher.name}</span>
+                </div>
+                {wish.claimer && (
+                  <div class="flex items-center gap-1.5 text-xs">
+                    <span class:list={[styles.text, 'font-medium']}>
+                      {wish.status === '已完成' ? '由' : '認領者'}
+                    </span>
+                    <span
+                      class="w-6 h-6 rounded-full flex items-center justify-center text-base"
+                      style={`background: ${wish.claimer.color}22;`}
+                    >
+                      {wish.claimer.avatar}
+                    </span>
+                    <span class:list={[styles.text, 'font-medium']}>{wish.claimer.name}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+
+    <!-- Flow Explanation -->
+    <section class="mb-12">
+      <h2 class="text-xl font-semibold mb-5 flex items-center gap-2">
+        <span>🔄</span>
+        <span class="text-[var(--color-text-primary)]">許願流程</span>
+      </h2>
+      <div class="glass rounded-2xl p-6 glow-neon">
+        <div class="flex flex-wrap items-center justify-center gap-2 sm:gap-0">
+          {flowSteps.map((step, idx) => (
+            <>
+              <div class="flex flex-col items-center gap-1 px-3 py-2">
+                <span class="text-2xl">{step.icon}</span>
+                <span class="text-xs font-medium text-[var(--color-text-secondary)]">{step.label}</span>
+              </div>
+              {idx < flowSteps.length - 1 && (
+                <span class="text-[var(--color-neon-green)] opacity-60 text-xl font-light hidden sm:block">→</span>
+              )}
+            </>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- Leaderboard + CTA side by side -->
+    <div class="grid gap-6 md:grid-cols-2">
+
+      <!-- Points Leaderboard -->
+      <section>
+        <h2 class="text-xl font-semibold mb-5 flex items-center gap-2">
+          <span>🏆</span>
+          <span class="text-[var(--color-text-primary)]">積分排行</span>
+        </h2>
+        <div class="glass rounded-2xl overflow-hidden">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-[var(--color-border)]">
+                <th class="text-left px-4 py-3 text-[var(--color-text-secondary)] font-medium">#</th>
+                <th class="text-left px-4 py-3 text-[var(--color-text-secondary)] font-medium">成員</th>
+                <th class="text-right px-4 py-3 text-[var(--color-text-secondary)] font-medium whitespace-nowrap">委託力 XP</th>
+                <th class="text-right px-4 py-3 text-[var(--color-text-secondary)] font-medium whitespace-nowrap">解題力 XP</th>
+              </tr>
+            </thead>
+            <tbody>
+              {leaderboard
+                .sort((a, b) => (b.wishXP + b.grantXP) - (a.wishXP + a.grantXP))
+                .map((entry, idx) => (
+                  <tr
+                    class:list={[
+                      'border-b border-[var(--color-border)] last:border-0 transition-colors hover:bg-white/5',
+                    ]}
+                  >
+                    <td class="px-4 py-3 text-[var(--color-text-muted)]">
+                      {idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : idx + 1}
+                    </td>
+                    <td class="px-4 py-3">
+                      <div class="flex items-center gap-2">
+                        <span
+                          class="w-7 h-7 rounded-full flex items-center justify-center text-sm"
+                          style={`background: ${entry.member.color}22;`}
+                        >
+                          {entry.member.avatar}
+                        </span>
+                        <span class="text-[var(--color-text-primary)] font-medium">{entry.member.name}</span>
+                      </div>
+                    </td>
+                    <td class="px-4 py-3 text-right">
+                      <span style="color: var(--color-neon-green);" class="font-semibold">
+                        {entry.wishXP}
+                      </span>
+                    </td>
+                    <td class="px-4 py-3 text-right">
+                      <span style="color: var(--color-neon-blue);" class="font-semibold">
+                        {entry.grantXP}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Make a Wish CTA -->
+      <section class="flex flex-col">
+        <h2 class="text-xl font-semibold mb-5 flex items-center gap-2">
+          <span>💫</span>
+          <span class="text-[var(--color-text-primary)]">許下你的願望</span>
+        </h2>
+        <div
+          class="glass rounded-2xl p-6 flex-1 flex flex-col items-center justify-center text-center gap-5"
+          style="border-color: rgba(0,245,160,0.2);"
+        >
+          <div
+            class="text-6xl"
+            style="filter: drop-shadow(0 0 16px rgba(0,245,160,0.4));"
+          >
+            🌠
+          </div>
+          <div>
+            <p class="text-[var(--color-text-primary)] font-semibold text-lg mb-1">有個想法需要幫忙嗎？</p>
+            <p class="text-[var(--color-text-secondary)] text-sm leading-relaxed">
+              把你的需求化為願望，讓團隊夥伴一起來實現。<br />
+              每個願望都是互相成長的機會。
+            </p>
+          </div>
+          <button
+            type="button"
+            class="px-6 py-3 rounded-xl font-semibold text-sm transition-all cursor-not-allowed select-none"
+            style="background: linear-gradient(135deg, var(--color-neon-green), var(--color-neon-blue)); color: #0A0A1A; box-shadow: 0 0 20px rgba(0,245,160,0.3);"
+            disabled
+          >
+            ✨ 許下你的願望
+          </button>
+          <p class="text-xs text-[var(--color-text-muted)]">（功能即將開放）</p>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</Layout>

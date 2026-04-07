@@ -1,0 +1,366 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import { MEMBERS, WEEKS } from '@/lib/constants';
+
+const features = [
+  {
+    icon: '🤖',
+    title: 'AI 工作流設計',
+    desc: '從日常重複任務中識別自動化機會，系統性建立屬於你的 AI 工作流架構。',
+    color: '#6C63FF',
+    glow: 'glow-primary',
+  },
+  {
+    icon: '🎤',
+    title: '語音輸入系統',
+    desc: '邊說邊記，結合 Web Speech API 與 Whisper，讓靈感不再因打字速度而流失。',
+    color: '#00D9FF',
+    glow: 'glow-neon',
+  },
+  {
+    icon: '🧠',
+    title: 'Agent Memory',
+    desc: '打造個人化 AI 記憶系統，讓助理記住你的偏好、習慣與專案脈絡。',
+    color: '#00F5A0',
+    glow: 'glow-neon',
+  },
+  {
+    icon: '🌳',
+    title: '許願樹',
+    desc: '互助機制，交換 Project，用別人的視角打磨你的 AI 工作流。',
+    color: '#E94560',
+    glow: 'glow-accent',
+  },
+];
+---
+
+<Layout title="首頁" description="四週 AI 工作流共學計畫 — Cyclone 隊長 × 生活黑客共學團">
+  <!-- Hero Section -->
+  <section class="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <!-- Animated grid background -->
+    <div class="absolute inset-0 hero-grid opacity-20"></div>
+    <!-- Radial glow overlay -->
+    <div class="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_40%,rgba(108,99,255,0.15),transparent)]"></div>
+    <!-- Bottom fade -->
+    <div class="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-[var(--color-bg-dark)] to-transparent"></div>
+
+    <div class="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-24">
+      <!-- Badge -->
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[var(--color-primary)]/40 bg-[var(--color-primary)]/10 text-sm text-[var(--color-primary-light)] mb-8 animate-fade-in">
+        <span class="w-2 h-2 rounded-full bg-[var(--color-neon-green)] animate-pulse"></span>
+        2026 Q2 四週共學計畫 · 現正進行中
+      </div>
+
+      <!-- Main heading -->
+      <h1 class="text-5xl sm:text-6xl lg:text-7xl font-extrabold leading-tight mb-6 animate-slide-up">
+        <span class="gradient-text">打造你的</span><br />
+        <span class="gradient-text">AI 工作流</span>
+      </h1>
+
+      <!-- Subtitle -->
+      <p class="text-lg sm:text-xl text-[var(--color-text-secondary)] max-w-2xl mx-auto mb-4 animate-slide-up animation-delay-100">
+        Cyclone 隊長 × 生活黑客共學團 — 四週內系統性學習 AI 自動化工具，
+        從零建立屬於自己的高效工作流。
+      </p>
+      <p class="text-base text-[var(--color-text-muted)] mb-10 animate-slide-up animation-delay-200">
+        6 位成員 · 4 週計畫 · 實戰專案交換
+      </p>
+
+      <!-- CTA Buttons -->
+      <div class="flex flex-col sm:flex-row gap-4 justify-center animate-slide-up animation-delay-300">
+        <a
+          href="/dashboard"
+          class="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-semibold text-white bg-[var(--color-primary)] hover:bg-[var(--color-primary-light)] transition-all duration-200 glow-primary hover:scale-105 active:scale-95"
+        >
+          📊 前往儀表板
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+          </svg>
+        </a>
+        <a
+          href="/team"
+          class="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-semibold text-[var(--color-text-primary)] border border-[var(--color-border)] bg-white/5 hover:bg-white/10 hover:border-[var(--color-primary)]/50 transition-all duration-200 hover:scale-105 active:scale-95"
+        >
+          👥 認識團隊
+        </a>
+      </div>
+    </div>
+
+    <!-- Scroll indicator -->
+    <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-[var(--color-text-muted)] text-xs animate-bounce">
+      <span>往下捲動</span>
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+      </svg>
+    </div>
+  </section>
+
+  <!-- Feature Cards Section -->
+  <section class="relative py-24 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+      <!-- Section header -->
+      <div class="text-center mb-16">
+        <p class="text-sm font-semibold text-[var(--color-primary)] tracking-widest uppercase mb-3">共學主題</p>
+        <h2 class="text-3xl sm:text-4xl font-bold text-[var(--color-text-primary)] mb-4">
+          四大學習方向
+        </h2>
+        <p class="text-[var(--color-text-secondary)] max-w-xl mx-auto">
+          從工具認識到系統建立，每週聚焦一個核心主題，循序漸進打造完整 AI 工作流。
+        </p>
+      </div>
+
+      <!-- Cards grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {features.map((f, i) => (
+          <div
+            class="card-hover group relative rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-card)] p-6 overflow-hidden cursor-default"
+            style={`animation-delay: ${i * 80}ms`}
+          >
+            <!-- Card glow on hover (using pseudo-element via inline style) -->
+            <div
+              class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl"
+              style={`background: radial-gradient(circle at 50% 0%, ${f.color}18, transparent 70%);`}
+            ></div>
+
+            <!-- Top accent line -->
+            <div
+              class="absolute top-0 left-6 right-6 h-px rounded-full opacity-60"
+              style={`background: linear-gradient(90deg, transparent, ${f.color}, transparent);`}
+            ></div>
+
+            <div class="relative z-10">
+              <!-- Icon -->
+              <div
+                class="w-14 h-14 rounded-xl flex items-center justify-center text-2xl mb-5 transition-transform duration-200 group-hover:scale-110"
+                style={`background: ${f.color}20; border: 1px solid ${f.color}40;`}
+              >
+                {f.icon}
+              </div>
+
+              <!-- Title -->
+              <h3 class="text-lg font-bold text-[var(--color-text-primary)] mb-2 group-hover:text-white transition-colors">
+                {f.title}
+              </h3>
+
+              <!-- Description -->
+              <p class="text-sm text-[var(--color-text-secondary)] leading-relaxed">
+                {f.desc}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Timeline Section -->
+  <section class="relative py-24 px-4 sm:px-6 lg:px-8 overflow-hidden">
+    <!-- Background accent -->
+    <div class="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_50%,rgba(0,217,255,0.05),transparent)]"></div>
+
+    <div class="relative max-w-5xl mx-auto">
+      <!-- Section header -->
+      <div class="text-center mb-16">
+        <p class="text-sm font-semibold text-[var(--color-neon-blue)] tracking-widest uppercase mb-3">學習路線</p>
+        <h2 class="text-3xl sm:text-4xl font-bold text-[var(--color-text-primary)] mb-4">
+          四週計畫時程
+        </h2>
+        <p class="text-[var(--color-text-secondary)] max-w-xl mx-auto">
+          系統性的學習路徑，每週一個里程碑，四週後完成你的 AI 工作流。
+        </p>
+      </div>
+
+      <!-- Timeline -->
+      <div class="relative">
+        <!-- Central line (desktop) -->
+        <div class="hidden lg:block absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-[var(--color-border)] to-transparent -translate-x-1/2"></div>
+
+        <div class="space-y-8 lg:space-y-0">
+          {WEEKS.map((week, i) => {
+            const isLeft = i % 2 === 0;
+            const colors = ['#6C63FF', '#00D9FF', '#00F5A0', '#E94560'];
+            const weekColor = colors[i] ?? '#6C63FF';
+            const startDate = new Date(week.start);
+            const dateStr = `${startDate.getMonth() + 1}/${startDate.getDate()}`;
+            return (
+              <div class={`relative lg:flex lg:items-center lg:gap-8 ${isLeft ? 'lg:flex-row' : 'lg:flex-row-reverse'} lg:mb-12`}>
+                <!-- Content card -->
+                <div class="lg:w-5/12 card-hover">
+                  <div
+                    class="group relative rounded-2xl border bg-[var(--color-bg-card)] p-6 overflow-hidden"
+                    style={`border-color: ${weekColor}30;`}
+                  >
+                    <!-- Glow -->
+                    <div
+                      class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl"
+                      style={`background: radial-gradient(circle at ${isLeft ? '100%' : '0%'} 50%, ${weekColor}10, transparent 60%);`}
+                    ></div>
+
+                    <div class="relative z-10">
+                      <!-- Week badge + date -->
+                      <div class="flex items-center justify-between mb-3">
+                        <span
+                          class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold"
+                          style={`background: ${weekColor}20; color: ${weekColor}; border: 1px solid ${weekColor}40;`}
+                        >
+                          第 {week.num} 週
+                        </span>
+                        <span class="text-xs text-[var(--color-text-muted)]">{dateStr} 起</span>
+                      </div>
+                      <!-- Title -->
+                      <h3
+                        class="text-xl font-extrabold mb-1"
+                        style={`color: ${weekColor};`}
+                      >
+                        {week.title}
+                      </h3>
+                      <!-- Subtitle -->
+                      <p class="text-sm text-[var(--color-text-secondary)]">{week.subtitle}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Center dot (desktop) -->
+                <div class="hidden lg:flex lg:w-2/12 justify-center items-center">
+                  <div
+                    class="w-5 h-5 rounded-full border-2 z-10 shadow-lg"
+                    style={`background: ${weekColor}; border-color: var(--color-bg-dark); box-shadow: 0 0 12px ${weekColor}80;`}
+                  ></div>
+                </div>
+
+                <!-- Spacer (other side) -->
+                <div class="hidden lg:block lg:w-5/12"></div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Team Preview Section -->
+  <section class="relative py-24 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-5xl mx-auto">
+      <!-- Section header -->
+      <div class="text-center mb-16">
+        <p class="text-sm font-semibold text-[var(--color-neon-green)] tracking-widest uppercase mb-3">成員陣容</p>
+        <h2 class="text-3xl sm:text-4xl font-bold text-[var(--color-text-primary)] mb-4">
+          認識共學夥伴
+        </h2>
+        <p class="text-[var(--color-text-secondary)] max-w-xl mx-auto">
+          來自不同背景的六位夥伴，一起探索 AI 工作流的無限可能。
+        </p>
+      </div>
+
+      <!-- Members grid -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-10">
+        {MEMBERS.map((member) => (
+          <a
+            href="/team"
+            class="card-hover group flex flex-col items-center gap-3 p-5 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-card)] hover:border-[var(--color-primary)]/40 transition-all duration-200"
+          >
+            <!-- Avatar circle -->
+            <div
+              class="w-14 h-14 rounded-full flex items-center justify-center text-2xl transition-transform duration-200 group-hover:scale-110"
+              style={`background: ${member.color}20; border: 2px solid ${member.color}40; box-shadow: 0 0 0 0 ${member.color}00;`}
+              onmouseover={`this.style.boxShadow='0 0 16px ${member.color}60'`}
+              onmouseout={`this.style.boxShadow='0 0 0 0 ${member.color}00'`}
+            >
+              {member.avatar}
+            </div>
+            <!-- Name -->
+            <div class="text-center">
+              <p class="text-sm font-semibold text-[var(--color-text-primary)] group-hover:text-white transition-colors leading-tight">
+                {member.name}
+              </p>
+              <p class="text-xs text-[var(--color-text-muted)] mt-0.5">{member.role}</p>
+            </div>
+          </a>
+        ))}
+      </div>
+
+      <!-- CTA -->
+      <div class="text-center">
+        <a
+          href="/team"
+          class="inline-flex items-center gap-2 text-sm text-[var(--color-primary)] hover:text-[var(--color-primary-light)] transition-colors font-medium"
+        >
+          查看完整團隊頁面
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+          </svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Bottom CTA banner -->
+  <section class="py-20 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-3xl mx-auto text-center">
+      <div class="relative rounded-3xl border border-[var(--color-primary)]/30 bg-[var(--color-bg-card)] p-10 sm:p-14 overflow-hidden">
+        <!-- Background glow -->
+        <div class="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_50%,rgba(108,99,255,0.12),transparent)] rounded-3xl"></div>
+        <!-- Top line -->
+        <div class="absolute top-0 left-10 right-10 h-px bg-gradient-to-r from-transparent via-[var(--color-primary)]/60 to-transparent"></div>
+
+        <div class="relative z-10">
+          <div class="text-4xl mb-4">🌀</div>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-[var(--color-text-primary)] mb-4">
+            準備好打造你的 AI 工作流了嗎？
+          </h2>
+          <p class="text-[var(--color-text-secondary)] mb-8 max-w-lg mx-auto">
+            前往儀表板查看本週任務、進度追蹤，以及共學成員的最新動態。
+          </p>
+          <a
+            href="/dashboard"
+            class="inline-flex items-center justify-center gap-2 px-10 py-4 rounded-xl font-bold text-white bg-[var(--color-primary)] hover:bg-[var(--color-primary-light)] transition-all duration-200 glow-primary hover:scale-105 active:scale-95 text-lg"
+          >
+            📊 進入儀表板
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  /* Hero animated grid */
+  .hero-grid {
+    background-image:
+      linear-gradient(rgba(108, 99, 255, 0.15) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(108, 99, 255, 0.15) 1px, transparent 1px);
+    background-size: 60px 60px;
+    animation: grid-drift 20s linear infinite;
+  }
+
+  @keyframes grid-drift {
+    0% { background-position: 0 0; }
+    100% { background-position: 60px 60px; }
+  }
+
+  /* Entrance animations */
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slide-up {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.6s ease both;
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.7s ease both;
+  }
+
+  .animation-delay-100 { animation-delay: 0.1s; }
+  .animation-delay-200 { animation-delay: 0.2s; }
+  .animation-delay-300 { animation-delay: 0.35s; }
+</style>

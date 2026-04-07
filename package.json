@@ -1,0 +1,29 @@
+{
+  "name": "cyclone-26",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "deploy": "astro build && wrangler pages deploy dist"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@astrojs/cloudflare": "^13.1.7",
+    "@astrojs/react": "^5.0.3",
+    "@astrojs/tailwind": "^6.0.2",
+    "@tailwindcss/vite": "^4.2.2",
+    "astro": "^6.1.4",
+    "nanoid": "^5.1.7",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "tailwindcss": "^4.2.2"
+  }
+}

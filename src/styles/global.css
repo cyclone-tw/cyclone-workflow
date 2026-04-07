@@ -1,0 +1,90 @@
+@import "tailwindcss";
+
+@theme {
+  /* Brand Colors - Cyberpunk / Dark Tech */
+  --color-primary: #6C63FF;
+  --color-primary-light: #8B83FF;
+  --color-primary-dark: #4A42DB;
+  --color-accent: #E94560;
+  --color-accent-light: #FF6B81;
+  --color-neon-green: #00F5A0;
+  --color-neon-blue: #00D9FF;
+
+  /* Backgrounds */
+  --color-bg-dark: #0A0A1A;
+  --color-bg-card: #12122A;
+  --color-bg-card-hover: #1A1A3E;
+  --color-bg-surface: #16163A;
+
+  /* Text */
+  --color-text-primary: #F0F0FF;
+  --color-text-secondary: #9090B0;
+  --color-text-muted: #606080;
+
+  /* Borders */
+  --color-border: #2A2A4A;
+  --color-border-light: #3A3A5A;
+}
+
+/* Base styles */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--color-bg-dark);
+  color: var(--color-text-primary);
+}
+
+/* Glow effects */
+.glow-primary {
+  box-shadow: 0 0 20px rgba(108, 99, 255, 0.3);
+}
+
+.glow-accent {
+  box-shadow: 0 0 20px rgba(233, 69, 96, 0.3);
+}
+
+.glow-neon {
+  box-shadow: 0 0 20px rgba(0, 245, 160, 0.3);
+}
+
+/* Glass morphism */
+.glass {
+  background: rgba(18, 18, 42, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--color-border);
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Card hover animation */
+.card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(108, 99, 255, 0.15);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-bg-dark);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
+}

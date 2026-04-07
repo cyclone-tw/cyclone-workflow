@@ -1,0 +1,108 @@
+---
+import '@/styles/global.css';
+import { NAV_ITEMS, SITE } from '@/lib/constants';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title, description } = Astro.props;
+const pageTitle = title ? `${title} | ${SITE.title}` : SITE.title;
+const pageDesc = description || SITE.description;
+const currentPath = Astro.url.pathname;
+---
+
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={pageDesc} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet" />
+    <title>{pageTitle}</title>
+    <style>
+      body {
+        font-family: 'Noto Sans TC', 'Inter', system-ui, sans-serif;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen bg-[var(--color-bg-dark)] text-[var(--color-text-primary)]">
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 glass border-b border-[var(--color-border)]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+          <a href="/" class="flex items-center gap-2 text-lg font-bold">
+            <span class="text-2xl">🌀</span>
+            <span class="gradient-text hidden sm:inline">AI 工作流共學團</span>
+          </a>
+          <div class="hidden md:flex items-center gap-1">
+            {NAV_ITEMS.map((item) => (
+              <a
+                href={item.href}
+                class:list={[
+                  'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
+                  currentPath === item.href || (item.href !== '/' && currentPath.startsWith(item.href))
+                    ? 'bg-[var(--color-primary)]/20 text-[var(--color-primary-light)]'
+                    : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-white/5',
+                ]}
+              >
+                <span class="mr-1.5">{item.icon}</span>
+                {item.label}
+              </a>
+            ))}
+          </div>
+          <!-- Mobile menu button -->
+          <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg hover:bg-white/5">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+        </div>
+      </div>
+      <!-- Mobile menu -->
+      <div id="mobile-menu" class="hidden md:hidden border-t border-[var(--color-border)]">
+        <div class="px-4 py-3 space-y-1">
+          {NAV_ITEMS.map((item) => (
+            <a
+              href={item.href}
+              class:list={[
+                'block px-4 py-2.5 rounded-lg text-sm font-medium transition-colors',
+                currentPath === item.href || (item.href !== '/' && currentPath.startsWith(item.href))
+                  ? 'bg-[var(--color-primary)]/20 text-[var(--color-primary-light)]'
+                  : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-white/5',
+              ]}
+            >
+              <span class="mr-2">{item.icon}</span>
+              {item.label}
+            </a>
+          ))}
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main content -->
+    <main class="pt-16">
+      <slot />
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-[var(--color-border)] mt-20">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-[var(--color-text-muted)]">
+          <p>2026 Q2 — Cyclone 隊長 × 生活黑客共學團</p>
+          <p>Built with Astro + Cloudflare Pages</p>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      const btn = document.getElementById('mobile-menu-btn');
+      const menu = document.getElementById('mobile-menu');
+      btn?.addEventListener('click', () => menu?.classList.toggle('hidden'));
+    </script>
+  </body>
+</html>
