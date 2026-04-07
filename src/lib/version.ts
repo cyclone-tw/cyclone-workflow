@@ -1,4 +1,4 @@
-export const VERSION = 'v20260407.8';
+export const VERSION = 'v20260407.9';
 
 export interface ChangelogEntry {
   version: string;
@@ -7,6 +7,14 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: 'v20260407.9',
+    date: '2026-04-07 23:20',
+    changes: [
+      'fix: 修正 Issue 頁面無法顯示列表 (API response parsing)',
+      'feat: 新增 /sitemap 網站架構圖 (Mermaid flowchart)',
+    ],
+  },
   {
     version: 'v20260407.8',
     date: '2026-04-07 23:15',

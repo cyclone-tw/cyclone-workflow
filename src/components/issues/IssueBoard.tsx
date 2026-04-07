@@ -423,7 +423,7 @@ function DetailView({ issueId, onBack }: DetailViewProps) {
       const res = await fetch(`/api/issues/${issueId}`);
       if (!res.ok) throw new Error('載入失敗');
       const data = await res.json();
-      setIssue(data);
+      setIssue(data.issue ? { ...data.issue, comments: data.comments || [] } : null);
     } catch {
       setIssue(null);
     } finally {
@@ -697,7 +697,7 @@ export default function IssueBoard() {
       const res = await fetch(`/api/issues?${params}`);
       if (!res.ok) throw new Error('載入失敗');
       const data = await res.json();
-      setIssues(data);
+      setIssues(data.issues || []);
     } catch {
       setIssues([]);
     } finally {

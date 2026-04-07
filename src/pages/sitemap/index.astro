@@ -1,0 +1,155 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import { VERSION } from '@/lib/version';
+
+const mermaidDiagram = `flowchart TD
+    HOME["🏠 首頁 /"]
+    HOME --> DASH["📊 儀表板 /dashboard"]
+    HOME --> TEAM["👥 團隊 /team"]
+    HOME --> KNOW["📚 知識庫 /knowledge"]
+    HOME --> QA["❓ QA 知識集 /qa"]
+    HOME --> AGENT["🏠 Cyclone 管家 /agent"]
+    HOME --> WISH["🌳 許願樹 /wishlist"]
+    HOME --> DISCUSS["💬 討論區 /discuss"]
+    HOME --> ISSUE["📋 Issues /issue"]
+    HOME --> README["📖 使用說明 /readme"]
+    HOME --> BUG["🐛 Bug 回報 /bug"]
+    HOME --> LOG["📋 Changelog /changelog"]
+    HOME --> MAP["🗺️ Sitemap /sitemap"]
+    AGENT --- LETTA[("🧠 Letta Memory")]
+    DISCUSS --- DB[("💾 Turso DB")]
+    ISSUE --- DB
+    QA --- CRYPTO["🔒 Web Crypto"]
+    style HOME fill:#6C63FF,stroke:#8B83FF,color:#fff
+    style LETTA fill:#0A0A1A,stroke:#00F5A0,color:#00F5A0
+    style DB fill:#0A0A1A,stroke:#00D9FF,color:#00D9FF
+    style CRYPTO fill:#0A0A1A,stroke:#E94560,color:#E94560`;
+---
+
+<Layout title="Sitemap" description="網站架構總覽">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+    <!-- Header -->
+    <div class="text-center mb-10">
+      <h1 class="text-3xl sm:text-4xl font-bold mb-3">
+        <span class="gradient-text">🗺️ Sitemap</span>
+      </h1>
+      <p class="text-[var(--color-text-secondary)]">
+        網站架構總覽 — {VERSION}
+      </p>
+    </div>
+
+    <!-- Mermaid Diagram -->
+    <div class="glass rounded-xl p-6 mb-8 overflow-x-auto">
+      <pre class="mermaid" set:html={mermaidDiagram} />
+    </div>
+
+    <!-- Page List -->
+    <div class="grid sm:grid-cols-2 gap-4 mb-8">
+      <!-- 核心頁面 -->
+      <div class="glass rounded-xl p-5">
+        <h3 class="text-sm font-bold text-[var(--color-primary)] mb-3">核心頁面</h3>
+        <ul class="space-y-2">
+          {[
+            { path: '/', icon: '🏠', name: '首頁', desc: '團隊介紹 + 四週時程' },
+            { path: '/dashboard', icon: '📊', name: '儀表板', desc: '個人進度追蹤' },
+            { path: '/team', icon: '👥', name: '團隊', desc: '成員 + Project 交換' },
+            { path: '/knowledge', icon: '📚', name: '知識庫', desc: '模板 + 最佳實踐' },
+            { path: '/agent', icon: '🏠', name: 'Cyclone 管家', desc: 'AI 聊天 + 長期記憶' },
+            { path: '/wishlist', icon: '🌳', name: '許願樹', desc: '互助 + 積分' },
+          ].map(p => (
+            <li>
+              <a href={p.path} class="flex items-center gap-2 text-sm hover:text-[var(--color-primary)] transition-colors">
+                <span>{p.icon}</span>
+                <span class="text-[var(--color-text-primary)] font-medium">{p.name}</span>
+                <span class="text-[var(--color-text-muted)] text-xs">— {p.desc}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <!-- 互動頁面 -->
+      <div class="glass rounded-xl p-5">
+        <h3 class="text-sm font-bold text-[var(--color-neon-green)] mb-3">互動 + 工具</h3>
+        <ul class="space-y-2">
+          {[
+            { path: '/qa', icon: '❓', name: 'QA 知識集', desc: '密碼保護問答' },
+            { path: '/discuss', icon: '💬', name: '討論區', desc: '公開留言板' },
+            { path: '/issue', icon: '📋', name: 'Issues', desc: '問題追蹤系統' },
+            { path: '/bug', icon: '🐛', name: 'Bug 回報', desc: '表單 → 剪貼簿' },
+            { path: '/readme', icon: '📖', name: '使用說明', desc: '功能指南 + 資源' },
+            { path: '/changelog', icon: '📋', name: 'Changelog', desc: '版本更新紀錄' },
+            { path: '/sitemap', icon: '🗺️', name: 'Sitemap', desc: '你在這裡！' },
+          ].map(p => (
+            <li>
+              <a href={p.path} class="flex items-center gap-2 text-sm hover:text-[var(--color-neon-green)] transition-colors">
+                <span>{p.icon}</span>
+                <span class="text-[var(--color-text-primary)] font-medium">{p.name}</span>
+                <span class="text-[var(--color-text-muted)] text-xs">— {p.desc}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+
+    <!-- API Endpoints -->
+    <div class="glass rounded-xl p-5 mb-8">
+      <h3 class="text-sm font-bold text-[var(--color-neon-blue)] mb-3">API Endpoints</h3>
+      <div class="grid sm:grid-cols-2 gap-2 text-xs font-mono">
+        {[
+          { method: 'POST', path: '/api/agent/chat', desc: '管家對話' },
+          { method: 'POST', path: '/api/db/init', desc: 'DB 初始化' },
+          { method: 'GET', path: '/api/messages', desc: '讀取留言' },
+          { method: 'POST', path: '/api/messages', desc: '發表留言' },
+          { method: 'GET', path: '/api/issues', desc: '列出 Issues' },
+          { method: 'POST', path: '/api/issues', desc: '建立 Issue' },
+          { method: 'GET', path: '/api/issues/:id', desc: 'Issue 詳情' },
+          { method: 'POST', path: '/api/issues/:id', desc: '新增留言' },
+        ].map(api => (
+          <div class="flex items-center gap-2 py-1">
+            <span class="px-1.5 py-0.5 rounded text-[var(--color-bg-dark)]" style={`background: ${api.method === 'GET' ? '#00F5A0' : '#6C63FF'}`}>
+              {api.method}
+            </span>
+            <span class="text-[var(--color-text-secondary)]">{api.path}</span>
+            <span class="text-[var(--color-text-muted)]">— {api.desc}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <!-- Tech Stack -->
+    <div class="glass rounded-xl p-5 text-center">
+      <h3 class="text-sm font-bold text-[var(--color-text-primary)] mb-3">技術架構</h3>
+      <div class="flex flex-wrap justify-center gap-2 text-xs">
+        {[
+          { name: 'Bun', color: '#F472B6' },
+          { name: 'Astro', color: '#6C63FF' },
+          { name: 'React', color: '#00D9FF' },
+          { name: 'Tailwind CSS', color: '#00F5A0' },
+          { name: 'Cloudflare Pages', color: '#F6821F' },
+          { name: 'Turso DB', color: '#00D9FF' },
+          { name: 'Letta AI', color: '#E94560' },
+          { name: 'Web Crypto', color: '#FFD93D' },
+          { name: 'Gemini API', color: '#8B83FF' },
+        ].map(t => (
+          <span class="px-3 py-1 rounded-full border" style={`border-color: ${t.color}40; color: ${t.color}`}>
+            {t.name}
+          </span>
+        ))}
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Mermaid JS -->
+  <script is:inline src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script is:inline>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      flowchart: { curve: 'basis' }
+    });
+  </script>
+</Layout>
