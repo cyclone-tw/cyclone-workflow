@@ -32,6 +32,14 @@ const currentPath = Astro.url.pathname;
     'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
     })(window,document,'script','dataLayer','GTM-TW4TS9CX');</script>
     <!-- End Google Tag Manager -->
+    <!-- Google tag (gtag.js) GA4 -->
+    <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-WJQC4MZ9Y8"></script>
+    <script is:inline>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-WJQC4MZ9Y8');
+    </script>
     <style>
       body {
         font-family: 'Noto Sans TC', 'Inter', system-ui, sans-serif;
