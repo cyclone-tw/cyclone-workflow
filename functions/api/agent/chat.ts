@@ -1,7 +1,26 @@
+import { createClient } from '@libsql/client/web';
+
 interface Env {
   LETTA_API_KEY: string;
   TURSO_DATABASE_URL: string;
   TURSO_AUTH_TOKEN: string;
+}
+
+async function saveChat(env: Env, userId: string, userMessage: string, agentReply: string) {
+  try {
+    const db = createClient({ url: env.TURSO_DATABASE_URL, authToken: env.TURSO_AUTH_TOKEN });
+    await db.execute({
+      sql: `CREATE TABLE IF NOT EXISTS chat_history (
+        id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT DEFAULT 'anonymous',
+        user_message TEXT NOT NULL, agent_reply TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP)`,
+      args: [],
+    });
+    await db.execute({
+      sql: 'INSERT INTO chat_history (user_id, user_message, agent_reply) VALUES (?, ?, ?)',
+      args: [userId, userMessage, agentReply],
+    });
+  } catch { /* best-effort */ }
 }
 
 const LETTA_BASE_URL = 'https://app.letta.com';
@@ -114,12 +133,13 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       if (msg.message_type === 'assistant_message' && msg.content) reply += msg.content;
     }
 
+    const finalReply = reply || '（管家正在思考中...）';
+
+    // Save to DB (non-blocking)
+    context.waitUntil(saveChat(context.env, userId, message, finalReply));
+
     return new Response(
-      JSON.stringify({
-        reply: reply || '（管家正在思考中...）',
-        thoughts,
-        agentId,
-      }),
+      JSON.stringify({ reply: finalReply, thoughts, agentId }),
       { headers: { 'Content-Type': 'application/json' } },
     );
   } catch (err: unknown) {

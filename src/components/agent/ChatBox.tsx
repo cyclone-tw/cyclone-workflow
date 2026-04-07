@@ -18,11 +18,106 @@ const WELCOME_MESSAGE: Message = {
 
 const USER_ID = 'user-' + Math.random().toString(36).slice(2, 9);
 
+interface HistoryItem {
+  id: number;
+  user_id: string;
+  user_message: string;
+  agent_reply: string;
+  created_at: string;
+}
+
+function HistoryPanel() {
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [search, setSearch] = useState('');
+  const [searchInput, setSearchInput] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  const fetchHistory = async (p: number, q: string) => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({ page: String(p) });
+      if (q) params.set('search', q);
+      const res = await fetch(`/api/agent/history?${params}`);
+      const data = await res.json();
+      if (data.ok) {
+        setHistory(data.history);
+        setTotalPages(data.totalPages);
+        setTotal(data.total);
+      }
+    } catch { /* ignore */ } finally { setLoading(false); }
+  };
+
+  useEffect(() => { fetchHistory(page, search); }, [page, search]);
+
+  const handleSearch = () => { setPage(1); setSearch(searchInput); };
+
+  return (
+    <div className="flex flex-col" style={{ minHeight: '380px' }}>
+      {/* Search bar */}
+      <div className="px-4 pt-3 pb-2 flex gap-2">
+        <input
+          type="text"
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter' && !e.nativeEvent.isComposing) handleSearch(); }}
+          placeholder="搜尋對話紀錄..."
+          className="flex-1 px-3 py-1.5 rounded-lg text-xs outline-none"
+          style={{ background: 'var(--color-bg-dark)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)' }}
+        />
+        <button onClick={handleSearch} className="px-3 py-1.5 rounded-lg text-xs" style={{ background: 'var(--color-primary)', color: '#fff' }}>搜尋</button>
+        {search && <button onClick={() => { setSearch(''); setSearchInput(''); setPage(1); }} className="px-2 py-1.5 rounded-lg text-xs" style={{ color: 'var(--color-text-muted)' }}>清除</button>}
+      </div>
+      <div className="px-4 pb-2 text-xs" style={{ color: 'var(--color-text-muted)' }}>
+        共 {total} 筆對話{search && ` · 搜尋「${search}」`}
+      </div>
+
+      {/* History list */}
+      <div className="flex-1 overflow-y-auto px-4 space-y-3">
+        {loading ? (
+          <div className="text-center py-8" style={{ color: 'var(--color-text-muted)' }}>載入中...</div>
+        ) : history.length === 0 ? (
+          <div className="text-center py-8" style={{ color: 'var(--color-text-muted)' }}>
+            {search ? '找不到相關對話' : '還沒有對話紀錄'}
+          </div>
+        ) : history.map((h) => (
+          <div key={h.id} className="rounded-lg p-3" style={{ background: 'var(--color-bg-surface)', border: '1px solid var(--color-border)' }}>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-mono" style={{ color: 'var(--color-text-muted)' }}>#{h.id}</span>
+              <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{new Date(h.created_at + 'Z').toLocaleString('zh-TW')}</span>
+            </div>
+            <div className="mb-2">
+              <span className="text-xs px-1.5 py-0.5 rounded mr-1" style={{ background: 'rgba(108,99,255,0.2)', color: 'var(--color-primary)' }}>你</span>
+              <span className="text-sm" style={{ color: 'var(--color-text-primary)' }}>{h.user_message}</span>
+            </div>
+            <div>
+              <span className="text-xs px-1.5 py-0.5 rounded mr-1" style={{ background: 'rgba(0,245,160,0.15)', color: 'var(--color-neon-green)' }}>管家</span>
+              <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>{h.agent_reply.length > 150 ? h.agent_reply.slice(0, 150) + '...' : h.agent_reply}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-3 px-4 py-3 border-t" style={{ borderColor: 'var(--color-border)' }}>
+          <button disabled={page <= 1} onClick={() => setPage(page - 1)} className="text-xs px-3 py-1 rounded disabled:opacity-30" style={{ color: 'var(--color-primary)' }}>← 上一頁</button>
+          <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{page} / {totalPages}</span>
+          <button disabled={page >= totalPages} onClick={() => setPage(page + 1)} className="text-xs px-3 py-1 rounded disabled:opacity-30" style={{ color: 'var(--color-primary)' }}>下一頁 →</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ChatBox() {
   const [messages, setMessages] = useState<Message[]>([WELCOME_MESSAGE]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [expandedThoughts, setExpandedThoughts] = useState<Set<string>>(new Set());
+  const [tab, setTab] = useState<'chat' | 'history'>('chat');
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -124,17 +219,29 @@ export default function ChatBox() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <span
-            className="w-2 h-2 rounded-full animate-pulse"
-            style={{ background: 'var(--color-neon-green)' }}
-          />
-          <span className="text-xs" style={{ color: 'var(--color-neon-green)' }}>
-            線上
-          </span>
+          {(['chat', 'history'] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className="px-3 py-1 rounded-lg text-xs font-medium transition-colors"
+              style={{
+                background: tab === t ? 'var(--color-primary)' : 'transparent',
+                color: tab === t ? '#fff' : 'var(--color-text-muted)',
+                border: tab === t ? 'none' : '1px solid var(--color-border)',
+              }}
+            >
+              {t === 'chat' ? '💬 對話' : '📜 歷史'}
+            </button>
+          ))}
+          <span className="w-2 h-2 rounded-full animate-pulse ml-1" style={{ background: 'var(--color-neon-green)' }} />
         </div>
       </div>
 
+      {/* History tab */}
+      {tab === 'history' && <HistoryPanel />}
+
       {/* Chat area */}
+      {tab === 'chat' && <>
       <div className="flex-1 overflow-y-auto p-4 space-y-4" style={{ minHeight: '380px' }}>
         {messages.map((msg) => (
           <div
@@ -254,8 +361,10 @@ export default function ChatBox() {
         <div ref={bottomRef} />
       </div>
 
+      </>}
+
       {/* Input area */}
-      <div
+      {tab === 'chat' && <div
         className="px-4 py-3 border-t flex items-center gap-3"
         style={{ borderColor: 'var(--color-border)' }}
       >
@@ -297,7 +406,7 @@ export default function ChatBox() {
             <path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" />
           </svg>
         </button>
-      </div>
+      </div>}
     </div>
   );
 }

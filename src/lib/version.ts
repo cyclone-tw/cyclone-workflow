@@ -1,4 +1,4 @@
-export const VERSION = 'v20260407.9';
+export const VERSION = 'v20260407.10';
 
 export interface ChangelogEntry {
   version: string;
@@ -7,6 +7,15 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: 'v20260407.10',
+    date: '2026-04-07 23:48',
+    changes: [
+      'feat: 管家對話歷史紀錄 — 每次對話自動存入 Turso DB',
+      'feat: 歷史分頁瀏覽（每頁 10 筆）+ 搜尋功能',
+      'feat: ChatBox 新增「對話/歷史」切換 tab',
+    ],
+  },
   {
     version: 'v20260407.9',
     date: '2026-04-07 23:20',
