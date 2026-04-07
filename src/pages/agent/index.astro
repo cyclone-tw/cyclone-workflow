@@ -1,0 +1,62 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import ChatBox from '@/components/agent/ChatBox';
+---
+
+<Layout title="Cyclone 管家" description="共學團專屬 AI 管家 — 記住你的對話與偏好，隨時為你服務">
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+    <!-- Header -->
+    <div class="text-center mb-10">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[var(--color-primary)]/40 bg-[var(--color-primary)]/10 text-sm text-[var(--color-primary-light)] mb-6">
+        <span class="w-2 h-2 rounded-full bg-[var(--color-neon-green)] animate-pulse"></span>
+        AI 管家上線中
+      </div>
+      <h1 class="text-3xl sm:text-4xl font-bold mb-4">
+        <span class="gradient-text">🏠 Cyclone 管家</span>
+      </h1>
+      <p class="text-[var(--color-text-secondary)] max-w-lg mx-auto leading-relaxed">
+        共學團的專屬 AI 管家，記得你說過的每一句話、每一個偏好。<br />
+        隨時提問、尋求建議，或讓她幫你整理共學資料。
+      </p>
+    </div>
+
+    <!-- ChatBox -->
+    <ChatBox client:load />
+
+    <!-- Info section -->
+    <div class="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+      <div class="glass rounded-xl p-5 card-hover">
+        <div class="text-2xl mb-3">🧠</div>
+        <h3 class="font-semibold text-sm mb-2" style="color: var(--color-primary-light)">長期記憶</h3>
+        <p class="text-xs leading-relaxed" style="color: var(--color-text-secondary)">
+          管家使用 <span style="color: var(--color-primary-light)">Letta 平台</span>的長期記憶架構，能跨對話記住你的習慣、偏好與重要資訊。
+        </p>
+      </div>
+
+      <div class="glass rounded-xl p-5 card-hover">
+        <div class="text-2xl mb-3">💬</div>
+        <h3 class="font-semibold text-sm mb-2" style="color: var(--color-neon-blue)">記住你的偏好</h3>
+        <p class="text-xs leading-relaxed" style="color: var(--color-text-secondary)">
+          不管是學習風格、對話語氣，或是特定的任務習慣，管家都會主動記錄，越用越懂你。
+        </p>
+      </div>
+
+      <div class="glass rounded-xl p-5 card-hover">
+        <div class="text-2xl mb-3">🗄️</div>
+        <h3 class="font-semibold text-sm mb-2" style="color: var(--color-neon-green)">資料安全存儲</h3>
+        <p class="text-xs leading-relaxed" style="color: var(--color-text-secondary)">
+          對話記錄與記憶資料儲存於 <span style="color: var(--color-neon-green)">Turso 資料庫</span>，速度快、安全可靠。
+        </p>
+      </div>
+
+    </div>
+
+    <!-- Bottom note -->
+    <p class="text-center text-xs mt-6" style="color: var(--color-text-muted)">
+      Cyclone 管家由 Letta + Cloudflare Workers AI 驅動 · 記憶存於 Turso · 專為共學團打造
+    </p>
+
+  </div>
+</Layout>

@@ -1,0 +1,52 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import { QA_ITEMS } from '@/lib/qa-data';
+import QAList from '@/components/qa/QAList';
+---
+
+<Layout title="QA 知識集" description="共學團的問答精華，輸入密碼解鎖答案">
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <!-- Header -->
+    <div class="text-center mb-10">
+      <h1 class="text-3xl sm:text-4xl font-bold mb-3">
+        <span class="gradient-text">❓ QA 知識集</span>
+      </h1>
+      <p class="text-[var(--color-text-secondary)] max-w-lg mx-auto">
+        共學團的問答精華。標題公開瀏覽，答案需要密碼才能解鎖。<br />
+        忘記密碼？請求助 <span class="text-[var(--color-primary)]">Cyclone 老師</span> 🌀
+      </p>
+    </div>
+
+    <!-- Stats -->
+    <div class="flex justify-center gap-6 mb-8">
+      <div class="glass rounded-lg px-4 py-2 text-center">
+        <span class="text-lg font-bold text-[var(--color-primary)]">{QA_ITEMS.length}</span>
+        <span class="text-xs text-[var(--color-text-muted)] ml-1">題 QA</span>
+      </div>
+      <div class="glass rounded-lg px-4 py-2 text-center">
+        <span class="text-lg font-bold text-[var(--color-neon-green)]">🔒</span>
+        <span class="text-xs text-[var(--color-text-muted)] ml-1">密碼保護</span>
+      </div>
+      <div class="glass rounded-lg px-4 py-2 text-center">
+        <span class="text-lg font-bold text-[var(--color-accent)]">AES</span>
+        <span class="text-xs text-[var(--color-text-muted)] ml-1">加密</span>
+      </div>
+    </div>
+
+    <!-- QA List -->
+    <QAList client:load items={QA_ITEMS} />
+
+    <!-- Info box -->
+    <div class="mt-8 glass rounded-xl p-5">
+      <h3 class="text-sm font-semibold text-[var(--color-text-primary)] mb-2">
+        💡 關於密碼保護
+      </h3>
+      <ul class="text-xs text-[var(--color-text-muted)] space-y-1">
+        <li>• 每題 QA 有各自的密碼，由出題者設定</li>
+        <li>• 使用 AES-GCM 加密，即使查看原始碼也無法讀取內容</li>
+        <li>• 密碼在瀏覽器端解密，伺服器不會收到你的密碼</li>
+        <li>• 忘記密碼只能求助 Cyclone 老師，沒有其他方式恢復</li>
+      </ul>
+    </div>
+  </div>
+</Layout>

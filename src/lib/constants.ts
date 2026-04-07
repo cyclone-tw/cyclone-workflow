@@ -34,5 +34,7 @@ export const NAV_ITEMS = [
   { label: '儀表板', href: '/dashboard', icon: '📊' },
   { label: '團隊', href: '/team', icon: '👥' },
   { label: '知識庫', href: '/knowledge', icon: '📚' },
+  { label: 'QA', href: '/qa', icon: '❓' },
+  { label: '管家', href: '/agent', icon: '🏠' },
   { label: '許願樹', href: '/wishlist', icon: '🌳' },
 ];

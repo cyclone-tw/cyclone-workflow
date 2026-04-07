@@ -1,5 +1,6 @@
 name = "cyclone-26"
 compatibility_date = "2026-04-01"
+compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = "dist"
 
 # [TODO] Uncomment after creating D1 database
