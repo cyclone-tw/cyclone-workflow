@@ -1,4 +1,4 @@
-export const VERSION = 'v20260407.7';
+export const VERSION = 'v20260407.8';
 
 export interface ChangelogEntry {
   version: string;
@@ -7,6 +7,17 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: 'v20260407.8',
+    date: '2026-04-07 23:15',
+    changes: [
+      'feat: 新增 /issue 頁面 — GitHub Issues 風格的問題追蹤系統',
+      'feat: Issue 支援分類（bug/feature/improvement/question）、優先級、狀態流轉',
+      'feat: Issue 留言功能，可追蹤討論',
+      'feat: Issue 可對應 changelog 版本號，追蹤修復進度',
+      'feat: Turso DB 新增 issues + issue_comments 表',
+    ],
+  },
   {
     version: 'v20260407.7',
     date: '2026-04-07 23:00',

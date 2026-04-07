@@ -38,6 +38,7 @@ export const NAV_ITEMS = [
   { label: '管家', href: '/agent', icon: '🏠' },
   { label: '許願樹', href: '/wishlist', icon: '🌳' },
   { label: '討論', href: '/discuss', icon: '💬' },
+  { label: 'Issues', href: '/issue', icon: '📋' },
   { label: '說明', href: '/readme', icon: '📖' },
   { label: 'Bug', href: '/bug', icon: '🐛' },
 ];
