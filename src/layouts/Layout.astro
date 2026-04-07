@@ -1,6 +1,7 @@
 ---
 import '@/styles/global.css';
 import { NAV_ITEMS, SITE } from '@/lib/constants';
+import { VERSION } from '@/lib/version';
 
 interface Props {
   title?: string;
@@ -105,7 +106,10 @@ const currentPath = Astro.url.pathname;
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-[var(--color-text-muted)]">
           <p>2026 Q2 — Cyclone 隊長 × 生活黑客共學團</p>
-          <p>Built with Astro + Cloudflare Pages</p>
+          <p>
+            <a href="/changelog" class="hover:text-[var(--color-primary)] transition-colors">{VERSION}</a>
+            · Built with Astro + Cloudflare Pages
+          </p>
         </div>
       </div>
     </footer>

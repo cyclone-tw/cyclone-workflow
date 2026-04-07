@@ -1,0 +1,72 @@
+export const VERSION = 'v20260407.7';
+
+export interface ChangelogEntry {
+  version: string;
+  date: string;
+  changes: string[];
+}
+
+export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: 'v20260407.7',
+    date: '2026-04-07 23:00',
+    changes: [
+      'fix: 修正管家聊天 IME 中文輸入法 Enter 鍵送出問題',
+      'feat: 新增版本號系統 + /changelog 頁面',
+    ],
+  },
+  {
+    version: 'v20260407.6',
+    date: '2026-04-07 22:58',
+    changes: [
+      'fix: 修正 Letta API 訊息格式 (messages 陣列)',
+      'fix: 修正回應解析 (message_type + content)',
+      'feat: Cyclone 管家正式上線 (cyclone/MiniMax-M2.7)',
+    ],
+  },
+  {
+    version: 'v20260407.5',
+    date: '2026-04-07 22:21',
+    changes: [
+      'feat: 新增 Google Tag Manager (GTM-TW4TS9CX)',
+    ],
+  },
+  {
+    version: 'v20260407.4',
+    date: '2026-04-07 22:16',
+    changes: [
+      'feat: 新增 /discuss 討論區 (Turso DB + Pages Functions)',
+      'feat: 首頁整合 Gemini AI 生成的 hero 背景 + 4 張特色卡片圖',
+      'feat: 更新 site URL 為 cyclone.tw',
+    ],
+  },
+  {
+    version: 'v20260407.3',
+    date: '2026-04-07 21:39',
+    changes: [
+      'feat: 新增 /readme 使用說明頁面 (23+ 學習資源連結)',
+      'feat: 新增 /bug 回報表單頁面 (剪貼簿複製)',
+    ],
+  },
+  {
+    version: 'v20260407.2',
+    date: '2026-04-07 21:14',
+    changes: [
+      'feat: 新增 /qa QA 知識集 (AES-GCM 加密密碼保護)',
+      'feat: 新增 /agent Cyclone 管家頁面 + 聊天 UI',
+      'feat: 整合 Letta API 長期記憶 Agent',
+      'feat: 整合 Turso LibSQL 資料庫 (5 張表 + 6 位成員)',
+      'feat: Cloudflare Pages Functions API 路由',
+    ],
+  },
+  {
+    version: 'v20260407.1',
+    date: '2026-04-07 21:00',
+    changes: [
+      'feat: 初始版本 — Bun + Astro + Tailwind CSS v4',
+      'feat: 首頁 / 儀表板 / 團隊 / 知識庫 / 許願樹 (5 頁)',
+      'feat: 部署到 Cloudflare Pages (ifangdar@gmail.com)',
+      'feat: 深色 cyberpunk 主題設計',
+    ],
+  },
+];
