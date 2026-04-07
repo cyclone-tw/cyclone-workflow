@@ -37,6 +37,7 @@ export const NAV_ITEMS = [
   { label: 'QA', href: '/qa', icon: '❓' },
   { label: '管家', href: '/agent', icon: '🏠' },
   { label: '許願樹', href: '/wishlist', icon: '🌳' },
+  { label: '討論', href: '/discuss', icon: '💬' },
   { label: '說明', href: '/readme', icon: '📖' },
   { label: 'Bug', href: '/bug', icon: '🐛' },
 ];

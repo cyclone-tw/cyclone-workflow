@@ -5,7 +5,7 @@ import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
   output: 'static',
-  site: 'https://cyclone-26.pages.dev',
+  site: 'https://cyclone.tw',
   integrations: [react()],
   vite: {
     plugins: [tailwindcss()],

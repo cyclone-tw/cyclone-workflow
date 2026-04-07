@@ -9,6 +9,7 @@ const features = [
     desc: '從日常重複任務中識別自動化機會，系統性建立屬於你的 AI 工作流架構。',
     color: '#6C63FF',
     glow: 'glow-primary',
+    image: '/images/feature-workflow.png',
   },
   {
     icon: '🎤',
@@ -16,6 +17,7 @@ const features = [
     desc: '邊說邊記，結合 Web Speech API 與 Whisper，讓靈感不再因打字速度而流失。',
     color: '#00D9FF',
     glow: 'glow-neon',
+    image: '/images/feature-voice.png',
   },
   {
     icon: '🧠',
@@ -23,6 +25,7 @@ const features = [
     desc: '打造個人化 AI 記憶系統，讓助理記住你的偏好、習慣與專案脈絡。',
     color: '#00F5A0',
     glow: 'glow-neon',
+    image: '/images/feature-memory.png',
   },
   {
     icon: '🌳',
@@ -30,6 +33,7 @@ const features = [
     desc: '互助機制，交換 Project，用別人的視角打磨你的 AI 工作流。',
     color: '#E94560',
     glow: 'glow-accent',
+    image: '/images/feature-wishtree.png',
   },
 ];
 ---
@@ -37,10 +41,14 @@ const features = [
 <Layout title="首頁" description="四週 AI 工作流共學計畫 — Cyclone 隊長 × 生活黑客共學團">
   <!-- Hero Section -->
   <section class="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <!-- Hero background image -->
+    <div class="absolute inset-0">
+      <img src="/images/hero-bg.png" alt="" class="w-full h-full object-cover opacity-30" />
+    </div>
     <!-- Animated grid background -->
-    <div class="absolute inset-0 hero-grid opacity-20"></div>
+    <div class="absolute inset-0 hero-grid opacity-10"></div>
     <!-- Radial glow overlay -->
-    <div class="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_40%,rgba(108,99,255,0.15),transparent)]"></div>
+    <div class="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_40%,rgba(108,99,255,0.2),transparent)]"></div>
     <!-- Bottom fade -->
     <div class="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-[var(--color-bg-dark)] to-transparent"></div>
 
@@ -129,12 +137,9 @@ const features = [
             ></div>
 
             <div class="relative z-10">
-              <!-- Icon -->
-              <div
-                class="w-14 h-14 rounded-xl flex items-center justify-center text-2xl mb-5 transition-transform duration-200 group-hover:scale-110"
-                style={`background: ${f.color}20; border: 1px solid ${f.color}40;`}
-              >
-                {f.icon}
+              <!-- Feature image -->
+              <div class="w-full h-32 rounded-xl overflow-hidden mb-4 opacity-80 group-hover:opacity-100 transition-opacity">
+                <img src={f.image} alt={f.title} class="w-full h-full object-cover" />
               </div>
 
               <!-- Title -->

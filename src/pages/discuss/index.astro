@@ -1,0 +1,39 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import MessageBoard from '@/components/discuss/MessageBoard';
+---
+
+<Layout title="討論區" description="共學團成員交流討論、功能建議、成果分享">
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <!-- Header -->
+    <div class="text-center mb-8">
+      <h1 class="text-3xl sm:text-4xl font-bold mb-3">
+        <span class="gradient-text">💬 討論區</span>
+      </h1>
+      <p class="text-[var(--color-text-secondary)] max-w-lg mx-auto">
+        共學團的公開討論空間。聊聊功能建議、許願樹改版、學習心得，<br />
+        或任何想跟大家分享的事。
+      </p>
+    </div>
+
+    <!-- Cyclone's context -->
+    <div class="glass rounded-xl p-4 mb-6 border-l-3" style="border-left: 3px solid var(--color-primary);">
+      <p class="text-sm text-[var(--color-text-secondary)]">
+        <span class="text-[var(--color-primary)] font-semibold">🌀 Cyclone：</span>
+        請成員一起來看看 dar 的內容，我們可以討論許願樹可以改成什麼樣貌。
+        例如：限定 mail 登入才能看詳細頁面、訪客只能看成果分享等。歡迎留言討論！
+      </p>
+    </div>
+
+    <!-- Message Board -->
+    <MessageBoard client:load />
+
+    <!-- Info -->
+    <div class="mt-8 glass rounded-xl p-5 text-center">
+      <p class="text-xs text-[var(--color-text-muted)]">
+        留言會儲存在 Turso 資料庫中。請友善發言，尊重每位夥伴。<br />
+        緊急事項請直接在 Discord 頻道溝通。
+      </p>
+    </div>
+  </div>
+</Layout>
