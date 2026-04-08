@@ -5,7 +5,7 @@ const versionFile = "src/lib/version.ts";
 const versionTxtFile = ".version.txt";
 
 const content = readFileSync(versionFile, "utf-8");
-const match = content.match(/VERSION\s*=\s*['"]v(\d+)\.(\d+)\.(\d+)['"]/);
+const match = content.match(/VERSION\s*=\s*['"]v(\d+)\.(\d+)['"]/);
 
 if (!match) {
   console.error("Could not parse version");
