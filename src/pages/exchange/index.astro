@@ -2,8 +2,6 @@
 import Layout from '@/layouts/Layout.astro';
 import { MEMBERS } from '@/lib/constants';
 
-const coinBalance = 350;
-
 const items = [
   {
     id: 'soul-swap-gun',
@@ -121,15 +119,15 @@ const rarityOrder = ['傳說', '史詩', '稀有', '普通'];
       <p class="text-lg text-[var(--color-text-secondary)]">用 Cyclone Coin 兌換好玩的道具和神秘寶箱</p>
     </div>
 
-    <!-- Coin Balance Bar -->
+    <!-- Cyclone Coin Intro Bar -->
     <div class="glass rounded-2xl p-5 mb-10 flex flex-col sm:flex-row items-center justify-between gap-4 glow-primary">
       <div class="flex items-center gap-4">
         <div class="relative">
           <span class="text-5xl block coin-spin" style="filter: drop-shadow(0 0 12px rgba(255,215,0,0.6));">🪙</span>
         </div>
         <div>
-          <p class="text-sm text-[var(--color-text-secondary)]">我的 Cyclone Coin</p>
-          <p class="text-3xl font-bold" style="color: #FFD700;">{coinBalance}</p>
+          <p class="text-sm text-[var(--color-text-secondary)]">Cyclone Coin</p>
+          <p class="text-base text-[var(--color-text-primary)]">共學團專屬貨幣，完成任務即可獲得！</p>
         </div>
       </div>
       <div class="flex items-center gap-3">

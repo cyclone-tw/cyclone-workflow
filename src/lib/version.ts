@@ -1,4 +1,4 @@
-export const VERSION = 'v20260408.1452';
+export const VERSION = 'v20260408.1';
 
 export interface ChangelogEntry {
   version: string;
@@ -8,7 +8,7 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
-    version: 'v20260408.11',
+    version: 'v20260408.1',
     date: '2026-04-08 23:30',
     changes: [
       'feat: 新增 /exchange 兌換區頁面 — Cyclone Coin 貨幣系統',
