@@ -6,6 +6,7 @@ out
 dist
 .astro
 .wrangler
+target
 *.tgz
 
 # code coverage
