@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
 
 interface Message {
   id: string;
@@ -282,7 +283,29 @@ export default function ChatBox() {
                       }
                 }
               >
-                {msg.content}
+                {msg.role === 'user' ? (
+                  msg.content
+                ) : (
+                  <ReactMarkdown
+                    components={{
+                      p: ({ children }) => <p className="mb-1 last:mb-0">{children}</p>,
+                      ul: ({ children }) => <ul className="list-disc list-inside space-y-0.5 mb-1">{children}</ul>,
+                      ol: ({ children }) => <ol className="list-decimal list-inside space-y-0.5 mb-1">{children}</ol>,
+                      code: ({ children, className }) =>
+                        className ? (
+                          <pre className="rounded-lg p-2 mt-1 mb-1 text-xs overflow-x-auto" style={{ background: 'rgba(0,0,0,0.3)' }}>
+                            <code>{children}</code>
+                          </pre>
+                        ) : (
+                          <code className="px-1 py-0.5 rounded text-xs" style={{ background: 'rgba(0,0,0,0.3)' }}>{children}</code>
+                        ),
+                      strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+                      a: ({ href, children }) => <a href={href} target="_blank" rel="noopener noreferrer" className="underline opacity-80 hover:opacity-100">{children}</a>,
+                    }}
+                  >
+                    {msg.content}
+                  </ReactMarkdown>
+                )}
               </div>
 
               {/* Thoughts toggle */}
