@@ -138,9 +138,22 @@ bun run dev
 # 建置
 bun run build
 
-# 部署到 Cloudflare Pages
+# 部署到 Cloudflare Pages（手動）
 bun run deploy
 ```
+
+### 自動部署
+
+**push 到 `main` 分支就會自動部署到 Cloudflare Pages**，不需要手動觸發。
+
+流程：
+1. push 到 `main` → GitHub Actions 自動執行 `Cloudflare Pages Deploy` workflow
+2. 自動執行 `bun install` → `bun run build` → 部署到 Cloudflare Pages
+3. 部署成功後自動更新 `src/lib/version.ts` 版本號並 commit
+
+版本號格式：`v{YYYYMMDD}.{HHmm}`（每次部署自動更新）
+
+若只想本地測試，建議在 feature branch 開發完成後再 merge 到 main。
 
 ### 初始化資料庫
 
