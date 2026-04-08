@@ -32,6 +32,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
       - name: Install Bun
         uses: oven-sh/setup-bun@v2
         with:
@@ -67,11 +72,12 @@ jobs:
         with:
           name: tauri-${{ matrix.platform }}-${{ matrix.target || 'default' }}
           path: |
-            desktop_app/src-tauri/target/release/bundle/dmg/*.dmg
-            desktop_app/src-tauri/target/release/bundle/deb/*.deb
-            desktop_app/src-tauri/target/release/bundle/appimage/*.AppImage
-            desktop_app/src-tauri/target/release/bundle/msi/*.msi
-            desktop_app/src-tauri/target/release/bundle/nsis/*.exe
+            desktop_app/src-tauri/target/*/release/bundle/**/*.dmg
+            desktop_app/src-tauri/target/release/bundle/**/*.dmg
+            desktop_app/src-tauri/target/release/bundle/**/*.deb
+            desktop_app/src-tauri/target/release/bundle/**/*.AppImage
+            desktop_app/src-tauri/target/release/bundle/**/*.msi
+            desktop_app/src-tauri/target/release/bundle/**/*.exe
 
       - name: Create Release
         if: startsWith(github.ref, 'refs/tags/')
@@ -79,8 +85,9 @@ jobs:
         with:
           draft: true
           files: |
-            desktop_app/src-tauri/target/release/bundle/dmg/*.dmg
-            desktop_app/src-tauri/target/release/bundle/deb/*.deb
-            desktop_app/src-tauri/target/release/bundle/appimage/*.AppImage
-            desktop_app/src-tauri/target/release/bundle/msi/*.msi
-            desktop_app/src-tauri/target/release/bundle/nsis/*.exe
+            desktop_app/src-tauri/target/*/release/bundle/**/*.dmg
+            desktop_app/src-tauri/target/release/bundle/**/*.dmg
+            desktop_app/src-tauri/target/release/bundle/**/*.deb
+            desktop_app/src-tauri/target/release/bundle/**/*.AppImage
+            desktop_app/src-tauri/target/release/bundle/**/*.msi
+            desktop_app/src-tauri/target/release/bundle/**/*.exe
