@@ -4,7 +4,13 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - 'src/lib/version.ts'
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   NODE_VERSION: '22'
