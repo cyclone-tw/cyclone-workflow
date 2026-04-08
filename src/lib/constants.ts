@@ -41,4 +41,5 @@ export const NAV_ITEMS = [
   { label: 'Issues', href: '/issue', icon: '📋' },
   { label: '說明', href: '/readme', icon: '📖' },
   { label: 'Bug', href: '/bug', icon: '🐛' },
+  { label: '兌換區', href: '/exchange', icon: '🏪' },
 ];

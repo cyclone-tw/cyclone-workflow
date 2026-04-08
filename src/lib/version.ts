@@ -1,4 +1,4 @@
-export const VERSION = 'v20260408.1419';
+export const VERSION = 'v20260408.11';
 
 export interface ChangelogEntry {
   version: string;
@@ -7,6 +7,16 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: 'v20260408.11',
+    date: '2026-04-08 23:30',
+    changes: [
+      'feat: 新增 /exchange 兌換區頁面 — Cyclone Coin 貨幣系統',
+      'feat: 三大道具卡片（靈魂交換槍、憤怒早安音檔、大神兵）',
+      'feat: 四種神秘寶箱（銅/銀/金/傳說）含獎勵預覽',
+      'feat: Coin 獲取方式說明（簽到/任務/願望/Bug回報）',
+    ],
+  },
   {
     version: 'v20260407.10',
     date: '2026-04-07 23:48',

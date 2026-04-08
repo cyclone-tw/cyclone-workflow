@@ -1,0 +1,345 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import { MEMBERS } from '@/lib/constants';
+
+const coinBalance = 350;
+
+const items = [
+  {
+    id: 'soul-swap-gun',
+    name: '靈魂交換槍',
+    rarity: '傳說',
+    rarityColor: '#E94560',
+    description: '發射後與目標交換頭貼＋名字，限時分分鐘。誰是誰？沒人知道！',
+    effect: '頭貼+名字已交換！',
+    usage: '使用紀錄：限時分分',
+    price: 120,
+    image: '/images/exchange/items-cards.jpg',
+    bgGradient: 'from-purple-900/40 to-indigo-900/40',
+    borderColor: 'border-purple-500/50',
+    glowColor: 'rgba(139, 92, 246, 0.3)',
+    icon: '🔫',
+  },
+  {
+    id: 'angry-morning-audio',
+    name: '憤怒早安音檔',
+    rarity: '稀有',
+    rarityColor: '#00D9FF',
+    description: '女聲、超兇、已使用 47 次。起床了啦臭豬！再睡我把你被子燒掉！',
+    effect: '用途：喚醒隊友',
+    usage: '兌換碼：超好玩兵團日',
+    price: 80,
+    image: '/images/exchange/items-cards.jpg',
+    bgGradient: 'from-amber-900/40 to-orange-900/40',
+    borderColor: 'border-amber-500/50',
+    glowColor: 'rgba(245, 158, 11, 0.3)',
+    icon: '📢',
+  },
+  {
+    id: 'god-soldiers',
+    name: '大神兵',
+    rarity: '史詩',
+    rarityColor: '#00F5A0',
+    description: '團長，我們來了！這次包我們！召喚強力守護者，挑戰協助 95% 完成。',
+    effect: '效果：召喚強力守護者',
+    usage: '通關「地獄模式爬塔第87層」',
+    price: 150,
+    image: '/images/exchange/items-cards.jpg',
+    bgGradient: 'from-emerald-900/40 to-teal-900/40',
+    borderColor: 'border-emerald-500/50',
+    glowColor: 'rgba(0, 245, 160, 0.3)',
+    icon: '⚔️',
+  },
+];
+
+const mysteryBoxes = [
+  {
+    id: 'bronze',
+    name: '銅製寶箱',
+    tier: 'Bronze',
+    price: 30,
+    color: '#CD7F32',
+    glowColor: 'rgba(205, 127, 50, 0.3)',
+    icon: '📦',
+    description: '基礎獎勵，適合新手嘗鮮',
+    rewards: ['隨機表情包 ×1', '小稱號 ×1', '5~15 Coin 回饋'],
+  },
+  {
+    id: 'silver',
+    name: '白銀寶箱',
+    tier: 'Silver',
+    price: 60,
+    color: '#C0C0C0',
+    glowColor: 'rgba(192, 192, 192, 0.3)',
+    icon: '🗃️',
+    description: '進階獎勵，有機會開出稀有道具',
+    rewards: ['稀有道具碎片 ×1', '限定背景 ×1', '20~50 Coin 回饋'],
+  },
+  {
+    id: 'gold',
+    name: '黃金寶箱',
+    tier: 'Gold',
+    price: 100,
+    color: '#FFD700',
+    glowColor: 'rgba(255, 215, 0, 0.4)',
+    icon: '💎',
+    description: '高級獎勵，保底一件史詩道具',
+    rewards: ['史詩道具 ×1（保底）', '隱藏稱號機率 UP', '50~120 Coin 回饋'],
+  },
+  {
+    id: 'legendary',
+    name: '傳說寶箱',
+    tier: 'Legendary',
+    price: 200,
+    color: '#E94560',
+    glowColor: 'rgba(233, 69, 96, 0.5)',
+    icon: '👑',
+    description: '最頂級寶箱，必出傳說道具！',
+    rewards: ['傳說道具 ×1（必出）', '專屬特效 ×1', '100~200 Coin 回饋'],
+  },
+];
+
+const rarityOrder = ['傳說', '史詩', '稀有', '普通'];
+---
+
+<Layout title="兌換區" description="用 Cyclone Coin 兌換好玩的道具和神秘寶箱">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+    <!-- Header -->
+    <div class="text-center mb-12">
+      <div class="relative inline-block mb-4">
+        <span
+          class="text-8xl block leading-none select-none"
+          style="filter: drop-shadow(0 0 24px rgba(108,99,255,0.5)) drop-shadow(0 0 48px rgba(108,99,255,0.25));"
+        >🏪</span>
+      </div>
+      <h1 class="text-4xl sm:text-5xl font-bold mb-3">
+        <span style="background: linear-gradient(135deg, var(--color-primary), var(--color-accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+          兌換區
+        </span>
+      </h1>
+      <p class="text-lg text-[var(--color-text-secondary)]">用 Cyclone Coin 兌換好玩的道具和神秘寶箱</p>
+    </div>
+
+    <!-- Coin Balance Bar -->
+    <div class="glass rounded-2xl p-5 mb-10 flex flex-col sm:flex-row items-center justify-between gap-4 glow-primary">
+      <div class="flex items-center gap-4">
+        <div class="relative">
+          <span class="text-5xl block coin-spin" style="filter: drop-shadow(0 0 12px rgba(255,215,0,0.6));">🪙</span>
+        </div>
+        <div>
+          <p class="text-sm text-[var(--color-text-secondary)]">我的 Cyclone Coin</p>
+          <p class="text-3xl font-bold" style="color: #FFD700;">{coinBalance}</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="text-center px-4">
+          <p class="text-xs text-[var(--color-text-muted)]">每日簽到</p>
+          <p class="text-sm font-semibold" style="color: var(--color-neon-green);">+10</p>
+        </div>
+        <div class="w-px h-8 bg-[var(--color-border)]"></div>
+        <div class="text-center px-4">
+          <p class="text-xs text-[var(--color-text-muted)]">完成任務</p>
+          <p class="text-sm font-semibold" style="color: var(--color-neon-blue);">+20~50</p>
+        </div>
+        <div class="w-px h-8 bg-[var(--color-border)]"></div>
+        <div class="text-center px-4">
+          <p class="text-xs text-[var(--color-text-muted)]">許願實現</p>
+          <p class="text-sm font-semibold" style="color: var(--color-primary-light);">+30</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Items Preview Image -->
+    <section class="mb-12">
+      <h2 class="text-xl font-semibold mb-5 flex items-center gap-2">
+        <span>🎴</span>
+        <span class="text-[var(--color-text-primary)]">好玩的道具</span>
+      </h2>
+
+      <!-- Card Image Banner -->
+      <div class="glass rounded-2xl overflow-hidden mb-6" style="border-color: rgba(108,99,255,0.3);">
+        <img
+          src="/images/exchange/items-cards.jpg"
+          alt="道具卡片一覽 — 靈魂交換槍、憤怒早安音檔、大神兵"
+          class="w-full h-auto"
+          loading="lazy"
+        />
+      </div>
+
+      <!-- Item Detail Banner -->
+      <div class="glass rounded-2xl overflow-hidden mb-8" style="border-color: rgba(233,69,96,0.3);">
+        <img
+          src="/images/exchange/items-preview.png"
+          alt="道具詳細說明 — 好玩的道具使用方式"
+          class="w-full h-auto"
+          loading="lazy"
+        />
+      </div>
+
+      <!-- Item Cards -->
+      <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {items.map((item) => (
+          <div
+            class:list={[
+              'glass rounded-2xl overflow-hidden border card-hover transition-all duration-300 group',
+              item.borderColor,
+            ]}
+            style={`box-shadow: 0 0 20px ${item.glowColor};`}
+          >
+            <!-- Card Top: Rarity Badge -->
+            <div class="px-5 pt-5 pb-3">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-3xl">{item.icon}</span>
+                <span
+                  class="text-xs font-bold px-3 py-1 rounded-full"
+                  style={`background: ${item.rarityColor}22; color: ${item.rarityColor}; border: 1px solid ${item.rarityColor}44;`}
+                >
+                  {item.rarity}
+                </span>
+              </div>
+              <h3 class="text-lg font-bold text-[var(--color-text-primary)] mb-1">{item.name}</h3>
+              <p class="text-xs font-medium mb-3" style={`color: ${item.rarityColor};`}>{item.effect}</p>
+              <p class="text-sm text-[var(--color-text-secondary)] leading-relaxed">{item.description}</p>
+            </div>
+
+            <!-- Card Bottom: Price + Action -->
+            <div class="px-5 pb-5 pt-3 border-t border-[var(--color-border)] flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="text-lg">🪙</span>
+                <span class="text-xl font-bold" style="color: #FFD700;">{item.price}</span>
+              </div>
+              <button
+                type="button"
+                class="px-4 py-2 rounded-xl text-sm font-semibold transition-all cursor-not-allowed opacity-80 select-none"
+                style={`background: ${item.rarityColor}33; color: ${item.rarityColor}; border: 1px solid ${item.rarityColor}55;`}
+                disabled
+              >
+                兌換
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- Mystery Boxes Section -->
+    <section class="mb-12">
+      <h2 class="text-xl font-semibold mb-5 flex items-center gap-2">
+        <span>🎁</span>
+        <span class="text-[var(--color-text-primary)]">神秘寶箱</span>
+      </h2>
+      <p class="text-sm text-[var(--color-text-secondary)] mb-6">
+        花費 Cyclone Coin 開啟寶箱，隨機獲得道具、稱號、Coin 回饋！等級越高，獎勵越豐厚。
+      </p>
+
+      <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        {mysteryBoxes.map((box) => (
+          <div
+            class="glass rounded-2xl p-5 border border-[var(--color-border)] card-hover transition-all duration-300 flex flex-col items-center text-center group"
+            style={`box-shadow: 0 0 16px ${box.glowColor};`}
+          >
+            <!-- Box Icon -->
+            <div
+              class="text-5xl mb-3 transition-transform duration-300 group-hover:scale-110"
+              style={`filter: drop-shadow(0 0 12px ${box.glowColor});`}
+            >
+              {box.icon}
+            </div>
+
+            <!-- Box Name + Tier -->
+            <h3 class="text-base font-bold mb-1" style={`color: ${box.color};`}>
+              {box.name}
+            </h3>
+            <span
+              class="text-[10px] font-semibold px-2 py-0.5 rounded-full mb-3"
+              style={`background: ${box.color}22; color: ${box.color}; border: 1px solid ${box.color}33;`}
+            >
+              {box.tier}
+            </span>
+
+            <!-- Description -->
+            <p class="text-xs text-[var(--color-text-secondary)] mb-3 leading-relaxed">
+              {box.description}
+            </p>
+
+            <!-- Rewards Preview -->
+            <div class="w-full mb-4 flex-1">
+              <p class="text-[10px] text-[var(--color-text-muted)] mb-1.5 uppercase tracking-wider">可能獲得</p>
+              <ul class="space-y-1">
+                {box.rewards.map((reward) => (
+                  <li class="text-xs text-[var(--color-text-secondary)] flex items-center gap-1.5">
+                    <span style={`color: ${box.color};`}>•</span>
+                    {reward}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <!-- Price + Open Button -->
+            <div class="w-full pt-3 border-t border-[var(--color-border)]">
+              <div class="flex items-center justify-center gap-2 mb-2">
+                <span>🪙</span>
+                <span class="text-lg font-bold" style="color: #FFD700;">{box.price}</span>
+              </div>
+              <button
+                type="button"
+                class="w-full py-2 rounded-xl text-sm font-semibold transition-all cursor-not-allowed opacity-80 select-none"
+                style={`background: ${box.color}22; color: ${box.color}; border: 1px solid ${box.color}44;`}
+                disabled
+              >
+                開啟寶箱
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- How to Earn Coins -->
+    <section class="mb-12">
+      <h2 class="text-xl font-semibold mb-5 flex items-center gap-2">
+        <span>💰</span>
+        <span class="text-[var(--color-text-primary)]">如何獲得 Cyclone Coin？</span>
+      </h2>
+      <div class="glass rounded-2xl p-6 glow-neon">
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            { icon: '📅', title: '每日簽到', desc: '每天上線即可領取', reward: '+10 Coin' },
+            { icon: '✅', title: '完成任務', desc: '完成週任務 / 挑戰', reward: '+20~50 Coin' },
+            { icon: '🌟', title: '實現願望', desc: '幫夥伴完成願望', reward: '+30 Coin' },
+            { icon: '🐛', title: '回報 Bug', desc: '發現問題並回報', reward: '+15 Coin' },
+          ].map((way) => (
+            <div class="flex flex-col items-center text-center p-4 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
+              <span class="text-3xl mb-2">{way.icon}</span>
+              <h3 class="font-semibold text-[var(--color-text-primary)] text-sm mb-1">{way.title}</h3>
+              <p class="text-xs text-[var(--color-text-secondary)] mb-2">{way.desc}</p>
+              <span class="text-sm font-bold" style="color: #FFD700;">{way.reward}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- Coming Soon Notice -->
+    <div class="glass rounded-2xl p-6 text-center" style="border-color: rgba(108,99,255,0.3);">
+      <span class="text-4xl block mb-3" style="filter: drop-shadow(0 0 16px rgba(108,99,255,0.4));">🚀</span>
+      <p class="text-[var(--color-text-primary)] font-semibold text-lg mb-1">更多道具即將上架！</p>
+      <p class="text-sm text-[var(--color-text-secondary)]">
+        兌換功能即將開放，敬請期待。每週都會有新道具加入商店！
+      </p>
+    </div>
+
+  </div>
+</Layout>
+
+<style>
+  @keyframes coin-spin {
+    0%, 100% { transform: rotateY(0deg); }
+    50% { transform: rotateY(180deg); }
+  }
+  .coin-spin {
+    animation: coin-spin 3s ease-in-out infinite;
+    display: inline-block;
+  }
+</style>
