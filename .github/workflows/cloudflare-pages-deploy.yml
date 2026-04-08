@@ -35,14 +35,6 @@ jobs:
       - name: Build
         run: bun run build
 
-      - name: Commit version bump
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add src/lib/version.ts
-          git commit -m "chore: bump version to ${{ steps.bump.outputs.version }}" || true
-          git push
-
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/pages-action@v1
         with:
@@ -50,4 +42,13 @@ jobs:
           account-id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           project-name: cyclone-26
           directory: dist
-          git-source: true
+          git-source: false
+
+      - name: Commit version bump
+        if: success()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add src/lib/version.ts
+          git commit -m "chore: bump version to ${{ steps.bump.outputs.version }}"
+          git push
