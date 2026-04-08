@@ -50,10 +50,10 @@ jobs:
         uses: cloudflare/pages-action@v1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          account-id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          project-name: cyclone-26
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: cyclone-26
           directory: dist
-          git-source: false
+          gitSource: false
 
       - name: Commit version bump
         if: success()
