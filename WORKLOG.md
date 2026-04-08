@@ -106,8 +106,99 @@ ffa19e3 feat: chat history with pagination + search
 - [ ] 語音輸入元件 MVP
 - [ ] 成員登入系統（email-based）
 - [ ] 訪客 vs 成員權限區分
-- [ ] cyclone.tw SSL 確認穩定
+- [x] cyclone.tw SSL 確認穩定 ✅
+- [x] 桌面版應用程式 ✅
 
 ---
 
-*由 dar #3808 撰寫 — 2026.04.07*
+## 2026-04-08 — Day 2：桌面版 + 安全清理 + Release
+
+### 概要
+
+完成 Tauri v2 桌面版應用程式，支援 macOS (Apple Silicon + Intel)、Windows、Linux 三平台。建立 GitHub 組織 `cyclone-tw`，推送到 GitHub，清洗 git history 移除所有機密。第一版 Release 發布。
+
+### 時間軸
+
+| 時間 | 工作內容 |
+|------|----------|
+| 00:00 | 建立 /discuss 討論區留言板（Turso DB + Pages Functions） |
+| 00:10 | README.md 中英雙語 + Mermaid 圖表 + .env.example |
+| 07:00 | 建立 GitHub 組織 cyclone-tw/cyclone-workflow |
+| 07:05 | 機密掃描：發現 Gemini API key 硬編碼，移除修正 |
+| 07:10 | git filter-repo 重寫歷史，清除所有 secrets |
+| 07:15 | Force push 乾淨歷史到 GitHub |
+| 07:20 | 建立 Issue #1 + branch `feat/tauri-desktop-app` + Draft PR #2 |
+| 07:30 | Tauri v2 專案初始化（Cargo.toml, tauri.conf.json, main.rs） |
+| 07:35 | cargo tauri icon — 從 favicon.svg 生成全平台圖示 |
+| 07:45 | 本機 macOS build 成功 — 7.8MB DMG |
+| 07:50 | GitHub Actions CI — 4 平台建置（macOS x2, Windows, Linux） |
+| 08:05 | CI 修正：Ubuntu 需要 Node.js 22 + artifact glob 路徑 |
+| 08:30 | 4/4 平台全部建置成功 |
+| 08:45 | Merge PR #2 到 main，打 tag desktop-v0.1.0 觸發 Release CI |
+| 09:15 | Release CI 4/4 成功，6 個安裝檔 |
+| 09:20 | 發布 Release v0.1.0 |
+
+### Tauri 桌面版
+
+```
+Framework:  Tauri v2 (Rust backend)
+Frontend:   Astro static build (embedded)
+App Size:   ~8MB (DMG) — 比 Electron ~150MB 小 18 倍
+Platforms:  macOS (ARM + x64), Windows (MSI + EXE), Linux (deb + AppImage)
+CI/CD:      GitHub Actions — push desktop-v* tag 自動建置 + Release
+```
+
+### Release 安裝檔
+
+| 平台 | 檔案 |
+|------|------|
+| macOS Apple Silicon | `Cyclone.Workflow_0.1.0_aarch64.dmg` |
+| macOS Intel | `Cyclone.Workflow_0.1.0_x64.dmg` |
+| Linux (.deb) | `Cyclone.Workflow_0.1.0_amd64.deb` |
+| Linux (.AppImage) | `Cyclone.Workflow_0.1.0_amd64.AppImage` |
+| Windows (.exe) | `Cyclone.Workflow_0.1.0_x64-setup.exe` |
+| Windows (.msi) | `Cyclone.Workflow_0.1.0_x64_en-US.msi` |
+
+**Release URL**: https://github.com/cyclone-tw/cyclone-workflow/releases/tag/desktop-v0.1.0
+
+### 安全清理
+
+- 發現 `scripts/generate-images.ts` 硬編碼 Gemini API key
+- 使用 `git filter-repo` 重寫整個歷史移除 key
+- Force push 乾淨歷史
+- 驗證：`git log --all -p -S "AIzaSy"` 回傳空結果 ✅
+- `.env` 從未進入 git ✅
+
+### Git Commits（Day 2 新增）
+
+```
+4c795c0 security: remove hardcoded Gemini API key from script
+dd1017d docs: add WORKLOG.md — Day 1 完整工作日誌
+faf429e docs: add README.md (中英雙語 + Mermaid) + .env.example
+e982b51 chore: init desktop_app directory for Tauri (#1)
+8490d89 feat: Tauri v2 desktop app + GitHub Actions CI (#1)
+0310b3d fix: CI add Node.js 22 + fix artifact glob paths
+e86bcfd Merge PR #2: feat: Tauri 桌面版應用程式 (#1)
+```
+
+### 里程碑
+
+- **GitHub 組織**: https://github.com/cyclone-tw
+- **Repo**: https://github.com/cyclone-tw/cyclone-workflow
+- **網站**: https://cyclone.tw (13 頁)
+- **桌面版**: v0.1.0 (3 平台 6 安裝檔)
+- **Issue #1**: Tauri 桌面版 — Closed ✅
+- **PR #2**: Merged ✅
+
+### 待辦 / 下一步
+
+- [ ] 許願樹功能完善（真正的互動 CRUD）
+- [ ] 儀表板動態化（從 DB 讀取真實進度）
+- [ ] 語音輸入元件 MVP
+- [ ] 成員登入系統（email-based）
+- [ ] 訪客 vs 成員權限區分
+- [ ] 桌面版自動更新機制
+
+---
+
+*由 dar #3808 撰寫 — 2026.04.08*
