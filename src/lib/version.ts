@@ -1,4 +1,4 @@
-export const VERSION = 'v20260409.1412';
+export const VERSION = 'v20260409.1420';
 
 export interface ChangelogEntry {
   version: string;
