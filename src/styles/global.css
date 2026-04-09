@@ -113,19 +113,6 @@
   --color-category-primary-border: rgba(108, 99, 255, 0.20);
 }
 
-/* Light mode glow overrides */
-[data-theme="light"] .glow-primary {
-  box-shadow: 0 4px 12px rgba(108, 99, 255, 0.15);
-}
-
-[data-theme="light"] .glow-accent {
-  box-shadow: 0 4px 12px rgba(233, 69, 96, 0.15);
-}
-
-[data-theme="light"] .glow-neon {
-  box-shadow: 0 4px 12px rgba(0, 245, 160, 0.15);
-}
-
 /* Light mode card-hover */
 [data-theme="light"] .card-hover:hover {
   box-shadow: 0 8px 24px rgba(108, 99, 255, 0.10);
@@ -148,17 +135,17 @@ body {
   transition: background-color 0.25s ease, color 0.25s ease;
 }
 
-/* Glow effects */
+/* Glow effects — use CSS vars, auto-switches with light/dark mode */
 .glow-primary {
-  box-shadow: 0 0 20px rgba(108, 99, 255, 0.3);
+  box-shadow: var(--glow-primary, 0 0 20px rgba(108, 99, 255, 0.3));
 }
 
 .glow-accent {
-  box-shadow: 0 0 20px rgba(233, 69, 96, 0.3);
+  box-shadow: var(--glow-accent, 0 0 20px rgba(233, 69, 96, 0.3));
 }
 
 .glow-neon {
-  box-shadow: 0 0 20px rgba(0, 245, 160, 0.3);
+  box-shadow: var(--glow-neon, 0 0 20px rgba(0, 245, 160, 0.3));
 }
 
 /* Glass morphism */
