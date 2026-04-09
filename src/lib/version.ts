@@ -1,4 +1,4 @@
-export const VERSION = 'v20260408.1557';
+export const VERSION = 'v20260409.1';
 
 export interface ChangelogEntry {
   version: string;
@@ -7,6 +7,15 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: 'v20260409.1',
+    date: '2026-04-09 22:00',
+    changes: [
+      'feat: 新增 /ai-tools AI 工具箱頁面 — Turso DB CRUD 卡片系統',
+      'feat: 工具卡片含名稱、簡介、連結、分類篩選',
+      'feat: Modal 彈窗式新增/編輯 + 刪除確認',
+    ],
+  },
   {
     version: 'v20260408.1',
     date: '2026-04-08 23:30',

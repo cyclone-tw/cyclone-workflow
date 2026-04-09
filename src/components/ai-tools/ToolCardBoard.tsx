@@ -1,0 +1,593 @@
+import { useState, useEffect } from 'react';
+
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+type ToolCategory = 'agent' | 'llm' | 'productivity' | 'dev' | 'other';
+
+interface Tool {
+  id: number;
+  name: string;
+  description: string;
+  url: string;
+  category: ToolCategory;
+  author: string;
+  author_tag: string;
+  upvotes: number;
+  created_at: string;
+  updated_at: string;
+}
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const CATEGORY_CONFIG: Record<ToolCategory, { label: string; icon: string; color: string }> = {
+  agent: { label: 'Agent', icon: '🤖', color: '#6C63FF' },
+  llm: { label: 'LLM', icon: '🧠', color: '#00D9FF' },
+  productivity: { label: '生產力', icon: '⚡', color: '#00F5A0' },
+  dev: { label: '開發', icon: '💻', color: '#FFC300' },
+  other: { label: '其他', icon: '📦', color: '#9090B0' },
+};
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+function timeAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  const hours = Math.floor(mins / 60);
+  const days = Math.floor(hours / 24);
+  if (mins < 1) return '剛剛';
+  if (mins < 60) return `${mins} 分鐘前`;
+  if (hours < 24) return `${hours} 小時前`;
+  if (days < 30) return `${days} 天前`;
+  return new Date(dateStr).toLocaleDateString('zh-TW');
+}
+
+// ─── Shared styles ────────────────────────────────────────────────────────────
+
+const inputStyle: React.CSSProperties = {
+  width: '100%',
+  background: 'rgba(10, 10, 26, 0.6)',
+  border: '1px solid #2A2A4A',
+  borderRadius: '0.5rem',
+  padding: '0.625rem 0.875rem',
+  color: '#F0F0FF',
+  fontSize: '0.9rem',
+  outline: 'none',
+  transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
+  boxSizing: 'border-box',
+};
+
+const labelStyle: React.CSSProperties = {
+  display: 'block',
+  fontSize: '0.8rem',
+  fontWeight: 600,
+  color: '#9090B0',
+  marginBottom: '0.375rem',
+  letterSpacing: '0.02em',
+};
+
+function handleFocusIn(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
+  e.target.style.borderColor = '#6C63FF';
+  e.target.style.boxShadow = '0 0 0 3px rgba(108,99,255,0.15)';
+}
+
+function handleFocusOut(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
+  e.target.style.borderColor = '#2A2A4A';
+  e.target.style.boxShadow = 'none';
+}
+
+// ─── Modal ────────────────────────────────────────────────────────────────────
+
+interface ModalProps {
+  tool?: Tool | null;
+  onClose: () => void;
+  onSaved: () => void;
+}
+
+function ToolModal({ tool, onClose, onSaved }: ModalProps) {
+  const isEdit = !!tool;
+  const [name, setName] = useState(tool?.name ?? '');
+  const [description, setDescription] = useState(tool?.description ?? '');
+  const [url, setUrl] = useState(tool?.url ?? '');
+  const [category, setCategory] = useState<ToolCategory>(tool?.category ?? 'other');
+  const [author, setAuthor] = useState(tool?.author ?? '');
+  const [authorTag, setAuthorTag] = useState(tool?.author_tag ?? '');
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitting, setSubmitting] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const errs: Record<string, string> = {};
+    if (!name.trim()) errs.name = '請填寫工具名稱';
+    if (!description.trim()) errs.description = '請填寫簡介';
+    if (!url.trim()) errs.url = '請填寫連結';
+    if (!isEdit && !author.trim()) errs.author = '請填寫名稱';
+    setErrors(errs);
+    if (Object.keys(errs).length > 0) return;
+
+    setSubmitting(true);
+    try {
+      if (isEdit) {
+        const res = await fetch(`/api/ai-tools/${tool!.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: name.trim(), description: description.trim(), url: url.trim(), category }),
+        });
+        if (!res.ok) throw new Error('更新失敗');
+      } else {
+        const res = await fetch('/api/ai-tools', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: name.trim(), description: description.trim(), url: url.trim(), category, author: author.trim(), author_tag: authorTag.trim() }),
+        });
+        if (!res.ok) throw new Error('新增失敗');
+      }
+      onSaved();
+    } catch {
+      setErrors({ submit: isEdit ? '更新失敗，請稍後再試' : '新增失敗，請稍後再試' });
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 50,
+        background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: '1rem',
+      }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          background: 'rgba(18,18,42,0.95)', backdropFilter: 'blur(16px)',
+          border: '1px solid #2A2A4A', borderRadius: '1rem',
+          padding: '1.75rem', width: '100%', maxWidth: '480px',
+          maxHeight: '90vh', overflowY: 'auto',
+        }}
+      >
+        <h3 style={{ color: '#F0F0FF', fontWeight: 700, fontSize: '1.1rem', marginBottom: '1.25rem' }}>
+          {isEdit ? '編輯工具' : '新增工具'}
+        </h3>
+
+        <form onSubmit={handleSubmit}>
+          {/* Name + Category */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
+            <div>
+              <label style={labelStyle}>工具名稱 <span style={{ color: '#E94560' }}>*</span></label>
+              <input type="text" placeholder="e.g. Claude Code" value={name}
+                onChange={e => setName(e.target.value)} onFocus={handleFocusIn} onBlur={handleFocusOut}
+                style={{ ...inputStyle, borderColor: errors.name ? '#E94560' : '#2A2A4A' }} />
+              {errors.name && <p style={{ color: '#E94560', fontSize: '0.75rem', marginTop: '0.2rem' }}>{errors.name}</p>}
+            </div>
+            <div>
+              <label style={labelStyle}>分類</label>
+              <select value={category} onChange={e => setCategory(e.target.value as ToolCategory)}
+                onFocus={handleFocusIn} onBlur={handleFocusOut}
+                style={{ ...inputStyle, cursor: 'pointer' }}>
+                {(Object.entries(CATEGORY_CONFIG) as [ToolCategory, typeof CATEGORY_CONFIG[ToolCategory]][]).map(([key, cfg]) => (
+                  <option key={key} value={key} style={{ background: '#12122A' }}>{cfg.icon} {cfg.label}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* URL */}
+          <div style={{ marginBottom: '0.75rem' }}>
+            <label style={labelStyle}>連結 <span style={{ color: '#E94560' }}>*</span></label>
+            <input type="url" placeholder="https://..." value={url}
+              onChange={e => setUrl(e.target.value)} onFocus={handleFocusIn} onBlur={handleFocusOut}
+              style={{ ...inputStyle, borderColor: errors.url ? '#E94560' : '#2A2A4A' }} />
+            {errors.url && <p style={{ color: '#E94560', fontSize: '0.75rem', marginTop: '0.2rem' }}>{errors.url}</p>}
+          </div>
+
+          {/* Description */}
+          <div style={{ marginBottom: '0.75rem' }}>
+            <label style={labelStyle}>簡介 <span style={{ color: '#E94560' }}>*</span></label>
+            <textarea placeholder="簡短描述這個工具的用途和特色..." rows={3} value={description}
+              onChange={e => setDescription(e.target.value)} onFocus={handleFocusIn} onBlur={handleFocusOut}
+              style={{ ...inputStyle, resize: 'vertical', borderColor: errors.description ? '#E94560' : '#2A2A4A' }} />
+            {errors.description && <p style={{ color: '#E94560', fontSize: '0.75rem', marginTop: '0.2rem' }}>{errors.description}</p>}
+          </div>
+
+          {/* Author (only for create) */}
+          {!isEdit && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
+              <div>
+                <label style={labelStyle}>你的名稱 <span style={{ color: '#E94560' }}>*</span></label>
+                <input type="text" placeholder="名稱" value={author}
+                  onChange={e => setAuthor(e.target.value)} onFocus={handleFocusIn} onBlur={handleFocusOut}
+                  style={{ ...inputStyle, borderColor: errors.author ? '#E94560' : '#2A2A4A' }} />
+                {errors.author && <p style={{ color: '#E94560', fontSize: '0.75rem', marginTop: '0.2rem' }}>{errors.author}</p>}
+              </div>
+              <div>
+                <label style={labelStyle}>Discord Tag（選填）</label>
+                <input type="text" placeholder="@username" value={authorTag}
+                  onChange={e => setAuthorTag(e.target.value)} onFocus={handleFocusIn} onBlur={handleFocusOut}
+                  style={inputStyle} />
+              </div>
+            </div>
+          )}
+
+          {errors.submit && (
+            <p style={{ color: '#E94560', fontSize: '0.8rem', marginBottom: '0.75rem' }}>{errors.submit}</p>
+          )}
+
+          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+            <button type="button" onClick={onClose}
+              style={{
+                padding: '0.6rem 1.25rem', background: 'transparent', border: '1px solid #2A2A4A',
+                borderRadius: '0.5rem', color: '#9090B0', fontSize: '0.875rem', cursor: 'pointer',
+                transition: 'border-color 0.2s',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.borderColor = '#6C63FF')}
+              onMouseLeave={e => (e.currentTarget.style.borderColor = '#2A2A4A')}
+            >
+              取消
+            </button>
+            <button type="submit" disabled={submitting}
+              style={{
+                padding: '0.6rem 1.5rem',
+                background: submitting ? 'rgba(108,99,255,0.4)' : 'linear-gradient(135deg, #6C63FF, #00D9FF)',
+                border: 'none', borderRadius: '0.5rem', color: '#F0F0FF',
+                fontSize: '0.875rem', fontWeight: 600,
+                cursor: submitting ? 'not-allowed' : 'pointer',
+              }}
+            >
+              {submitting ? '儲存中…' : isEdit ? '儲存變更' : '新增工具'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ─── Delete Confirm ───────────────────────────────────────────────────────────
+
+function DeleteConfirm({ tool, onConfirm, onCancel }: { tool: Tool; onConfirm: () => void; onCancel: () => void }) {
+  const [deleting, setDeleting] = useState(false);
+
+  async function handleDelete() {
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/ai-tools/${tool.id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error();
+      onConfirm();
+    } catch {
+      alert('刪除失敗，請稍後再試');
+      setDeleting(false);
+    }
+  }
+
+  return (
+    <div
+      onClick={onCancel}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 50,
+        background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem',
+      }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          background: 'rgba(18,18,42,0.95)', border: '1px solid #E9456040',
+          borderRadius: '1rem', padding: '1.75rem', width: '100%', maxWidth: '380px', textAlign: 'center',
+        }}
+      >
+        <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🗑️</div>
+        <h3 style={{ color: '#F0F0FF', fontWeight: 700, fontSize: '1rem', marginBottom: '0.5rem' }}>
+          確定要刪除「{tool.name}」嗎？
+        </h3>
+        <p style={{ color: '#9090B0', fontSize: '0.85rem', marginBottom: '1.5rem' }}>此操作無法復原</p>
+        <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
+          <button onClick={onCancel}
+            style={{
+              padding: '0.6rem 1.25rem', background: 'transparent', border: '1px solid #2A2A4A',
+              borderRadius: '0.5rem', color: '#9090B0', fontSize: '0.875rem', cursor: 'pointer',
+            }}
+          >
+            取消
+          </button>
+          <button onClick={handleDelete} disabled={deleting}
+            style={{
+              padding: '0.6rem 1.5rem',
+              background: deleting ? 'rgba(233,69,96,0.4)' : '#E94560',
+              border: 'none', borderRadius: '0.5rem', color: '#F0F0FF',
+              fontSize: '0.875rem', fontWeight: 600,
+              cursor: deleting ? 'not-allowed' : 'pointer',
+            }}
+          >
+            {deleting ? '刪除中…' : '確認刪除'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Tool Card ────────────────────────────────────────────────────────────────
+
+function ToolCard({ tool, onEdit, onDelete }: { tool: Tool; onEdit: () => void; onDelete: () => void }) {
+  const cfg = CATEGORY_CONFIG[tool.category] || CATEGORY_CONFIG.other;
+
+  return (
+    <article
+      style={{
+        background: 'rgba(18,18,42,0.7)', backdropFilter: 'blur(12px)',
+        border: '1px solid #2A2A4A', borderRadius: '0.875rem',
+        padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem',
+        transition: 'transform 0.2s, box-shadow 0.2s',
+        cursor: 'default',
+      }}
+      onMouseEnter={e => {
+        e.currentTarget.style.transform = 'translateY(-2px)';
+        e.currentTarget.style.boxShadow = `0 8px 30px ${cfg.color}15`;
+      }}
+      onMouseLeave={e => {
+        e.currentTarget.style.transform = 'translateY(0)';
+        e.currentTarget.style.boxShadow = 'none';
+      }}
+    >
+      {/* Header: category badge + actions */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span
+          style={{
+            fontSize: '0.72rem', fontWeight: 600, padding: '0.2rem 0.55rem', borderRadius: '999px',
+            background: `${cfg.color}18`, color: cfg.color, border: `1px solid ${cfg.color}30`,
+          }}
+        >
+          {cfg.icon} {cfg.label}
+        </span>
+        <div style={{ display: 'flex', gap: '0.375rem' }}>
+          <button onClick={onEdit} title="編輯"
+            style={{
+              background: 'rgba(108,99,255,0.1)', border: '1px solid rgba(108,99,255,0.2)',
+              borderRadius: '0.375rem', color: '#8B83FF', fontSize: '0.75rem',
+              padding: '0.25rem 0.5rem', cursor: 'pointer', transition: 'background 0.2s',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(108,99,255,0.2)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'rgba(108,99,255,0.1)')}
+          >
+            ✏️
+          </button>
+          <button onClick={onDelete} title="刪除"
+            style={{
+              background: 'rgba(233,69,96,0.1)', border: '1px solid rgba(233,69,96,0.2)',
+              borderRadius: '0.375rem', color: '#E94560', fontSize: '0.75rem',
+              padding: '0.25rem 0.5rem', cursor: 'pointer', transition: 'background 0.2s',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(233,69,96,0.2)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'rgba(233,69,96,0.1)')}
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+
+      {/* Name */}
+      <h3 style={{ color: '#F0F0FF', fontWeight: 700, fontSize: '1rem', lineHeight: 1.4, margin: 0 }}>
+        {tool.name}
+      </h3>
+
+      {/* Description */}
+      <p style={{ color: '#9090B0', fontSize: '0.85rem', lineHeight: 1.6, margin: 0, flex: 1 }}>
+        {tool.description}
+      </p>
+
+      {/* URL link */}
+      {(() => {
+        let validUrl: URL | null = null;
+        try {
+          const parsed = new URL(tool.url);
+          if (parsed.protocol === 'http:' || parsed.protocol === 'https:') validUrl = parsed;
+        } catch { /* invalid */ }
+        const display = validUrl ? validUrl.hostname : tool.url;
+        const linkStyle: React.CSSProperties = {
+          display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
+          fontSize: '0.8rem', color: validUrl ? cfg.color : '#606080', textDecoration: 'none',
+          padding: '0.35rem 0.65rem', borderRadius: '0.375rem',
+          background: `${validUrl ? cfg.color : '#606080'}10`,
+          border: `1px solid ${validUrl ? cfg.color : '#606080'}20`,
+          transition: 'background 0.2s', alignSelf: 'flex-start',
+        };
+        if (validUrl) {
+          return (
+            <a href={validUrl.href} target="_blank" rel="noopener noreferrer" style={linkStyle}
+              onMouseEnter={e => (e.currentTarget.style.background = `${cfg.color}20`)}
+              onMouseLeave={e => (e.currentTarget.style.background = `${cfg.color}10`)}
+            >
+              🔗 {display}
+            </a>
+          );
+        }
+        return <span style={linkStyle}>🔗 {display}</span>;
+      })()}
+
+      {/* Footer */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid #2A2A4A' }}>
+        <span style={{ fontSize: '0.75rem', color: '#606080' }}>
+          {tool.author}{tool.author_tag && <span style={{ color: '#505070' }}> {tool.author_tag}</span>}
+        </span>
+        <span style={{ color: '#2A2A4A' }}>·</span>
+        <span style={{ fontSize: '0.75rem', color: '#606080' }}>{timeAgo(tool.created_at)}</span>
+      </div>
+    </article>
+  );
+}
+
+// ─── Main Component ──────────────────────────────────────────────────────────
+
+export default function ToolCardBoard() {
+  const [tools, setTools] = useState<Tool[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [categoryFilter, setCategoryFilter] = useState<ToolCategory | 'all'>('all');
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [editingTool, setEditingTool] = useState<Tool | null>(null);
+  const [deletingTool, setDeletingTool] = useState<Tool | null>(null);
+
+  async function fetchTools() {
+    setLoading(true);
+    setLoadError(false);
+    try {
+      const params = new URLSearchParams();
+      if (categoryFilter !== 'all') params.set('category', categoryFilter);
+      const res = await fetch(`/api/ai-tools?${params}`);
+      if (!res.ok) throw new Error('載入失敗');
+      const data = await res.json();
+      setTools(data.tools || []);
+    } catch {
+      setLoadError(true);
+      setTools([]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => { fetchTools(); }, [categoryFilter]);
+
+  const categoryTabs: { key: ToolCategory | 'all'; label: string; icon: string }[] = [
+    { key: 'all', label: '全部', icon: '🔍' },
+    ...Object.entries(CATEGORY_CONFIG).map(([key, cfg]) => ({ key: key as ToolCategory, label: cfg.label, icon: cfg.icon })),
+  ];
+
+  return (
+    <div>
+      {/* Top action row */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+        <div style={{ fontSize: '0.875rem', color: '#9090B0' }}>
+          <span style={{ color: '#00F5A0', fontWeight: 600 }}>{tools.length} 個工具</span>
+        </div>
+        <button
+          onClick={() => setShowCreateModal(true)}
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
+            padding: '0.6rem 1.25rem',
+            background: 'linear-gradient(135deg, #6C63FF, #00D9FF)',
+            border: 'none', borderRadius: '0.5rem', color: '#F0F0FF',
+            fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer',
+            transition: 'opacity 0.2s, transform 0.2s',
+          }}
+          onMouseEnter={e => (e.currentTarget.style.opacity = '0.9')}
+          onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+        >
+          + 新增工具
+        </button>
+      </div>
+
+      {/* Category filter tabs */}
+      <div
+        style={{
+          background: 'rgba(18,18,42,0.7)', backdropFilter: 'blur(12px)',
+          border: '1px solid #2A2A4A', borderRadius: '0.75rem',
+          padding: '0.5rem', marginBottom: '1.25rem',
+          display: 'flex', gap: '0.25rem', flexWrap: 'wrap',
+        }}
+      >
+        {categoryTabs.map(tab => {
+          const cfg = tab.key !== 'all' ? CATEGORY_CONFIG[tab.key] : null;
+          const active = categoryFilter === tab.key;
+          return (
+            <button
+              key={tab.key}
+              onClick={() => setCategoryFilter(tab.key)}
+              style={{
+                padding: '0.4rem 0.875rem', borderRadius: '0.5rem', border: 'none',
+                background: active ? (cfg ? `${cfg.color}20` : 'rgba(108,99,255,0.2)') : 'transparent',
+                color: active ? (cfg ? cfg.color : '#8B83FF') : '#9090B0',
+                fontSize: '0.85rem', fontWeight: active ? 600 : 400,
+                cursor: 'pointer', transition: 'all 0.15s',
+              }}
+              onMouseEnter={e => { if (!active) e.currentTarget.style.color = '#F0F0FF'; }}
+              onMouseLeave={e => { if (!active) e.currentTarget.style.color = '#9090B0'; }}
+            >
+              {tab.icon} {tab.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Card grid */}
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '4rem', color: '#9090B0' }}>載入中…</div>
+      ) : loadError ? (
+        <div
+          style={{
+            textAlign: 'center', padding: '4rem 2rem',
+            background: 'rgba(233,69,96,0.08)', border: '1px solid rgba(233,69,96,0.3)',
+            borderRadius: '1rem', color: '#E94560',
+          }}
+        >
+          <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>⚠️</div>
+          <p style={{ fontSize: '0.95rem', marginBottom: '0.5rem' }}>載入失敗，請稍後再試</p>
+          <button onClick={fetchTools}
+            style={{
+              marginTop: '0.5rem', padding: '0.5rem 1.25rem',
+              background: 'rgba(233,69,96,0.15)', border: '1px solid rgba(233,69,96,0.3)',
+              borderRadius: '0.5rem', color: '#E94560', fontSize: '0.85rem', cursor: 'pointer',
+            }}
+          >
+            重試
+          </button>
+        </div>
+      ) : tools.length === 0 ? (
+        <div
+          style={{
+            textAlign: 'center', padding: '4rem 2rem',
+            background: 'rgba(18,18,42,0.5)', border: '1px solid #2A2A4A',
+            borderRadius: '1rem', color: '#606080',
+          }}
+        >
+          <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🤖</div>
+          <p style={{ fontSize: '0.95rem', marginBottom: '0.25rem' }}>還沒有工具卡片</p>
+          <p style={{ fontSize: '0.85rem' }}>點擊「+ 新增工具」來分享你發現的好用 AI 工具！</p>
+        </div>
+      ) : (
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+          gap: '1rem',
+        }}>
+          {tools.map(tool => (
+            <ToolCard
+              key={tool.id}
+              tool={tool}
+              onEdit={() => setEditingTool(tool)}
+              onDelete={() => setDeletingTool(tool)}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Create modal */}
+      {showCreateModal && (
+        <ToolModal
+          onClose={() => setShowCreateModal(false)}
+          onSaved={() => { setShowCreateModal(false); fetchTools(); }}
+        />
+      )}
+
+      {/* Edit modal */}
+      {editingTool && (
+        <ToolModal
+          tool={editingTool}
+          onClose={() => setEditingTool(null)}
+          onSaved={() => { setEditingTool(null); fetchTools(); }}
+        />
+      )}
+
+      {/* Delete confirm */}
+      {deletingTool && (
+        <DeleteConfirm
+          tool={deletingTool}
+          onConfirm={() => { setDeletingTool(null); fetchTools(); }}
+          onCancel={() => setDeletingTool(null)}
+        />
+      )}
+    </div>
+  );
+}

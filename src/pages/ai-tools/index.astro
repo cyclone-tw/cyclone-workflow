@@ -1,0 +1,22 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import ToolCardBoard from '@/components/ai-tools/ToolCardBoard';
+---
+
+<Layout title="AI 工具箱" description="團隊共享的 AI Agent 工具知識卡片">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+    <!-- Header -->
+    <div class="mb-10">
+      <h1 class="text-4xl sm:text-5xl font-bold mb-3">
+        <span class="text-3xl sm:text-4xl mr-2">🤖</span>
+        <span class="gradient-text">AI 工具箱</span>
+      </h1>
+      <p class="text-[var(--color-text-secondary)] text-lg">發現、收藏、分享好用的 AI 工具</p>
+    </div>
+
+    <!-- Tool Card Board -->
+    <ToolCardBoard client:load />
+
+  </div>
+</Layout>
