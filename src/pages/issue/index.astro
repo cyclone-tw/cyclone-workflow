@@ -22,16 +22,16 @@ import IssueBoard from '@/components/issues/IssueBoard';
     <!-- Info section -->
     <div
       class="mt-10 rounded-xl p-5 border"
-      style="background: rgba(108,99,255,0.07); border-color: rgba(108,99,255,0.25);"
+      style="background: var(--color-info-primary-bg); border-color: var(--color-info-primary-border);"
     >
       <div class="flex items-start gap-3">
         <span class="text-xl mt-0.5">💡</span>
         <div>
-          <h3 class="text-sm font-bold mb-1" style="color: #8B83FF;">Issues 與 Changelog 的關聯</h3>
+          <h3 class="text-sm font-bold mb-1" style="color: var(--color-primary-light);">Issues 與 Changelog 的關聯</h3>
           <p class="text-sm text-[var(--color-text-secondary)] leading-relaxed">
             Issues 會對應到 Changelog 版本，讓你知道問題在哪個版本修復。
             當一個 Issue 被解決後，會標記對應的版本號，你可以前往
-            <a href="/changelog" class="font-semibold transition-colors" style="color: #6C63FF;" onmouseover="this.style.color='#8B83FF'" onmouseout="this.style.color='#6C63FF'">Changelog</a>
+            <a href="/changelog" class="font-semibold transition-colors" style="color: var(--color-primary);" onmouseover="this.style.color='var(--color-primary-light)'" onmouseout="this.style.color='var(--color-primary)'">Changelog</a>
             查看該版本的完整更新內容。
           </p>
         </div>

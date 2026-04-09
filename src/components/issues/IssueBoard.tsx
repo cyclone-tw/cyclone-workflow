@@ -44,10 +44,10 @@ const STATUS_LABELS: Record<IssueStatus, string> = {
 };
 
 const STATUS_COLORS: Record<IssueStatus, string> = {
-  'open': '#00F5A0',
-  'in-progress': '#00D9FF',
-  'resolved': '#6C63FF',
-  'closed': '#606080',
+  'open': 'var(--color-status-open)',
+  'in-progress': 'var(--color-status-in-progress)',
+  'resolved': 'var(--color-status-resolved)',
+  'closed': 'var(--color-status-closed)',
 };
 
 const CATEGORY_LABELS: Record<IssueCategory, string> = {
@@ -58,10 +58,10 @@ const CATEGORY_LABELS: Record<IssueCategory, string> = {
 };
 
 const CATEGORY_COLORS: Record<IssueCategory, { bg: string; color: string }> = {
-  'bug': { bg: 'rgba(233,69,96,0.15)', color: '#E94560' },
-  'feature': { bg: 'rgba(0,245,160,0.15)', color: '#00F5A0' },
-  'improvement': { bg: 'rgba(0,217,255,0.15)', color: '#00D9FF' },
-  'question': { bg: 'rgba(255,195,0,0.15)', color: '#FFC300' },
+  'bug': { bg: 'var(--color-info-accent-bg)', color: 'var(--color-info-accent-text)' },
+  'feature': { bg: 'var(--color-info-neon-bg)', color: 'var(--color-info-neon-text)' },
+  'improvement': { bg: 'rgba(0,217,255,0.15)', color: 'var(--color-status-in-progress)' },
+  'question': { bg: 'rgba(255,195,0,0.15)', color: 'var(--color-priority-medium)' },
 };
 
 const PRIORITY_LABELS: Record<IssuePriority, string> = {
@@ -72,10 +72,10 @@ const PRIORITY_LABELS: Record<IssuePriority, string> = {
 };
 
 const PRIORITY_COLORS: Record<IssuePriority, { bg: string; color: string }> = {
-  'critical': { bg: 'rgba(233,69,96,0.2)', color: '#E94560' },
-  'high': { bg: 'rgba(255,140,0,0.2)', color: '#FF8C00' },
-  'medium': { bg: 'rgba(255,195,0,0.15)', color: '#FFC300' },
-  'low': { bg: 'rgba(96,96,128,0.2)', color: '#9090B0' },
+  'critical': { bg: 'var(--color-info-accent-bg)', color: 'var(--color-priority-critical)' },
+  'high': { bg: 'rgba(255,140,0,0.2)', color: 'var(--color-priority-high)' },
+  'medium': { bg: 'rgba(255,195,0,0.15)', color: 'var(--color-priority-medium)' },
+  'low': { bg: 'rgba(96,96,128,0.2)', color: 'var(--color-priority-low)' },
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────

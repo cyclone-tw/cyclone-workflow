@@ -128,4 +128,8 @@ import { MEMBERS } from '@/lib/constants';
   .card-hover:hover > div:first-child > div {
     box-shadow: 0 0 24px var(--member-color, #6C63FF);
   }
+
+  [data-theme="light"] .card-hover > div:first-child > div {
+    filter: drop-shadow(0 0 8px var(--member-color, #6C63FF));
+  }
 </style>

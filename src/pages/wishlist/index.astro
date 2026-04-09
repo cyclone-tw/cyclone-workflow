@@ -68,21 +68,46 @@ const flowSteps = [
 const statusStyles: Record<string, { border: string; badge: string; text: string }> = {
   'neon-green': {
     border: 'border-[var(--color-neon-green)]/40',
-    badge: 'bg-[var(--color-neon-green)]/15 text-[var(--color-neon-green)]',
+    badge: 'bg-[var(--color-neon-green)]/30 text-[var(--color-neon-green)]',
     text: 'text-[var(--color-neon-green)]',
   },
   'neon-blue': {
     border: 'border-[var(--color-neon-blue)]/40',
-    badge: 'bg-[var(--color-neon-blue)]/15 text-[var(--color-neon-blue)]',
+    badge: 'bg-[var(--color-neon-blue)]/30 text-[var(--color-neon-blue)]',
     text: 'text-[var(--color-neon-blue)]',
   },
   primary: {
     border: 'border-[var(--color-primary)]/40',
-    badge: 'bg-[var(--color-primary)]/15 text-[var(--color-primary-light)]',
+    badge: 'bg-[var(--color-primary)]/30 text-[var(--color-primary-light)]',
     text: 'text-[var(--color-primary-light)]',
   },
 };
 ---
+
+<style>
+  /* Default glow for dark mode */
+  .wish-tree-glow {
+    filter: drop-shadow(0 0 24px rgba(0, 245, 160, 0.5)) drop-shadow(0 0 48px rgba(0, 245, 160, 0.25));
+  }
+
+  /* Light mode overrides */
+  [data-theme="light"] .wish-tree-glow {
+    filter: drop-shadow(0 0 16px rgba(0, 245, 160, 0.25)) drop-shadow(0 0 32px rgba(0, 245, 160, 0.12));
+  }
+
+  [data-theme="light"] .wish-cta-border {
+    border-color: rgba(0, 245, 160, 0.3);
+  }
+
+  [data-theme="light"] .wish-cta-icon {
+    filter: drop-shadow(0 0 12px rgba(0, 245, 160, 0.3));
+  }
+
+  /* Light mode: avatar backgrounds need more contrast */
+  [data-theme="light"] .avatar-bg {
+    background-color: color-mix(in srgb, var(--avatar-color) 30%, transparent);
+  }
+</style>
 
 <Layout title="許願樹" description="許下願望，等待夥伴來實現">
   <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -91,8 +116,7 @@ const statusStyles: Record<string, { border: string; badge: string; text: string
     <div class="text-center mb-12">
       <div class="relative inline-block mb-4">
         <span
-          class="text-8xl block leading-none select-none"
-          style="filter: drop-shadow(0 0 24px rgba(0,245,160,0.5)) drop-shadow(0 0 48px rgba(0,245,160,0.25));"
+          class="text-8xl block leading-none select-none wish-tree-glow"
         >🌳</span>
       </div>
       <h1 class="text-4xl sm:text-5xl font-bold mb-3">
@@ -234,7 +258,7 @@ const statusStyles: Record<string, { border: string; badge: string; text: string
                 .map((entry, idx) => (
                   <tr
                     class:list={[
-                      'border-b border-[var(--color-border)] last:border-0 transition-colors hover:bg-white/5',
+                      'border-b border-[var(--color-border)] last:border-0 transition-colors hover:bg-[var(--color-overlay-neutral-weak)]',
                     ]}
                   >
                     <td class="px-4 py-3 text-[var(--color-text-muted)]">
@@ -275,12 +299,10 @@ const statusStyles: Record<string, { border: string; badge: string; text: string
           <span class="text-[var(--color-text-primary)]">許下你的願望</span>
         </h2>
         <div
-          class="glass rounded-2xl p-6 flex-1 flex flex-col items-center justify-center text-center gap-5"
-          style="border-color: rgba(0,245,160,0.2);"
+          class="glass rounded-2xl p-6 flex-1 flex flex-col items-center justify-center text-center gap-5 wish-cta-border"
         >
           <div
-            class="text-6xl"
-            style="filter: drop-shadow(0 0 16px rgba(0,245,160,0.4));"
+            class="text-6xl wish-cta-icon"
           >
             🌠
           </div>
@@ -294,7 +316,7 @@ const statusStyles: Record<string, { border: string; badge: string; text: string
           <button
             type="button"
             class="px-6 py-3 rounded-xl font-semibold text-sm transition-all cursor-not-allowed select-none"
-            style="background: linear-gradient(135deg, var(--color-neon-green), var(--color-neon-blue)); color: #0A0A1A; box-shadow: 0 0 20px rgba(0,245,160,0.3);"
+            style="background: linear-gradient(135deg, var(--color-neon-green), var(--color-neon-blue)); color: #0A0A1A; box-shadow: 0 4px 16px color-mix(in srgb, var(--color-neon-green) 30%, transparent);"
             disabled
           >
             ✨ 許下你的願望

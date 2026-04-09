@@ -330,7 +330,7 @@ const faqs = [
     <!-- Header -->
     <div class="mb-14 text-center">
       <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium mb-5 border"
-        style="background: rgba(108,99,255,0.1); border-color: rgba(108,99,255,0.3); color: var(--color-primary-light);">
+        style="background: color-mix(in srgb, var(--color-primary) 15%, transparent); border-color: color-mix(in srgb, var(--color-primary) 30%, transparent); color: var(--color-primary-light);">
         2026 Q2・四週共學計畫
       </div>
       <h1 class="text-4xl sm:text-5xl font-bold mb-4">
@@ -349,7 +349,7 @@ const faqs = [
         <span class="w-1 h-6 rounded-full" style="background: var(--color-primary);"></span>
         <h2 class="text-xl font-bold text-[var(--color-text-primary)]">這個網站是什麼？</h2>
       </div>
-      <div class="glass rounded-2xl p-7 mb-5" style="background: linear-gradient(135deg, rgba(108,99,255,0.08) 0%, rgba(0,217,255,0.05) 100%); border-color: rgba(108,99,255,0.25);">
+      <div class="glass rounded-2xl p-7 mb-5" style="background: linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 12%, transparent) 0%, color-mix(in srgb, var(--color-neon-blue) 8%, transparent) 100%); border-color: color-mix(in srgb, var(--color-primary) 25%, transparent);">
         <p class="text-[var(--color-text-secondary)] leading-relaxed mb-5 text-base">
           這是一個專為 <strong class="text-[var(--color-text-primary)]">六人小型共學團</strong> 設計的專屬平台。六位成員將在四週內，從零開始打造屬於自己的 AI 工作流，互相學習、互相督促、互相幫助。
         </p>
@@ -359,7 +359,7 @@ const faqs = [
             { icon: '🤖', title: '專屬 AI 管家', desc: '每位成員都有專屬的 Cyclone 管家，具備長期記憶，記得你的偏好與進度。' },
             { icon: '🌳', title: '互助共學機制', desc: '透過許願樹、Project 交換、知識庫，把個人學習變成集體智慧。' },
           ].map((item) => (
-            <div class="rounded-xl p-4 border" style="background: rgba(18,18,42,0.6); border-color: var(--color-border);">
+            <div class="rounded-xl p-4 border" style="background: var(--color-glass-bg); border-color: var(--color-border);">
               <div class="text-2xl mb-2">{item.icon}</div>
               <h3 class="text-sm font-semibold text-[var(--color-text-primary)] mb-1">{item.title}</h3>
               <p class="text-xs text-[var(--color-text-secondary)] leading-relaxed">{item.desc}</p>
@@ -375,7 +375,7 @@ const faqs = [
         <span class="w-1 h-6 rounded-full" style="background: var(--color-neon-blue);"></span>
         <h2 class="text-xl font-bold text-[var(--color-text-primary)]">頁面導覽</h2>
         <span class="text-xs px-2 py-0.5 rounded-full font-medium border"
-          style="background: rgba(0,217,255,0.1); color: var(--color-neon-blue); border-color: rgba(0,217,255,0.2);">
+          style="background: var(--color-info-neon-bg); color: var(--color-info-neon-text); border-color: color-mix(in srgb, var(--color-neon-blue) 30%, transparent);">
           {pages.length} 個頁面
         </span>
       </div>
@@ -530,7 +530,7 @@ const faqs = [
             <summary class="flex items-center justify-between px-5 py-4 cursor-pointer list-none select-none">
               <div class="flex items-center gap-3">
                 <span class="text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center shrink-0"
-                  style="background: rgba(0,245,160,0.15); color: var(--color-neon-green);">
+                  style="background: color-mix(in srgb, var(--color-neon-green) 15%, transparent); color: var(--color-neon-green);">
                   Q
                 </span>
                 <span class="text-sm font-medium text-[var(--color-text-primary)]">{faq.q}</span>
@@ -542,7 +542,7 @@ const faqs = [
             <div class="px-5 pb-5 pt-1">
               <div class="flex items-start gap-3">
                 <span class="text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5"
-                  style="background: rgba(108,99,255,0.15); color: var(--color-primary-light);">
+                  style="background: color-mix(in srgb, var(--color-primary) 15%, transparent); color: var(--color-primary-light);">
                   A
                 </span>
                 <p class="text-sm text-[var(--color-text-secondary)] leading-relaxed">{faq.a}</p>
@@ -555,9 +555,9 @@ const faqs = [
 
     <!-- CTA Banner -->
     <div class="relative overflow-hidden rounded-2xl p-8 text-center"
-      style="background: linear-gradient(135deg, rgba(108,99,255,0.15) 0%, rgba(0,245,160,0.08) 100%); border: 1px solid rgba(108,99,255,0.3);">
+      style="background: linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 15%, transparent) 0%, color-mix(in srgb, var(--color-neon-green) 10%, transparent) 100%); border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent);">
       <div class="absolute inset-0 pointer-events-none"
-        style="background: radial-gradient(ellipse at 50% 0%, rgba(108,99,255,0.12) 0%, transparent 70%);"></div>
+        style="background: radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--color-primary) 12%, transparent) 0%, transparent 70%);"></div>
       <div class="relative z-10">
         <div class="text-4xl mb-3">🌀</div>
         <h3 class="text-xl font-bold text-[var(--color-text-primary)] mb-2">準備好了嗎？</h3>

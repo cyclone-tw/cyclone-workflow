@@ -43,12 +43,12 @@ const features = [
   <section class="relative min-h-screen flex items-center justify-center overflow-hidden">
     <!-- Hero background image -->
     <div class="absolute inset-0">
-      <img src="/images/hero-bg.png" alt="" class="w-full h-full object-cover opacity-30" />
+      <img src="/images/hero-bg.png" alt="" class="w-full h-full object-cover opacity-20 dark:opacity-30" />
     </div>
     <!-- Animated grid background -->
     <div class="absolute inset-0 hero-grid opacity-10"></div>
     <!-- Radial glow overlay -->
-    <div class="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_40%,rgba(108,99,255,0.2),transparent)]"></div>
+    <div class="absolute inset-0" style="background: radial-gradient(ellipse 80% 60% at 50% 40%, color-mix(in srgb, var(--color-primary) 20%, transparent), transparent);"></div>
     <!-- Bottom fade -->
     <div class="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-[var(--color-bg-dark)] to-transparent"></div>
 
@@ -161,7 +161,7 @@ const features = [
   <!-- Timeline Section -->
   <section class="relative py-24 px-4 sm:px-6 lg:px-8 overflow-hidden">
     <!-- Background accent -->
-    <div class="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_50%,rgba(0,217,255,0.05),transparent)]"></div>
+    <div class="absolute inset-0" style="background: radial-gradient(ellipse 60% 50% at 50% 50%, color-mix(in srgb, var(--color-neon-blue) 8%, transparent), transparent);"></div>
 
     <div class="relative max-w-5xl mx-auto">
       <!-- Section header -->
@@ -183,8 +183,13 @@ const features = [
         <div class="space-y-8 lg:space-y-0">
           {WEEKS.map((week, i) => {
             const isLeft = i % 2 === 0;
-            const colors = ['#6C63FF', '#00D9FF', '#00F5A0', '#E94560'];
-            const weekColor = colors[i] ?? '#6C63FF';
+            const weekColors = [
+              'var(--color-primary)',
+              'var(--color-neon-blue)',
+              'var(--color-neon-green)',
+              'var(--color-accent)',
+            ];
+            const weekColor = weekColors[i] ?? 'var(--color-primary)';
             const startDate = new Date(week.start);
             const dateStr = `${startDate.getMonth() + 1}/${startDate.getDate()}`;
             return (
@@ -193,12 +198,12 @@ const features = [
                 <div class="lg:w-5/12 card-hover">
                   <div
                     class="group relative rounded-2xl border bg-[var(--color-bg-card)] p-6 overflow-hidden"
-                    style={`border-color: ${weekColor}30;`}
+                    style={`border-color: color-mix(in srgb, ${weekColor} 30%, transparent);`}
                   >
                     <!-- Glow -->
                     <div
                       class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl"
-                      style={`background: radial-gradient(circle at ${isLeft ? '100%' : '0%'} 50%, ${weekColor}10, transparent 60%);`}
+                      style={`background: radial-gradient(circle at ${isLeft ? '100%' : '0%'} 50%, color-mix(in srgb, ${weekColor} 10%, transparent), transparent 60%);`}
                     ></div>
 
                     <div class="relative z-10">
@@ -206,7 +211,7 @@ const features = [
                       <div class="flex items-center justify-between mb-3">
                         <span
                           class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold"
-                          style={`background: ${weekColor}20; color: ${weekColor}; border: 1px solid ${weekColor}40;`}
+                          style={`background: color-mix(in srgb, ${weekColor} 20%, transparent); color: ${weekColor}; border: 1px solid color-mix(in srgb, ${weekColor} 40%, transparent);`}
                         >
                           第 {week.num} 週
                         </span>
@@ -229,7 +234,7 @@ const features = [
                 <div class="hidden lg:flex lg:w-2/12 justify-center items-center">
                   <div
                     class="w-5 h-5 rounded-full border-2 z-10 shadow-lg"
-                    style={`background: ${weekColor}; border-color: var(--color-bg-dark); box-shadow: 0 0 12px ${weekColor}80;`}
+                    style={`background: ${weekColor}; border-color: var(--color-bg-dark); --glow-color: ${weekColor};`}
                   ></div>
                 </div>
 
@@ -304,7 +309,7 @@ const features = [
     <div class="max-w-3xl mx-auto text-center">
       <div class="relative rounded-3xl border border-[var(--color-primary)]/30 bg-[var(--color-bg-card)] p-10 sm:p-14 overflow-hidden">
         <!-- Background glow -->
-        <div class="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_50%,rgba(108,99,255,0.12),transparent)] rounded-3xl"></div>
+        <div class="absolute inset-0 rounded-3xl" style="background: radial-gradient(ellipse 80% 60% at 50% 50%, color-mix(in srgb, var(--color-primary) 12%, transparent), transparent);"></div>
         <!-- Top line -->
         <div class="absolute top-0 left-10 right-10 h-px bg-gradient-to-r from-transparent via-[var(--color-primary)]/60 to-transparent"></div>
 
@@ -341,6 +346,12 @@ const features = [
     animation: grid-drift 20s linear infinite;
   }
 
+  [data-theme="light"] .hero-grid {
+    background-image:
+      linear-gradient(rgba(108, 99, 255, 0.08) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(108, 99, 255, 0.08) 1px, transparent 1px);
+  }
+
   @keyframes grid-drift {
     0% { background-position: 0 0; }
     100% { background-position: 60px 60px; }
@@ -368,4 +379,9 @@ const features = [
   .animation-delay-100 { animation-delay: 0.1s; }
   .animation-delay-200 { animation-delay: 0.2s; }
   .animation-delay-300 { animation-delay: 0.35s; }
+
+  /* Timeline center dot glow */
+  .lg\:flex > .lg\:w-2\/12 > .rounded-full {
+    box-shadow: 0 0 12px var(--glow-color, var(--color-primary));
+  }
 </style>

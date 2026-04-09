@@ -116,3 +116,4 @@ For more information, read the Bun API docs in `node_modules/bun-types/docs/**.m
 - 新增一筆 `ChangelogEntry`（version 改為新版本，date 為當下時間）
 - 確保 `CHANGELOG[0]` 是最新版本
 - push 到 main 會自動部署 + 自動更新版本號，但 changelog 內容需手動維護
+- 線上 Changelog 頁面：https://cyclone.tw/changelog/（由 `src/lib/version.ts` 的 `CHANGELOG` 陣列生成）

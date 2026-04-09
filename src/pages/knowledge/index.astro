@@ -96,8 +96,8 @@ const bestPractices = [
             <div class="flex items-start justify-between gap-3">
               <div class="text-3xl leading-none">{card.icon}</div>
               <span
-                class="text-xs px-2 py-1 rounded-full font-medium shrink-0"
-                style={`background: ${card.categoryColor}18; color: ${card.categoryColor}; border: 1px solid ${card.categoryColor}30;`}
+                class="text-xs px-2 py-1 rounded-full font-medium shrink-0 badge-green"
+                style={`color: ${card.categoryColor}; border: 1px solid color-mix(in srgb, ${card.categoryColor} 30%, transparent);`}
               >
                 {card.category}
               </span>
@@ -130,8 +130,8 @@ const bestPractices = [
             <div class="flex items-start justify-between gap-3">
               <div class="text-3xl leading-none">{card.icon}</div>
               <span
-                class="text-xs px-2 py-1 rounded-full font-medium shrink-0"
-                style={`background: ${card.categoryColor}18; color: ${card.categoryColor}; border: 1px solid ${card.categoryColor}30;`}
+                class="text-xs px-2 py-1 rounded-full font-medium shrink-0 badge-primary"
+                style={`color: ${card.categoryColor}; border: 1px solid color-mix(in srgb, ${card.categoryColor} 30%, transparent);`}
               >
                 {card.category}
               </span>
@@ -171,8 +171,8 @@ const bestPractices = [
     </section>
 
     <!-- Contribute CTA Banner -->
-    <div class="relative overflow-hidden rounded-2xl p-8 text-center" style="background: linear-gradient(135deg, rgba(108,99,255,0.15) 0%, rgba(0,217,255,0.10) 100%); border: 1px solid rgba(108,99,255,0.3);">
-      <div class="absolute inset-0 pointer-events-none" style="background: radial-gradient(ellipse at 50% 0%, rgba(108,99,255,0.12) 0%, transparent 70%);"></div>
+    <div class="relative overflow-hidden rounded-2xl p-8 text-center" style="background: linear-gradient(135deg, var(--color-info-primary-bg) 0%, color-mix(in srgb, var(--color-neon-blue) 10%, transparent) 100%); border: 1px solid var(--color-info-primary-border);">
+      <div class="absolute inset-0 pointer-events-none" style="background: radial-gradient(ellipse at 50% 0%, var(--color-info-primary-bg) 0%, transparent 70%);"></div>
       <div class="relative z-10">
         <div class="text-3xl mb-3">✨</div>
         <h3 class="text-xl font-bold text-[var(--color-text-primary)] mb-2">有值得分享的知識嗎？</h3>
@@ -186,3 +186,17 @@ const bestPractices = [
 
   </div>
 </Layout>
+
+<style>
+  /* Light mode: category badge colors */
+  [data-theme="light"] .badge-green {
+    background: var(--color-category-green-bg) !important;
+    color: var(--color-info-neon-text) !important;
+    border-color: var(--color-category-green-border) !important;
+  }
+  [data-theme="light"] .badge-primary {
+    background: var(--color-category-primary-bg) !important;
+    color: var(--color-info-primary-text) !important;
+    border-color: var(--color-category-primary-border) !important;
+  }
+</style>

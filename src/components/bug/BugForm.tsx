@@ -55,9 +55,9 @@ function Toast({ message, visible }: { message: string; visible: boolean }) {
     >
       <div
         style={{
-          background: 'rgba(0, 245, 160, 0.15)',
-          border: '1px solid #00F5A0',
-          color: '#00F5A0',
+          background: 'var(--color-info-neon-bg)',
+          border: '1px solid var(--color-status-open)',
+          color: 'var(--color-info-neon-text)',
           padding: '0.75rem 1.5rem',
           borderRadius: '0.75rem',
           fontSize: '0.9rem',
@@ -80,11 +80,11 @@ export default function BugForm() {
 
   const inputStyle: React.CSSProperties = {
     width: '100%',
-    background: 'rgba(10, 10, 26, 0.6)',
-    border: '1px solid #2A2A4A',
+    background: 'var(--color-bg-card)',
+    border: '1px solid var(--color-border)',
     borderRadius: '0.5rem',
     padding: '0.625rem 0.875rem',
-    color: '#F0F0FF',
+    color: 'var(--color-text-primary)',
     fontSize: '0.9rem',
     outline: 'none',
     transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
@@ -94,7 +94,7 @@ export default function BugForm() {
     display: 'block',
     fontSize: '0.875rem',
     fontWeight: 600,
-    color: '#9090B0',
+    color: 'var(--color-text-secondary)',
     marginBottom: '0.375rem',
   };
 
@@ -166,12 +166,12 @@ export default function BugForm() {
   }
 
   function handleFocus(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
-    e.target.style.borderColor = '#6C63FF';
+    e.target.style.borderColor = 'var(--color-primary)';
     e.target.style.boxShadow = '0 0 0 3px rgba(108, 99, 255, 0.15)';
   }
 
   function handleBlur(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
-    e.target.style.borderColor = '#2A2A4A';
+    e.target.style.borderColor = 'var(--color-border)';
     e.target.style.boxShadow = 'none';
   }
 
@@ -180,32 +180,32 @@ export default function BugForm() {
       <>
         <div
           style={{
-            background: 'rgba(18, 18, 42, 0.7)',
+            background: 'var(--color-glass-bg)',
             backdropFilter: 'blur(12px)',
-            border: '1px solid #2A2A4A',
+            border: '1px solid var(--color-border)',
             borderRadius: '1rem',
             padding: '2.5rem',
             textAlign: 'center',
           }}
         >
           <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>✅</div>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#F0F0FF', marginBottom: '0.75rem' }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: '0.75rem' }}>
             回報已複製！
           </h2>
-          <p style={{ color: '#9090B0', marginBottom: '0.5rem' }}>
+          <p style={{ color: 'var(--color-text-secondary)', marginBottom: '0.5rem' }}>
             內容已複製到剪貼簿，請貼到 Discord 的 Bug 回報頻道。
           </p>
-          <p style={{ color: '#606080', fontSize: '0.85rem', marginBottom: '2rem' }}>
+          <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', marginBottom: '2rem' }}>
             感謝你的回報，我們會盡快處理！
           </p>
           <button
             onClick={handleReset}
             style={{
-              background: 'linear-gradient(135deg, #6C63FF, #E94560)',
+              background: 'linear-gradient(135deg, var(--color-primary), var(--color-accent))',
               border: 'none',
               borderRadius: '0.5rem',
               padding: '0.75rem 2rem',
-              color: '#F0F0FF',
+              color: 'var(--color-text-primary)',
               fontSize: '0.9rem',
               fontWeight: 600,
               cursor: 'pointer',
@@ -224,9 +224,9 @@ export default function BugForm() {
       <form
         onSubmit={handleSubmit}
         style={{
-          background: 'rgba(18, 18, 42, 0.7)',
+          background: 'var(--color-glass-bg)',
           backdropFilter: 'blur(12px)',
-          border: '1px solid #2A2A4A',
+          border: '1px solid var(--color-border)',
           borderRadius: '1rem',
           padding: '2rem',
         }}
@@ -234,7 +234,7 @@ export default function BugForm() {
         {/* 回報者暱稱 */}
         <div style={fieldStyle}>
           <label style={labelStyle}>
-            回報者暱稱 <span style={{ color: '#E94560' }}>*</span>
+            回報者暱稱 <span style={{ color: 'var(--color-accent)' }}>*</span>
           </label>
           <input
             type="text"
@@ -245,18 +245,18 @@ export default function BugForm() {
             onBlur={handleBlur}
             style={{
               ...inputStyle,
-              borderColor: errors.nickname ? '#E94560' : '#2A2A4A',
+              borderColor: errors.nickname ? 'var(--color-accent)' : 'var(--color-border)',
             }}
           />
           {errors.nickname && (
-            <p style={{ color: '#E94560', fontSize: '0.8rem', marginTop: '0.25rem' }}>{errors.nickname}</p>
+            <p style={{ color: 'var(--color-accent)', fontSize: '0.8rem', marginTop: '0.25rem' }}>{errors.nickname}</p>
           )}
         </div>
 
         {/* 問題類型 */}
         <div style={fieldStyle}>
           <label style={labelStyle}>
-            問題類型 <span style={{ color: '#E94560' }}>*</span>
+            問題類型 <span style={{ color: 'var(--color-accent)' }}>*</span>
           </label>
           <select
             value={formData.bugType}
@@ -265,25 +265,25 @@ export default function BugForm() {
             onBlur={handleBlur}
             style={{
               ...inputStyle,
-              borderColor: errors.bugType ? '#E94560' : '#2A2A4A',
+              borderColor: errors.bugType ? 'var(--color-accent)' : 'var(--color-border)',
               cursor: 'pointer',
             }}
           >
             {BUG_TYPES.map((t) => (
-              <option key={t.value} value={t.value} style={{ background: '#12122A' }}>
+              <option key={t.value} value={t.value} style={{ background: 'var(--color-bg-card)' }}>
                 {t.label}
               </option>
             ))}
           </select>
           {errors.bugType && (
-            <p style={{ color: '#E94560', fontSize: '0.8rem', marginTop: '0.25rem' }}>{errors.bugType}</p>
+            <p style={{ color: 'var(--color-accent)', fontSize: '0.8rem', marginTop: '0.25rem' }}>{errors.bugType}</p>
           )}
         </div>
 
         {/* 問題頁面 */}
         <div style={fieldStyle}>
           <label style={labelStyle}>
-            問題頁面 <span style={{ color: '#E94560' }}>*</span>
+            問題頁面 <span style={{ color: 'var(--color-accent)' }}>*</span>
           </label>
           <select
             value={formData.bugPage}
@@ -292,25 +292,25 @@ export default function BugForm() {
             onBlur={handleBlur}
             style={{
               ...inputStyle,
-              borderColor: errors.bugPage ? '#E94560' : '#2A2A4A',
+              borderColor: errors.bugPage ? 'var(--color-accent)' : 'var(--color-border)',
               cursor: 'pointer',
             }}
           >
             {BUG_PAGES.map((p) => (
-              <option key={p.value} value={p.value} style={{ background: '#12122A' }}>
+              <option key={p.value} value={p.value} style={{ background: 'var(--color-bg-card)' }}>
                 {p.label}
               </option>
             ))}
           </select>
           {errors.bugPage && (
-            <p style={{ color: '#E94560', fontSize: '0.8rem', marginTop: '0.25rem' }}>{errors.bugPage}</p>
+            <p style={{ color: 'var(--color-accent)', fontSize: '0.8rem', marginTop: '0.25rem' }}>{errors.bugPage}</p>
           )}
         </div>
 
         {/* 問題描述 */}
         <div style={fieldStyle}>
           <label style={labelStyle}>
-            問題描述 <span style={{ color: '#E94560' }}>*</span>
+            問題描述 <span style={{ color: 'var(--color-accent)' }}>*</span>
           </label>
           <textarea
             placeholder="請盡量詳細描述你遇到的問題..."
@@ -322,11 +322,11 @@ export default function BugForm() {
             style={{
               ...inputStyle,
               resize: 'vertical',
-              borderColor: errors.description ? '#E94560' : '#2A2A4A',
+              borderColor: errors.description ? 'var(--color-accent)' : 'var(--color-border)',
             }}
           />
           {errors.description && (
-            <p style={{ color: '#E94560', fontSize: '0.8rem', marginTop: '0.25rem' }}>{errors.description}</p>
+            <p style={{ color: 'var(--color-accent)', fontSize: '0.8rem', marginTop: '0.25rem' }}>{errors.description}</p>
           )}
         </div>
 
@@ -363,11 +363,11 @@ export default function BugForm() {
           type="submit"
           style={{
             width: '100%',
-            background: 'linear-gradient(135deg, #6C63FF, #E94560)',
+            background: 'linear-gradient(135deg, var(--color-primary), var(--color-accent))',
             border: 'none',
             borderRadius: '0.5rem',
             padding: '0.875rem',
-            color: '#F0F0FF',
+            color: 'var(--color-text-emphasis)',
             fontSize: '1rem',
             fontWeight: 700,
             cursor: 'pointer',

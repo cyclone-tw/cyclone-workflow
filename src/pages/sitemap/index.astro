@@ -21,10 +21,10 @@ const mermaidDiagram = `flowchart TD
     DISCUSS --- DB[("💾 Turso DB")]
     ISSUE --- DB
     QA --- CRYPTO["🔒 Web Crypto"]
-    style HOME fill:#6C63FF,stroke:#8B83FF,color:#fff
-    style LETTA fill:#0A0A1A,stroke:#00F5A0,color:#00F5A0
-    style DB fill:#0A0A1A,stroke:#00D9FF,color:#00D9FF
-    style CRYPTO fill:#0A0A1A,stroke:#E94560,color:#E94560`;
+    style HOME fill:var(--color-primary),stroke:var(--color-primary-light),color:#fff
+    style LETTA fill:var(--color-bg-dark),stroke:var(--color-neon-green),color:var(--color-neon-green)
+    style DB fill:var(--color-bg-dark),stroke:var(--color-neon-blue),color:var(--color-neon-blue)
+    style CRYPTO fill:var(--color-bg-dark),stroke:var(--color-accent),color:var(--color-accent)`;
 ---
 
 <Layout title="Sitemap" description="網站架構總覽">
@@ -111,7 +111,7 @@ const mermaidDiagram = `flowchart TD
           { method: 'POST', path: '/api/issues/:id', desc: '新增留言' },
         ].map(api => (
           <div class="flex items-center gap-2 py-1">
-            <span class="px-1.5 py-0.5 rounded text-[var(--color-bg-dark)]" style={`background: ${api.method === 'GET' ? '#00F5A0' : '#6C63FF'}`}>
+            <span class="px-1.5 py-0.5 rounded" style={`background: ${api.method === 'GET' ? 'var(--color-neon-green)' : 'var(--color-primary)'}; color: var(--color-bg-dark);`}>
               {api.method}
             </span>
             <span class="text-[var(--color-text-secondary)]">{api.path}</span>
@@ -148,10 +148,13 @@ const mermaidDiagram = `flowchart TD
   <!-- Mermaid JS -->
   <script is:inline src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script is:inline>
-    mermaid.initialize({
-      startOnLoad: true,
-      theme: 'dark',
-      flowchart: { curve: 'basis' }
-    });
+    (function() {
+      var theme = document.documentElement.getAttribute('data-theme') || 'dark';
+      mermaid.initialize({
+        startOnLoad: true,
+        theme: theme === 'light' ? 'neutral' : 'dark',
+        flowchart: { curve: 'basis' }
+      });
+    })();
   </script>
 </Layout>

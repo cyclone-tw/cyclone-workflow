@@ -30,6 +30,32 @@
   --color-overlay-neutral-weak: rgba(255, 255, 255, 0.05);
   --color-overlay-neutral-strong: rgba(255, 255, 255, 0.10);
   --color-glass-bg: rgba(18, 18, 42, 0.70);
+
+  /* IssueBoard / Status colors */
+  --color-status-open: #00F5A0;
+  --color-status-in-progress: #00D9FF;
+  --color-status-resolved: #6C63FF;
+  --color-status-closed: #606080;
+  --color-priority-critical: #E94560;
+  --color-priority-high: #FF8C00;
+  --color-priority-medium: #FFC300;
+  --color-priority-low: #9090B0;
+
+  /* Info tip variants */
+  --color-info-primary-bg: rgba(108, 99, 255, 0.08);
+  --color-info-primary-border: rgba(108, 99, 255, 0.30);
+  --color-info-primary-text: #6C63FF;
+  --color-info-neon-bg: rgba(0, 245, 160, 0.15);
+  --color-info-neon-text: #00F5A0;
+  --color-info-accent-bg: rgba(233, 69, 96, 0.07);
+  --color-info-accent-border: rgba(233, 69, 96, 0.25);
+  --color-info-accent-text: #FF6B81;
+
+  /* Knowledge category badge backgrounds (alpha-enabled via rgba) */
+  --color-category-green-bg: rgba(0, 245, 160, 0.10);
+  --color-category-green-border: rgba(0, 245, 160, 0.20);
+  --color-category-primary-bg: rgba(108, 99, 255, 0.10);
+  --color-category-primary-border: rgba(108, 99, 255, 0.20);
 }
 
 /* Light theme overrides — activated when <html data-theme="light"> */
@@ -53,7 +79,61 @@
   --color-text-emphasis: #000018;
   --color-overlay-neutral-weak: rgba(0, 0, 0, 0.04);
   --color-overlay-neutral-strong: rgba(0, 0, 0, 0.07);
-  --color-glass-bg: rgba(255, 255, 255, 0.75);
+  --color-glass-bg: rgba(255, 255, 255, 0.80);
+
+  /* Glow effects — softer in light mode */
+  --glow-primary: 0 4px 12px rgba(108, 99, 255, 0.15);
+  --glow-accent: 0 4px 12px rgba(233, 69, 96, 0.15);
+  --glow-neon: 0 4px 12px rgba(0, 245, 160, 0.15);
+
+  /* Status colors — same hues, softer alpha */
+  --color-status-open: #00A855;
+  --color-status-in-progress: #00A8CC;
+  --color-status-resolved: #6C63FF;
+  --color-status-closed: #9090B0;
+  --color-priority-critical: #D9364A;
+  --color-priority-high: #D97706;
+  --color-priority-medium: #CA8A04;
+  --color-priority-low: #9090B0;
+
+  /* Info tip variants — softer for light mode */
+  --color-info-primary-bg: rgba(108, 99, 255, 0.08);
+  --color-info-primary-border: rgba(108, 99, 255, 0.20);
+  --color-info-primary-text: #5A52E0;
+  --color-info-neon-bg: rgba(0, 245, 160, 0.10);
+  --color-info-neon-text: #009955;
+  --color-info-accent-bg: rgba(233, 69, 96, 0.06);
+  --color-info-accent-border: rgba(233, 69, 96, 0.18);
+  --color-info-accent-text: #D9364A;
+
+  /* Knowledge category badges */
+  --color-category-green-bg: rgba(0, 180, 100, 0.10);
+  --color-category-green-border: rgba(0, 180, 100, 0.20);
+  --color-category-primary-bg: rgba(108, 99, 255, 0.10);
+  --color-category-primary-border: rgba(108, 99, 255, 0.20);
+}
+
+/* Light mode glow overrides */
+[data-theme="light"] .glow-primary {
+  box-shadow: 0 4px 12px rgba(108, 99, 255, 0.15);
+}
+
+[data-theme="light"] .glow-accent {
+  box-shadow: 0 4px 12px rgba(233, 69, 96, 0.15);
+}
+
+[data-theme="light"] .glow-neon {
+  box-shadow: 0 4px 12px rgba(0, 245, 160, 0.15);
+}
+
+/* Light mode card-hover */
+[data-theme="light"] .card-hover:hover {
+  box-shadow: 0 8px 24px rgba(108, 99, 255, 0.10);
+}
+
+/* Light mode scrollbar */
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: #C0C0D8;
 }
 
 /* Base styles */
