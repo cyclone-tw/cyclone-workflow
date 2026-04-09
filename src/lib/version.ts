@@ -8,6 +8,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: 'v20260409.2',
+    date: '2026-04-09 18:20',
+    changes: [
+      'feat: 首頁支援深色 / 淺色主題切換（#16）— Navbar 右上角 ☀️/🌙 按鈕',
+      'feat: 首次造訪跟隨系統 prefers-color-scheme，之後記憶 localStorage',
+      'feat: 重構 global.css 加入 [data-theme="light"] 變數組 + helper vars',
+      'feat: Layout 加入 FOUC 防護 inline script，切換時無閃爍',
+    ],
+  },
+  {
     version: 'v20260409.1',
     date: '2026-04-09 22:00',
     changes: [

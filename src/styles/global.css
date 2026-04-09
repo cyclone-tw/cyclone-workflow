@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  /* Brand Colors - Cyberpunk / Dark Tech */
+  /* Brand Colors - stay consistent across themes */
   --color-primary: #6C63FF;
   --color-primary-light: #8B83FF;
   --color-primary-dark: #4A42DB;
@@ -10,7 +10,7 @@
   --color-neon-green: #00F5A0;
   --color-neon-blue: #00D9FF;
 
-  /* Backgrounds */
+  /* Backgrounds (dark theme defaults — name kept for compat) */
   --color-bg-dark: #0A0A1A;
   --color-bg-card: #12122A;
   --color-bg-card-hover: #1A1A3E;
@@ -24,6 +24,36 @@
   /* Borders */
   --color-border: #2A2A4A;
   --color-border-light: #3A3A5A;
+
+  /* Theme-flip helpers (swap with light mode) */
+  --color-text-emphasis: #FFFFFF;
+  --color-overlay-neutral-weak: rgba(255, 255, 255, 0.05);
+  --color-overlay-neutral-strong: rgba(255, 255, 255, 0.10);
+  --color-glass-bg: rgba(18, 18, 42, 0.70);
+}
+
+/* Light theme overrides — activated when <html data-theme="light"> */
+[data-theme="light"] {
+  /* Backgrounds — soft off-white with blue tint to match brand */
+  --color-bg-dark: #F8F9FC;
+  --color-bg-card: #FFFFFF;
+  --color-bg-card-hover: #F0F1FB;
+  --color-bg-surface: #EEF0F8;
+
+  /* Text — deep navy for strong contrast */
+  --color-text-primary: #0F0F2E;
+  --color-text-secondary: #4A4A6E;
+  --color-text-muted: #8080A0;
+
+  /* Borders */
+  --color-border: #E5E7F0;
+  --color-border-light: #D6D8E5;
+
+  /* Flip helpers */
+  --color-text-emphasis: #000018;
+  --color-overlay-neutral-weak: rgba(0, 0, 0, 0.04);
+  --color-overlay-neutral-strong: rgba(0, 0, 0, 0.07);
+  --color-glass-bg: rgba(255, 255, 255, 0.75);
 }
 
 /* Base styles */
@@ -35,6 +65,7 @@ body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   background-color: var(--color-bg-dark);
   color: var(--color-text-primary);
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 /* Glow effects */
@@ -52,10 +83,16 @@ body {
 
 /* Glass morphism */
 .glass {
-  background: rgba(18, 18, 42, 0.7);
+  background: var(--color-glass-bg);
   backdrop-filter: blur(12px);
   border: 1px solid var(--color-border);
 }
+
+/* Theme toggle — icon visibility flips with data-theme */
+.theme-icon-sun { display: none; }
+.theme-icon-moon { display: block; }
+[data-theme="light"] .theme-icon-sun { display: block; }
+[data-theme="light"] .theme-icon-moon { display: none; }
 
 /* Gradient text */
 .gradient-text {

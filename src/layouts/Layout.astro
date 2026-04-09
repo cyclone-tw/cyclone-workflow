@@ -15,10 +15,23 @@ const currentPath = Astro.url.pathname;
 ---
 
 <!doctype html>
-<html lang="zh-TW">
+<html lang="zh-TW" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Theme bootstrap — must run before any paint to avoid FOUC -->
+    <script is:inline>
+      (function () {
+        try {
+          var stored = localStorage.getItem('cyclone-theme');
+          var theme = stored
+            || (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+          document.documentElement.setAttribute('data-theme', theme);
+        } catch (_) {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      })();
+    </script>
     <meta name="description" content={pageDesc} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -67,7 +80,7 @@ const currentPath = Astro.url.pathname;
                   'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
                   currentPath === item.href || (item.href !== '/' && currentPath.startsWith(item.href))
                     ? 'bg-[var(--color-primary)]/20 text-[var(--color-primary-light)]'
-                    : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-white/5',
+                    : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-overlay-neutral-weak)]',
                 ]}
               >
                 <span class="mr-1.5">{item.icon}</span>
@@ -75,12 +88,30 @@ const currentPath = Astro.url.pathname;
               </a>
             ))}
           </div>
-          <!-- Mobile menu button -->
-          <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg hover:bg-white/5">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
+          <div class="flex items-center gap-1">
+            <!-- Theme toggle -->
+            <button
+              id="theme-toggle"
+              type="button"
+              aria-label="切換深色 / 淺色主題"
+              class="p-2 rounded-lg text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-overlay-neutral-weak)] transition-colors"
+            >
+              <!-- Sun icon (shown in light mode = current state) -->
+              <svg class="w-5 h-5 theme-icon-sun" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+              <!-- Moon icon (shown in dark mode = current state) -->
+              <svg class="w-5 h-5 theme-icon-moon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+              </svg>
+            </button>
+            <!-- Mobile menu button -->
+            <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg hover:bg-[var(--color-overlay-neutral-weak)]">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
       <!-- Mobile menu -->
@@ -93,7 +124,7 @@ const currentPath = Astro.url.pathname;
                 'block px-4 py-2.5 rounded-lg text-sm font-medium transition-colors',
                 currentPath === item.href || (item.href !== '/' && currentPath.startsWith(item.href))
                   ? 'bg-[var(--color-primary)]/20 text-[var(--color-primary-light)]'
-                  : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-white/5',
+                  : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-overlay-neutral-weak)]',
               ]}
             >
               <span class="mr-2">{item.icon}</span>
@@ -126,6 +157,19 @@ const currentPath = Astro.url.pathname;
       const btn = document.getElementById('mobile-menu-btn');
       const menu = document.getElementById('mobile-menu');
       btn?.addEventListener('click', () => menu?.classList.toggle('hidden'));
+
+      // Theme toggle — click flips data-theme and persists to localStorage
+      const themeBtn = document.getElementById('theme-toggle');
+      themeBtn?.addEventListener('click', () => {
+        const current = document.documentElement.getAttribute('data-theme');
+        const next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        try {
+          localStorage.setItem('cyclone-theme', next);
+        } catch (_) {
+          // localStorage disabled — theme still flips for this session
+        }
+      });
     </script>
   </body>
 </html>
