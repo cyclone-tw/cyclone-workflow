@@ -252,8 +252,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
     // Seed captain with known email
     await db.execute({
-      sql: `UPDATE users SET email = ? WHERE id = 'cyclone' AND email = ''`,
-      args: ['cyclone.tw@gmail.com'],
+      sql: `UPDATE users SET email = ? WHERE id = 'cyclone' AND (email = '' OR email = 'cyclone.tw@gmail.com')`,
+      args: ['cyclonetw@gmail.com'],
     });
 
     return new Response(JSON.stringify({ ok: true, message: 'Schema initialized and members seeded' }), {
