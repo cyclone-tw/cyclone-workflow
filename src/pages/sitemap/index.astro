@@ -4,27 +4,26 @@ import { VERSION } from '@/lib/version';
 
 const mermaidDiagram = `flowchart TD
     HOME["🏠 首頁 /"]
+    HOME --> README["📖 使用說明 /readme"]
     HOME --> DASH["📊 儀表板 /dashboard"]
     HOME --> TEAM["👥 團隊 /team"]
     HOME --> KNOW["📚 知識庫 /knowledge"]
-    HOME --> QA["❓ QA 知識集 /qa"]
-    HOME --> AGENT["🏠 Cyclone 管家 /agent"]
+    HOME --> AITOOLS["🤖 AI 工具箱 /ai-tools"]
+    HOME --> AGENT["🎩 Cyclone 管家 /agent"]
     HOME --> WISH["🌳 許願樹 /wishlist"]
     HOME --> DISCUSS["💬 討論區 /discuss"]
     HOME --> ISSUE["📋 Issues /issue"]
-    HOME --> README["📖 使用說明 /readme"]
     HOME --> BUG["🐛 Bug 回報 /bug"]
-    HOME --> EXCHANGE["🏪 兌換區 /exchange"]
     HOME --> LOG["📋 Changelog /changelog"]
     HOME --> MAP["🗺️ Sitemap /sitemap"]
     AGENT --- LETTA[("🧠 Letta Memory")]
-    DISCUSS --- DB[("💾 Turso DB")]
+    AITOOLS --- DB[("💾 Turso DB")]
+    DISCUSS --- DB
     ISSUE --- DB
-    QA --- CRYPTO["🔒 Web Crypto"]
+    KNOW --- DB
     style HOME fill:var(--color-primary),stroke:var(--color-primary-light),color:#fff
     style LETTA fill:var(--color-bg-dark),stroke:var(--color-neon-green),color:var(--color-neon-green)
-    style DB fill:var(--color-bg-dark),stroke:var(--color-neon-blue),color:var(--color-neon-blue)
-    style CRYPTO fill:var(--color-bg-dark),stroke:var(--color-accent),color:var(--color-accent)`;
+    style DB fill:var(--color-bg-dark),stroke:var(--color-neon-blue),color:var(--color-neon-blue)`;
 ---
 
 <Layout title="Sitemap" description="網站架構總覽">
