@@ -37,7 +37,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     const userIds = result.rows.map((r) => r.user_id as string);
     const dateResult = userIds.length > 0
       ? await db.execute({
-          sql: `SELECT user_id, DATE(checked_at) AS day FROM checkins WHERE user_id IN (${userIds.map(() => '?').join(',')}) ORDER BY user_id, day DESC`,
+          sql: `SELECT user_id, checkin_date AS day FROM checkins WHERE user_id IN (${userIds.map(() => '?').join(',')}) ORDER BY user_id, day DESC`,
           args: userIds,
         })
       : { rows: [] as { user_id: string; day: string }[] };

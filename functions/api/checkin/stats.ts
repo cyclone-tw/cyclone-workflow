@@ -116,11 +116,13 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     return new Response(
       JSON.stringify({
         ok: true,
-        totalPoints,
-        totalCheckins,
-        currentStreak,
-        longestStreak,
-        lastCheckinDate,
+        stats: {
+          totalPoints,
+          totalCheckins,
+          currentStreak,
+          longestStreak,
+          lastCheckinDate,
+        },
       }),
       { headers: { 'Content-Type': 'application/json' } },
     );
