@@ -22,6 +22,21 @@ interface Issue {
   updated_at: string;
 }
 
+interface GitHubIssue {
+  id: number;
+  number: number;
+  title: string;
+  body: string | null;
+  state: string;
+  labels: string[];
+  user: string;
+  avatar_url: string;
+  created_at: string;
+  updated_at: string;
+  comments: number;
+  html_url: string;
+}
+
 interface Comment {
   id: number;
   author: string;
@@ -678,7 +693,263 @@ function DetailView({ issueId, onBack }: DetailViewProps) {
   );
 }
 
+// ─── GitHub Label Colors ──────────────────────────────────────────────────────
+
+const GITHUB_LABEL_COLORS: Record<string, { bg: string; color: string }> = {
+  bug: { bg: 'rgba(255,0,0,0.15)', color: '#ff6666' },
+  feature: { bg: 'rgba(0,255,160,0.12)', color: '#00F5A0' },
+  enhancement: { bg: 'rgba(108,99,255,0.15)', color: '#8B83FF' },
+  documentation: { bg: 'rgba(0,217,255,0.12)', color: '#00D9FF' },
+  'good first issue': { bg: 'rgba(0,255,160,0.12)', color: '#00F5A0' },
+  help: { bg: 'rgba(255,195,0,0.15)', color: '#FFC300' },
+  question: { bg: 'rgba(255,195,0,0.15)', color: '#FFC300' },
+  wontfix: { bg: 'rgba(96,96,128,0.2)', color: '#606080' },
+};
+
+function getGitHubLabelStyle(label: string): { bg: string; color: string } {
+  const lower = label.toLowerCase();
+  return GITHUB_LABEL_COLORS[lower] ?? { bg: 'rgba(108,99,255,0.12)', color: '#A0A0C8' };
+}
+
+// ─── GitHub Issues Tab ────────────────────────────────────────────────────────
+
+function GitHubIssuesTab() {
+  const [issues, setIssues] = useState<GitHubIssue[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchGitHub() {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await fetch('/api/github/issues');
+        if (!res.ok) throw new Error('載入 GitHub Issues 失敗');
+        const data = await res.json();
+        setIssues(data.issues || []);
+      } catch {
+        setError('無法載入 GitHub Issues，請稍後再試');
+        setIssues([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchGitHub();
+  }, []);
+
+  const cardBase: React.CSSProperties = {
+    background: 'rgba(18,18,42,0.7)',
+    backdropFilter: 'blur(12px)',
+    border: '1px solid #2A2A4A',
+    borderRadius: '0.75rem',
+    padding: '1rem 1.25rem',
+    cursor: 'pointer',
+    transition: 'background 0.15s, border-color 0.15s',
+  };
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div
+            key={i}
+            style={{
+              background: 'rgba(18,18,42,0.5)',
+              border: '1px solid #2A2A4A',
+              borderRadius: '0.75rem',
+              padding: '1.25rem',
+              animation: 'pulse 1.5s ease-in-out infinite',
+            }}
+          >
+            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', marginBottom: '0.75rem' }}>
+              <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(42,42,74,0.6)' }} />
+              <div style={{ width: '80px', height: '12px', borderRadius: '4px', background: 'rgba(42,42,74,0.6)' }} />
+              <div style={{ width: '60%', height: '14px', borderRadius: '4px', background: 'rgba(42,42,74,0.6)' }} />
+            </div>
+            <div style={{ width: '40%', height: '10px', borderRadius: '4px', background: 'rgba(42,42,74,0.4)' }} />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div
+        style={{
+          textAlign: 'center',
+          padding: '4rem 2rem',
+          background: 'rgba(18,18,42,0.5)',
+          border: '1px solid #2A2A4A',
+          borderRadius: '1rem',
+          color: '#9090B0',
+        }}
+      >
+        <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>⚠️</div>
+        <p style={{ fontSize: '0.95rem' }}>{error}</p>
+      </div>
+    );
+  }
+
+  if (issues.length === 0) {
+    return (
+      <div
+        style={{
+          textAlign: 'center',
+          padding: '4rem 2rem',
+          background: 'rgba(18,18,42,0.5)',
+          border: '1px solid #2A2A4A',
+          borderRadius: '1rem',
+          color: '#606080',
+        }}
+      >
+        <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🎉</div>
+        <p style={{ fontSize: '0.95rem' }}>目前沒有 Open 的 GitHub Issues</p>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1rem' }}>
+        {issues.map((issue) => (
+          <div
+            key={issue.id}
+            onClick={() => window.open(issue.html_url, '_blank', 'noopener')}
+            style={cardBase}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(26,26,62,0.8)';
+              e.currentTarget.style.borderColor = 'rgba(108,99,255,0.3)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(18,18,42,0.7)';
+              e.currentTarget.style.borderColor = '#2A2A4A';
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.875rem' }}>
+              {/* Author avatar */}
+              {issue.avatar_url && (
+                <img
+                  src={issue.avatar_url}
+                  alt={issue.user}
+                  style={{
+                    width: '28px',
+                    height: '28px',
+                    borderRadius: '50%',
+                    flexShrink: 0,
+                    marginTop: '0.1rem',
+                    border: '1px solid #2A2A4A',
+                  }}
+                />
+              )}
+
+              <div style={{ flex: 1, minWidth: 0 }}>
+                {/* Title row */}
+                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.4rem', marginBottom: '0.35rem' }}>
+                  <span style={{ color: '#606080', fontSize: '0.8rem', fontWeight: 600 }}>#{issue.number}</span>
+                  <span style={{ color: '#F0F0FF', fontWeight: 600, fontSize: '0.95rem', lineHeight: 1.4 }}>
+                    {issue.title}
+                  </span>
+                </div>
+
+                {/* Labels */}
+                {issue.labels.length > 0 && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem', marginBottom: '0.4rem' }}>
+                    {issue.labels.map((label) => {
+                      const style = getGitHubLabelStyle(label);
+                      return (
+                        <span
+                          key={label}
+                          style={{
+                            fontSize: '0.7rem',
+                            fontWeight: 600,
+                            padding: '0.15rem 0.5rem',
+                            borderRadius: '999px',
+                            background: style.bg,
+                            color: style.color,
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {label}
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Meta row */}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', fontSize: '0.75rem', color: '#606080', alignItems: 'center' }}>
+                  <span>{issue.user}</span>
+                  <span>{timeAgo(issue.created_at)}</span>
+                </div>
+              </div>
+
+              {/* Comment count */}
+              {issue.comments > 0 && (
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.3rem',
+                    color: '#606080',
+                    fontSize: '0.8rem',
+                    flexShrink: 0,
+                    marginTop: '0.15rem',
+                  }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                  </svg>
+                  {issue.comments}
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Link to create new GitHub issue */}
+      <div style={{ textAlign: 'center', marginTop: '0.5rem' }}>
+        <a
+          href="https://github.com/cyclone-tw/cyclone-workflow/issues/new"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.4rem',
+            color: '#8B83FF',
+            fontSize: '0.85rem',
+            fontWeight: 600,
+            textDecoration: 'none',
+            padding: '0.5rem 1rem',
+            borderRadius: '0.5rem',
+            border: '1px solid rgba(108,99,255,0.3)',
+            background: 'rgba(108,99,255,0.08)',
+            transition: 'background 0.2s, border-color 0.2s',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(108,99,255,0.15)';
+            e.currentTarget.style.borderColor = 'rgba(108,99,255,0.5)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'rgba(108,99,255,0.08)';
+            e.currentTarget.style.borderColor = 'rgba(108,99,255,0.3)';
+          }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+          前往 GitHub 建立 Issue →
+        </a>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main IssueBoard ──────────────────────────────────────────────────────────
+
+type SourceTab = 'local' | 'github';
 
 export default function IssueBoard() {
   const [issues, setIssues] = useState<Issue[]>([]);
@@ -687,6 +958,7 @@ export default function IssueBoard() {
   const [categoryFilter, setCategoryFilter] = useState<IssueCategory | 'all'>('all');
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [selectedIssueId, setSelectedIssueId] = useState<number | null>(null);
+  const [sourceTab, setSourceTab] = useState<SourceTab>('local');
 
   async function fetchIssues() {
     setLoading(true);
@@ -734,224 +1006,270 @@ export default function IssueBoard() {
 
   return (
     <div>
-      {/* Top action row */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
-        <div style={{ fontSize: '0.875rem', color: '#9090B0' }}>
-          <span style={{ color: '#00F5A0', fontWeight: 600 }}>{notClosedCount} 個 open</span>
-          <span style={{ margin: '0 0.5rem', color: '#2A2A4A' }}>·</span>
-          <span>{closedCount} 個 closed</span>
-        </div>
-        <button
-          onClick={() => setShowCreateForm(v => !v)}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.4rem',
-            padding: '0.6rem 1.25rem',
-            background: showCreateForm ? 'rgba(108,99,255,0.15)' : 'linear-gradient(135deg, #6C63FF, #E94560)',
-            border: showCreateForm ? '1px solid rgba(108,99,255,0.4)' : 'none',
-            borderRadius: '0.5rem',
-            color: '#F0F0FF',
-            fontSize: '0.875rem',
-            fontWeight: 600,
-            cursor: 'pointer',
-            transition: 'opacity 0.2s, transform 0.2s',
-          }}
-          onMouseEnter={e => e.currentTarget.style.opacity = '0.9'}
-          onMouseLeave={e => e.currentTarget.style.opacity = '1'}
-        >
-          {showCreateForm ? '✕ 關閉' : '+ 新增 Issue'}
-        </button>
-      </div>
-
-      {/* Create form (collapsible) */}
-      {showCreateForm && (
-        <CreateIssueForm
-          onCreated={() => {
-            setShowCreateForm(false);
-            fetchIssues();
-          }}
-          onCancel={() => setShowCreateForm(false)}
-        />
-      )}
-
-      {/* Filter bar */}
+      {/* Source tabs */}
       <div
         style={{
+          display: 'flex',
+          gap: '0.25rem',
+          marginBottom: '1.25rem',
           background: 'rgba(18,18,42,0.7)',
           backdropFilter: 'blur(12px)',
           border: '1px solid #2A2A4A',
           borderRadius: '0.75rem',
-          padding: '0.75rem 1rem',
-          marginBottom: '0.75rem',
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: '0.5rem',
-          alignItems: 'center',
-          justifyContent: 'space-between',
+          padding: '0.3rem',
         }}
       >
-        {/* Status tabs */}
-        <div style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
-          {statusTabs.map(tab => (
-            <button
-              key={tab.key}
-              onClick={() => setStatusFilter(tab.key)}
-              style={{
-                padding: '0.375rem 0.875rem',
-                borderRadius: '0.5rem',
-                border: 'none',
-                background: statusFilter === tab.key ? 'rgba(108,99,255,0.2)' : 'transparent',
-                color: statusFilter === tab.key ? '#8B83FF' : '#9090B0',
-                fontSize: '0.85rem',
-                fontWeight: statusFilter === tab.key ? 600 : 400,
-                cursor: 'pointer',
-                transition: 'all 0.15s',
-              }}
-              onMouseEnter={e => { if (statusFilter !== tab.key) e.currentTarget.style.color = '#F0F0FF'; }}
-              onMouseLeave={e => { if (statusFilter !== tab.key) e.currentTarget.style.color = '#9090B0'; }}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Category filter */}
-        <select
-          value={categoryFilter}
-          onChange={e => setCategoryFilter(e.target.value as IssueCategory | 'all')}
-          onFocus={handleFocusIn}
-          onBlur={handleFocusOut}
-          style={{
-            background: 'rgba(10,10,26,0.6)',
-            border: '1px solid #2A2A4A',
-            borderRadius: '0.5rem',
-            padding: '0.375rem 0.75rem',
-            color: '#9090B0',
-            fontSize: '0.85rem',
-            cursor: 'pointer',
-            outline: 'none',
-          }}
-        >
-          <option value="all" style={{ background: '#12122A' }}>所有類別</option>
-          <option value="bug" style={{ background: '#12122A' }}>🐛 Bug</option>
-          <option value="feature" style={{ background: '#12122A' }}>✨ 功能</option>
-          <option value="improvement" style={{ background: '#12122A' }}>🔧 改善</option>
-          <option value="question" style={{ background: '#12122A' }}>❓ 問題</option>
-        </select>
+        {([
+          { key: 'local' as SourceTab, label: '本地 Issues' },
+          { key: 'github' as SourceTab, label: 'GitHub Issues' },
+        ]).map(tab => (
+          <button
+            key={tab.key}
+            onClick={() => setSourceTab(tab.key)}
+            style={{
+              flex: 1,
+              padding: '0.5rem 1rem',
+              borderRadius: '0.5rem',
+              border: 'none',
+              background: sourceTab === tab.key ? 'rgba(108,99,255,0.2)' : 'transparent',
+              color: sourceTab === tab.key ? '#8B83FF' : '#9090B0',
+              fontSize: '0.875rem',
+              fontWeight: sourceTab === tab.key ? 600 : 400,
+              cursor: 'pointer',
+              transition: 'all 0.15s',
+            }}
+            onMouseEnter={e => { if (sourceTab !== tab.key) e.currentTarget.style.color = '#F0F0FF'; }}
+            onMouseLeave={e => { if (sourceTab !== tab.key) e.currentTarget.style.color = '#9090B0'; }}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
-      {/* Issue list */}
-      {loading ? (
-        <div style={{ textAlign: 'center', padding: '4rem', color: '#9090B0' }}>
-          載入中…
-        </div>
-      ) : issues.length === 0 ? (
-        <div
-          style={{
-            textAlign: 'center',
-            padding: '4rem 2rem',
-            background: 'rgba(18,18,42,0.5)',
-            border: '1px solid #2A2A4A',
-            borderRadius: '1rem',
-            color: '#606080',
-          }}
-        >
-          <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>📭</div>
-          <p style={{ fontSize: '0.95rem' }}>目前沒有符合條件的 Issues</p>
-        </div>
+      {sourceTab === 'github' ? (
+        <GitHubIssuesTab />
       ) : (
-        <div
-          style={{
-            border: '1px solid #2A2A4A',
-            borderRadius: '0.75rem',
-            overflow: 'hidden',
-          }}
-        >
-          {issues.map((issue, idx) => (
-            <div
-              key={issue.id}
-              onClick={() => setSelectedIssueId(issue.id)}
+        <>
+          {/* Top action row */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+            <div style={{ fontSize: '0.875rem', color: '#9090B0' }}>
+              <span style={{ color: '#00F5A0', fontWeight: 600 }}>{notClosedCount} 個 open</span>
+              <span style={{ margin: '0 0.5rem', color: '#2A2A4A' }}>·</span>
+              <span>{closedCount} 個 closed</span>
+            </div>
+            <button
+              onClick={() => setShowCreateForm(v => !v)}
               style={{
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: '0.875rem',
-                padding: '1rem 1.25rem',
-                background: 'rgba(18,18,42,0.6)',
-                borderBottom: idx < issues.length - 1 ? '1px solid #2A2A4A' : 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                padding: '0.6rem 1.25rem',
+                background: showCreateForm ? 'rgba(108,99,255,0.15)' : 'linear-gradient(135deg, #6C63FF, #E94560)',
+                border: showCreateForm ? '1px solid rgba(108,99,255,0.4)' : 'none',
+                borderRadius: '0.5rem',
+                color: '#F0F0FF',
+                fontSize: '0.875rem',
+                fontWeight: 600,
                 cursor: 'pointer',
-                transition: 'background 0.15s',
+                transition: 'opacity 0.2s, transform 0.2s',
               }}
-              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(26,26,62,0.8)')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'rgba(18,18,42,0.6)')}
+              onMouseEnter={e => e.currentTarget.style.opacity = '0.9'}
+              onMouseLeave={e => e.currentTarget.style.opacity = '1'}
             >
-              {/* Status dot */}
-              <div style={{ marginTop: '0.35rem', flexShrink: 0 }}>
-                <StatusDot status={issue.status} />
-              </div>
+              {showCreateForm ? '✕ 關閉' : '+ 新增 Issue'}
+            </button>
+          </div>
 
-              {/* Main content */}
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.4rem', marginBottom: '0.3rem' }}>
-                  <span style={{ color: '#F0F0FF', fontWeight: 600, fontSize: '0.95rem', lineHeight: 1.4 }}>
-                    {issue.title}
-                  </span>
-                  <CategoryBadge category={issue.category} />
-                  <PriorityBadge priority={issue.priority} />
-                  {issue.resolved_version && (
-                    <a
-                      href="/changelog"
-                      onClick={e => e.stopPropagation()}
-                      style={{
-                        fontSize: '0.7rem',
-                        fontWeight: 700,
-                        padding: '0.15rem 0.45rem',
-                        borderRadius: '0.3rem',
-                        background: 'rgba(108,99,255,0.15)',
-                        color: '#8B83FF',
-                        border: '1px solid rgba(108,99,255,0.3)',
-                        textDecoration: 'none',
-                      }}
-                    >
-                      {issue.resolved_version}
-                    </a>
-                  )}
-                </div>
+          {/* Create form (collapsible) */}
+          {showCreateForm && (
+            <CreateIssueForm
+              onCreated={() => {
+                setShowCreateForm(false);
+                fetchIssues();
+              }}
+              onCancel={() => setShowCreateForm(false)}
+            />
+          )}
 
-                {issue.description && (
-                  <p style={{ color: '#9090B0', fontSize: '0.825rem', margin: '0 0 0.4rem', lineHeight: 1.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {issue.description.slice(0, 100)}{issue.description.length > 100 ? '…' : ''}
-                  </p>
-                )}
+          {/* Filter bar */}
+          <div
+            style={{
+              background: 'rgba(18,18,42,0.7)',
+              backdropFilter: 'blur(12px)',
+              border: '1px solid #2A2A4A',
+              borderRadius: '0.75rem',
+              padding: '0.75rem 1rem',
+              marginBottom: '0.75rem',
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '0.5rem',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
+            {/* Status tabs */}
+            <div style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
+              {statusTabs.map(tab => (
+                <button
+                  key={tab.key}
+                  onClick={() => setStatusFilter(tab.key)}
+                  style={{
+                    padding: '0.375rem 0.875rem',
+                    borderRadius: '0.5rem',
+                    border: 'none',
+                    background: statusFilter === tab.key ? 'rgba(108,99,255,0.2)' : 'transparent',
+                    color: statusFilter === tab.key ? '#8B83FF' : '#9090B0',
+                    fontSize: '0.85rem',
+                    fontWeight: statusFilter === tab.key ? 600 : 400,
+                    cursor: 'pointer',
+                    transition: 'all 0.15s',
+                  }}
+                  onMouseEnter={e => { if (statusFilter !== tab.key) e.currentTarget.style.color = '#F0F0FF'; }}
+                  onMouseLeave={e => { if (statusFilter !== tab.key) e.currentTarget.style.color = '#9090B0'; }}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
 
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', fontSize: '0.75rem', color: '#606080', alignItems: 'center' }}>
-                  <span>{issue.author}{issue.author_tag && <span> · {issue.author_tag}</span>}</span>
-                  <span>{timeAgo(issue.created_at)}</span>
-                </div>
-              </div>
+            {/* Category filter */}
+            <select
+              value={categoryFilter}
+              onChange={e => setCategoryFilter(e.target.value as IssueCategory | 'all')}
+              onFocus={handleFocusIn}
+              onBlur={handleFocusOut}
+              style={{
+                background: 'rgba(10,10,26,0.6)',
+                border: '1px solid #2A2A4A',
+                borderRadius: '0.5rem',
+                padding: '0.375rem 0.75rem',
+                color: '#9090B0',
+                fontSize: '0.85rem',
+                cursor: 'pointer',
+                outline: 'none',
+              }}
+            >
+              <option value="all" style={{ background: '#12122A' }}>所有類別</option>
+              <option value="bug" style={{ background: '#12122A' }}>🐛 Bug</option>
+              <option value="feature" style={{ background: '#12122A' }}>✨ 功能</option>
+              <option value="improvement" style={{ background: '#12122A' }}>🔧 改善</option>
+              <option value="question" style={{ background: '#12122A' }}>❓ 問題</option>
+            </select>
+          </div>
 
-              {/* Comment count */}
-              {issue.comments_count > 0 && (
+          {/* Issue list */}
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: '4rem', color: '#9090B0' }}>
+              載入中…
+            </div>
+          ) : issues.length === 0 ? (
+            <div
+              style={{
+                textAlign: 'center',
+                padding: '4rem 2rem',
+                background: 'rgba(18,18,42,0.5)',
+                border: '1px solid #2A2A4A',
+                borderRadius: '1rem',
+                color: '#606080',
+              }}
+            >
+              <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>📭</div>
+              <p style={{ fontSize: '0.95rem' }}>目前沒有符合條件的 Issues</p>
+            </div>
+          ) : (
+            <div
+              style={{
+                border: '1px solid #2A2A4A',
+                borderRadius: '0.75rem',
+                overflow: 'hidden',
+              }}
+            >
+              {issues.map((issue, idx) => (
                 <div
+                  key={issue.id}
+                  onClick={() => setSelectedIssueId(issue.id)}
                   style={{
                     display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.3rem',
-                    color: '#606080',
-                    fontSize: '0.8rem',
-                    flexShrink: 0,
-                    marginTop: '0.15rem',
+                    alignItems: 'flex-start',
+                    gap: '0.875rem',
+                    padding: '1rem 1.25rem',
+                    background: 'rgba(18,18,42,0.6)',
+                    borderBottom: idx < issues.length - 1 ? '1px solid #2A2A4A' : 'none',
+                    cursor: 'pointer',
+                    transition: 'background 0.15s',
                   }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(26,26,62,0.8)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'rgba(18,18,42,0.6)')}
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                  </svg>
-                  {issue.comments_count}
+                  {/* Status dot */}
+                  <div style={{ marginTop: '0.35rem', flexShrink: 0 }}>
+                    <StatusDot status={issue.status} />
+                  </div>
+
+                  {/* Main content */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.4rem', marginBottom: '0.3rem' }}>
+                      <span style={{ color: '#F0F0FF', fontWeight: 600, fontSize: '0.95rem', lineHeight: 1.4 }}>
+                        {issue.title}
+                      </span>
+                      <CategoryBadge category={issue.category} />
+                      <PriorityBadge priority={issue.priority} />
+                      {issue.resolved_version && (
+                        <a
+                          href="/changelog"
+                          onClick={e => e.stopPropagation()}
+                          style={{
+                            fontSize: '0.7rem',
+                            fontWeight: 700,
+                            padding: '0.15rem 0.45rem',
+                            borderRadius: '0.3rem',
+                            background: 'rgba(108,99,255,0.15)',
+                            color: '#8B83FF',
+                            border: '1px solid rgba(108,99,255,0.3)',
+                            textDecoration: 'none',
+                          }}
+                        >
+                          {issue.resolved_version}
+                        </a>
+                      )}
+                    </div>
+
+                    {issue.description && (
+                      <p style={{ color: '#9090B0', fontSize: '0.825rem', margin: '0 0 0.4rem', lineHeight: 1.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {issue.description.slice(0, 100)}{issue.description.length > 100 ? '…' : ''}
+                      </p>
+                    )}
+
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', fontSize: '0.75rem', color: '#606080', alignItems: 'center' }}>
+                      <span>{issue.author}{issue.author_tag && <span> · {issue.author_tag}</span>}</span>
+                      <span>{timeAgo(issue.created_at)}</span>
+                    </div>
+                  </div>
+
+                  {/* Comment count */}
+                  {issue.comments_count > 0 && (
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.3rem',
+                        color: '#606080',
+                        fontSize: '0.8rem',
+                        flexShrink: 0,
+                        marginTop: '0.15rem',
+                      }}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                      </svg>
+                      {issue.comments_count}
+                    </div>
+                  )}
                 </div>
-              )}
+              ))}
             </div>
-          ))}
-        </div>
+          )}
+        </>
       )}
     </div>
   );

@@ -12,14 +12,39 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       authToken: context.env.TURSO_AUTH_TOKEN,
     });
 
+    // --- Core tables ---
     await db.batch([
       {
         sql: `CREATE TABLE IF NOT EXISTS users (
           id TEXT PRIMARY KEY,
+          email TEXT NOT NULL DEFAULT '',
           name TEXT NOT NULL,
+          avatar_url TEXT DEFAULT '',
           discord_id TEXT,
           preferences TEXT DEFAULT '{}',
-          created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+          created_at TEXT DEFAULT (datetime('now')),
+          updated_at TEXT DEFAULT (datetime('now')),
+          UNIQUE(email)
+        )`,
+        args: [],
+      },
+      {
+        sql: `CREATE TABLE IF NOT EXISTS user_roles (
+          id TEXT PRIMARY KEY,
+          user_id TEXT NOT NULL REFERENCES users(id),
+          role TEXT NOT NULL CHECK(role IN ('captain', 'tech', 'admin', 'member', 'companion')),
+          assigned_at TEXT DEFAULT (datetime('now')),
+          UNIQUE(user_id, role)
+        )`,
+        args: [],
+      },
+      {
+        sql: `CREATE TABLE IF NOT EXISTS sessions (
+          id TEXT PRIMARY KEY,
+          user_id TEXT NOT NULL REFERENCES users(id),
+          token TEXT NOT NULL UNIQUE,
+          expires_at TEXT NOT NULL,
+          created_at TEXT DEFAULT (datetime('now'))
         )`,
         args: [],
       },
@@ -77,24 +102,141 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         )`,
         args: [],
       },
+      {
+        sql: `CREATE TABLE IF NOT EXISTS checkins (
+          id TEXT PRIMARY KEY,
+          user_id TEXT NOT NULL REFERENCES users(id),
+          checkin_date TEXT NOT NULL,
+          note TEXT DEFAULT '',
+          points INTEGER DEFAULT 10,
+          created_at TEXT DEFAULT (datetime('now')),
+          UNIQUE(user_id, checkin_date)
+        )`,
+        args: [],
+      },
+      {
+        sql: `CREATE TABLE IF NOT EXISTS tags (
+          id TEXT PRIMARY KEY,
+          name TEXT NOT NULL,
+          category TEXT DEFAULT 'both' CHECK(category IN ('knowledge', 'ai-tools', 'both')),
+          color TEXT DEFAULT '#6C63FF',
+          created_at TEXT DEFAULT (datetime('now'))
+        )`,
+        args: [],
+      },
+      {
+        sql: `CREATE TABLE IF NOT EXISTS resource_tags (
+          id TEXT PRIMARY KEY,
+          resource_id TEXT NOT NULL,
+          resource_type TEXT NOT NULL CHECK(resource_type IN ('knowledge', 'ai-tool', 'wish')),
+          tag_id TEXT NOT NULL REFERENCES tags(id),
+          UNIQUE(resource_id, resource_type, tag_id)
+        )`,
+        args: [],
+      },
+      {
+        sql: `CREATE TABLE IF NOT EXISTS knowledge_entries (
+          id TEXT PRIMARY KEY,
+          title TEXT NOT NULL,
+          content TEXT NOT NULL,
+          category TEXT DEFAULT 'template' CHECK(category IN ('template', 'best-practice', 'qa', 'other')),
+          icon TEXT DEFAULT '📘',
+          contributor_id TEXT NOT NULL REFERENCES users(id),
+          upvotes INTEGER DEFAULT 0,
+          created_at TEXT DEFAULT (datetime('now')),
+          updated_at TEXT DEFAULT (datetime('now'))
+        )`,
+        args: [],
+      },
+      {
+        sql: `CREATE TABLE IF NOT EXISTS wishes (
+          id TEXT PRIMARY KEY,
+          title TEXT NOT NULL,
+          description TEXT NOT NULL,
+          category TEXT DEFAULT 'personal' CHECK(category IN ('personal', 'site')),
+          status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'claimed', 'in-progress', 'completed')),
+          wisher_id TEXT NOT NULL REFERENCES users(id),
+          claimer_id TEXT REFERENCES users(id),
+          icon TEXT DEFAULT '✨',
+          points INTEGER DEFAULT 10,
+          created_at TEXT DEFAULT (datetime('now')),
+          updated_at TEXT DEFAULT (datetime('now'))
+        )`,
+        args: [],
+      },
+      {
+        sql: `CREATE TABLE IF NOT EXISTS discussion_likes (
+          id TEXT PRIMARY KEY,
+          message_id INTEGER NOT NULL,
+          user_id TEXT NOT NULL REFERENCES users(id),
+          created_at TEXT DEFAULT (datetime('now')),
+          UNIQUE(message_id, user_id)
+        )`,
+        args: [],
+      },
     ]);
 
-    // Seed members
-    const members = [
-      ['cyclone', 'Cyclone', '#2707'],
-      ['benben', 'βenben', '#0010'],
-      ['dar', 'Dar', '#3808'],
-      ['benson', 'Benson', '#2808'],
-      ['tiffanyhou', 'Tiffanyhou', '#2623'],
-      ['morning', '早安', '#1329'],
+    // --- Seed members (from constants) ---
+    // Each entry: [id, name, groupRole, tag]
+    const members: [string, string, string, string][] = [
+      // 隊長
+      ['cyclone', 'Cyclone', 'captain', '#2707'],
+      // 技術維護
+      ['dar', 'Dar', 'tech', '#3808'],
+      ['benben', 'Benben', 'tech', ''],
+      // 行政協作
+      ['tiffanyhou', 'Tiffanyhou', 'admin', '#2623'],
+      ['sandy', '珊迪', 'admin', ''],
+      // 正式隊員
+      ['benson', 'Benson', 'companion', ''],
+      ['chijie', '志傑', 'member', ''],
+      ['cake', '蛋糕', 'member', ''],
+      ['winnie', '維尼熊', 'member', ''],
+      ['lucy', 'Lucy', 'member', ''],
+      ['myra', 'Myra', 'member', '#2716'],
+      // 陪跑員
+      ['vision', 'Vision', 'companion', ''],
+      ['yawen', '雅雯', 'companion', ''],
+      ['annie', '安妮想要飛', 'companion', ''],
+      ['innoblue', 'innoblue', 'companion', ''],
+      ['twentysix', '26', 'companion', ''],
+      ['qiying', '琪穎', 'companion', ''],
+      ['ck', 'CK', 'companion', ''],
+      ['shunzi', '舜子', 'companion', ''],
+      ['ding', 'Ding', 'companion', ''],
+      ['lucia', 'Lucia', 'companion', ''],
+      ['panda', '熊貓', 'companion', ''],
+      ['rupert', 'Rupert', 'companion', ''],
+      ['mengxuan', '孟璇', 'companion', ''],
+      ['beast', 'Beast', 'companion', ''],
+      ['maggie', 'Maggie', 'companion', '#0696'],
+      ['rycen', 'Rycen', 'companion', ''],
+      ['muye', '牧野悠', 'companion', ''],
+      ['jerry', 'Jerry', 'companion', ''],
     ];
 
-    for (const [id, name, discord_id] of members) {
+    // Seed users
+    for (const [id, name, _role, tag] of members) {
       await db.execute({
-        sql: `INSERT OR IGNORE INTO users (id, name, discord_id) VALUES (?, ?, ?)`,
-        args: [id, name, discord_id],
+        sql: `INSERT OR IGNORE INTO users (id, email, name, avatar_url, discord_id) VALUES (?, '', ?, '', ?)`,
+        args: [id, name, tag],
       });
     }
+
+    // Seed roles
+    for (const [id, _name, role, _tag] of members) {
+      const roleId = `${id}_${role}`;
+      await db.execute({
+        sql: `INSERT OR IGNORE INTO user_roles (id, user_id, role) VALUES (?, ?, ?)`,
+        args: [roleId, id, role],
+      });
+    }
+
+    // Seed captain with known email
+    await db.execute({
+      sql: `UPDATE users SET email = ? WHERE id = 'cyclone' AND email = ''`,
+      args: ['cyclone.tw@gmail.com'],
+    });
 
     return new Response(JSON.stringify({ ok: true, message: 'Schema initialized and members seeded' }), {
       headers: { 'Content-Type': 'application/json' },

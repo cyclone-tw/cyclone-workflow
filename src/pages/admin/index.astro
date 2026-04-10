@@ -1,0 +1,10 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import AdminPanel from '@/components/admin/AdminPanel';
+---
+
+<Layout title="管理後台" description="管理員專用後台">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <AdminPanel client:load />
+  </div>
+</Layout>

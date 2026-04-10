@@ -1,0 +1,17 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import LeaderboardBoard from '@/components/leaderboard/LeaderboardBoard';
+---
+<Layout title="積分榜" description="共學團打卡積分排行榜">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <!-- Header -->
+    <div class="text-center mb-10">
+      <h1 class="text-4xl sm:text-5xl font-bold mb-3">
+        <span class="text-3xl sm:text-4xl mr-2">🏆</span>
+        <span class="gradient-text">積分榜</span>
+      </h1>
+      <p class="text-[var(--color-text-secondary)] text-lg">持續參與，累積積分，一起進步</p>
+    </div>
+    <LeaderboardBoard client:load />
+  </div>
+</Layout>

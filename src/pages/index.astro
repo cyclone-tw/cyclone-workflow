@@ -8,7 +8,6 @@ const features = [
     title: 'AI 工作流設計',
     desc: '從日常重複任務中識別自動化機會，系統性建立屬於你的 AI 工作流架構。',
     color: '#6C63FF',
-    glow: 'glow-primary',
     image: '/images/feature-workflow.png',
   },
   {
@@ -16,7 +15,6 @@ const features = [
     title: '語音輸入系統',
     desc: '邊說邊記，結合 Web Speech API 與 Whisper，讓靈感不再因打字速度而流失。',
     color: '#00D9FF',
-    glow: 'glow-neon',
     image: '/images/feature-voice.png',
   },
   {
@@ -24,7 +22,6 @@ const features = [
     title: 'Agent Memory',
     desc: '打造個人化 AI 記憶系統，讓助理記住你的偏好、習慣與專案脈絡。',
     color: '#00F5A0',
-    glow: 'glow-neon',
     image: '/images/feature-memory.png',
   },
   {
@@ -32,13 +29,14 @@ const features = [
     title: '許願樹',
     desc: '互助機制，交換 Project，用別人的視角打磨你的 AI 工作流。',
     color: '#E94560',
-    glow: 'glow-accent',
     image: '/images/feature-wishtree.png',
   },
 ];
+
+const memberCount = MEMBERS.length;
 ---
 
-<Layout title="首頁" description="四週 AI 工作流共學計畫 — Cyclone 隊長 × 生活黑客共學團">
+<Layout title="首頁" description="把 AI 真的用起來 — 三週共學計畫 — Cyclone 隊長 × 生活黑客共學團">
   <!-- Hero Section -->
   <section class="relative min-h-screen flex items-center justify-center overflow-hidden">
     <!-- Hero background image -->
@@ -56,22 +54,22 @@ const features = [
       <!-- Badge -->
       <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[var(--color-primary)]/40 bg-[var(--color-primary)]/10 text-sm text-[var(--color-primary-light)] mb-8 animate-fade-in">
         <span class="w-2 h-2 rounded-full bg-[var(--color-neon-green)] animate-pulse"></span>
-        2026 Q2 四週共學計畫 · 現正進行中
+        2026 Q2 三週共學計畫 · 4/13 啟動
       </div>
 
       <!-- Main heading -->
       <h1 class="text-5xl sm:text-6xl lg:text-7xl font-extrabold leading-tight mb-6 animate-slide-up">
-        <span class="gradient-text">打造你的</span><br />
-        <span class="gradient-text">AI 工作流</span>
+        <span class="gradient-text">把 AI 真的</span><br />
+        <span class="gradient-text">用起來</span>
       </h1>
 
       <!-- Subtitle -->
       <p class="text-lg sm:text-xl text-[var(--color-text-secondary)] max-w-2xl mx-auto mb-4 animate-slide-up animation-delay-100">
-        Cyclone 隊長 × 生活黑客共學團 — 四週內系統性學習 AI 自動化工具，
-        從零建立屬於自己的高效工作流。
+        Cyclone 隊長 × 生活黑客共學團 — 三週內從盤點需求到做出雛形，
+        真正把 AI 整合進你的工作流。
       </p>
       <p class="text-base text-[var(--color-text-muted)] mb-10 animate-slide-up animation-delay-200">
-        6 位成員 · 4 週計畫 · 實戰專案交換
+        {memberCount} 位成員 · 三週共學 · 實戰專案
       </p>
 
       <!-- CTA Buttons -->
@@ -103,6 +101,141 @@ const features = [
     </div>
   </section>
 
+  <!-- Announcement Section -->
+  <section class="relative py-16 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-5xl mx-auto">
+      <div class="flex items-center gap-3 mb-8">
+        <h2 class="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)]">
+          📢 最新公告
+        </h2>
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[var(--color-neon-green)]/10 text-[var(--color-neon-green)] border border-[var(--color-neon-green)]/30">
+          <span class="w-1.5 h-1.5 rounded-full bg-[var(--color-neon-green)] animate-pulse inline-block"></span>
+          NEW
+        </span>
+      </div>
+
+      <div class="space-y-4">
+        <!-- Latest announcement -->
+        <div class="glass rounded-2xl p-6 border-l-4 border-[var(--color-primary)]">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-xs text-[var(--color-text-muted)]">2026-04-10</span>
+            <span class="px-2 py-0.5 rounded text-xs font-semibold bg-[var(--color-primary)]/20 text-[var(--color-primary-light)]">重要</span>
+          </div>
+          <h3 class="text-lg font-bold text-[var(--color-text-primary)] mb-2">
+            共學團網站上線！
+          </h3>
+          <p class="text-[var(--color-text-secondary)] text-sm leading-relaxed">
+            歡迎所有成員！網站已正式上線，請先熟悉各頁面功能。4/13（一）為 W1 啟動日，
+            屆時會在啟動會議中對齊學習方向與目標。有任何問題歡迎在討論區提出！
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Timeline Section -->
+  <section class="relative py-24 px-4 sm:px-6 lg:px-8 overflow-hidden">
+    <!-- Background accent -->
+    <div class="absolute inset-0" style="background: radial-gradient(ellipse 60% 50% at 50% 50%, color-mix(in srgb, var(--color-neon-blue) 8%, transparent), transparent);"></div>
+
+    <div class="relative max-w-5xl mx-auto">
+      <!-- Section header -->
+      <div class="text-center mb-16">
+        <p class="text-sm font-semibold text-[var(--color-neon-blue)] tracking-widest uppercase mb-3">學習路線</p>
+        <h2 class="text-3xl sm:text-4xl font-bold text-[var(--color-text-primary)] mb-4">
+          三週共學時程
+        </h2>
+        <p class="text-[var(--color-text-secondary)] max-w-xl mx-auto">
+          標語：「<span class="text-[var(--color-primary-light)] font-semibold">把 AI 真的用起來</span>」
+          — 從盤點到實作，三週完成你的 AI 工作流。
+        </p>
+      </div>
+
+      <!-- Timeline -->
+      <div class="relative">
+        <!-- Central line (desktop) -->
+        <div class="hidden lg:block absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-[var(--color-border)] to-transparent -translate-x-1/2"></div>
+
+        <div class="space-y-8 lg:space-y-0">
+          {WEEKS.map((week, i) => {
+            const isLeft = i % 2 === 0;
+            const weekColors = [
+              'var(--color-text-muted)',
+              'var(--color-primary)',
+              'var(--color-neon-green)',
+              'var(--color-accent)',
+            ];
+            const weekColor = weekColors[i] ?? 'var(--color-primary)';
+            const isPrep = week.num === 0;
+            return (
+              <div class={`relative lg:flex lg:items-center lg:gap-8 ${isLeft ? 'lg:flex-row' : 'lg:flex-row-reverse'} ${isPrep ? 'lg:mb-8' : 'lg:mb-12'}`}>
+                <!-- Content card -->
+                <div class="lg:w-5/12 card-hover">
+                  <div
+                    class={`group relative rounded-2xl border bg-[var(--color-bg-card)] p-6 overflow-hidden ${isPrep ? 'opacity-70' : ''}`}
+                    style={`border-color: color-mix(in srgb, ${weekColor} 30%, transparent);`}
+                  >
+                    <!-- Glow -->
+                    <div
+                      class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl"
+                      style={`background: radial-gradient(circle at ${isLeft ? '100%' : '0%'} 50%, color-mix(in srgb, ${weekColor} 10%, transparent), transparent 60%);`}
+                    ></div>
+
+                    <div class="relative z-10">
+                      <!-- Week badge + date -->
+                      <div class="flex items-center justify-between mb-3">
+                        <span
+                          class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold"
+                          style={`background: color-mix(in srgb, ${weekColor} 20%, transparent); color: ${weekColor}; border: 1px solid color-mix(in srgb, ${weekColor} 40%, transparent);`}
+                        >
+                          {isPrep ? '預備' : `第 ${week.num} 週`}
+                        </span>
+                        <span class="text-xs text-[var(--color-text-muted)]">
+                          {week.start.slice(5).replace('-', '/')} ~ {week.end.slice(5).replace('-', '/')}
+                        </span>
+                      </div>
+                      <!-- Title -->
+                      <h3
+                        class="text-xl font-extrabold mb-1"
+                        style={`color: ${weekColor};`}
+                      >
+                        {week.title}
+                      </h3>
+                      <!-- Subtitle -->
+                      <p class="text-sm text-[var(--color-text-secondary)] mb-3">{week.subtitle}</p>
+                      <!-- Goals -->
+                      {week.goals.length > 0 && (
+                        <ul class="space-y-1.5">
+                          {week.goals.map((goal) => (
+                            <li class="flex items-start gap-2 text-xs text-[var(--color-text-muted)]">
+                              <span class="mt-0.5 text-[var(--color-neon-green)]">✓</span>
+                              {goal}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Center dot (desktop) -->
+                <div class="hidden lg:flex lg:w-2/12 justify-center items-center">
+                  <div
+                    class={`rounded-full border-2 z-10 shadow-lg ${isPrep ? 'w-4 h-4' : 'w-5 h-5'}`}
+                    style={`background: ${weekColor}; border-color: var(--color-bg-dark); --glow-color: ${weekColor};`}
+                  ></div>
+                </div>
+
+                <!-- Spacer (other side) -->
+                <div class="hidden lg:block lg:w-5/12"></div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- Feature Cards Section -->
   <section class="relative py-24 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto">
@@ -124,7 +257,7 @@ const features = [
             class="card-hover group relative rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-card)] p-6 overflow-hidden cursor-default"
             style={`animation-delay: ${i * 80}ms`}
           >
-            <!-- Card glow on hover (using pseudo-element via inline style) -->
+            <!-- Card glow on hover -->
             <div
               class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl"
               style={`background: radial-gradient(circle at 50% 0%, ${f.color}18, transparent 70%);`}
@@ -158,96 +291,6 @@ const features = [
     </div>
   </section>
 
-  <!-- Timeline Section -->
-  <section class="relative py-24 px-4 sm:px-6 lg:px-8 overflow-hidden">
-    <!-- Background accent -->
-    <div class="absolute inset-0" style="background: radial-gradient(ellipse 60% 50% at 50% 50%, color-mix(in srgb, var(--color-neon-blue) 8%, transparent), transparent);"></div>
-
-    <div class="relative max-w-5xl mx-auto">
-      <!-- Section header -->
-      <div class="text-center mb-16">
-        <p class="text-sm font-semibold text-[var(--color-neon-blue)] tracking-widest uppercase mb-3">學習路線</p>
-        <h2 class="text-3xl sm:text-4xl font-bold text-[var(--color-text-primary)] mb-4">
-          四週計畫時程
-        </h2>
-        <p class="text-[var(--color-text-secondary)] max-w-xl mx-auto">
-          系統性的學習路徑，每週一個里程碑，四週後完成你的 AI 工作流。
-        </p>
-      </div>
-
-      <!-- Timeline -->
-      <div class="relative">
-        <!-- Central line (desktop) -->
-        <div class="hidden lg:block absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-[var(--color-border)] to-transparent -translate-x-1/2"></div>
-
-        <div class="space-y-8 lg:space-y-0">
-          {WEEKS.map((week, i) => {
-            const isLeft = i % 2 === 0;
-            const weekColors = [
-              'var(--color-primary)',
-              'var(--color-neon-blue)',
-              'var(--color-neon-green)',
-              'var(--color-accent)',
-            ];
-            const weekColor = weekColors[i] ?? 'var(--color-primary)';
-            const startDate = new Date(week.start);
-            const dateStr = `${startDate.getMonth() + 1}/${startDate.getDate()}`;
-            return (
-              <div class={`relative lg:flex lg:items-center lg:gap-8 ${isLeft ? 'lg:flex-row' : 'lg:flex-row-reverse'} lg:mb-12`}>
-                <!-- Content card -->
-                <div class="lg:w-5/12 card-hover">
-                  <div
-                    class="group relative rounded-2xl border bg-[var(--color-bg-card)] p-6 overflow-hidden"
-                    style={`border-color: color-mix(in srgb, ${weekColor} 30%, transparent);`}
-                  >
-                    <!-- Glow -->
-                    <div
-                      class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl"
-                      style={`background: radial-gradient(circle at ${isLeft ? '100%' : '0%'} 50%, color-mix(in srgb, ${weekColor} 10%, transparent), transparent 60%);`}
-                    ></div>
-
-                    <div class="relative z-10">
-                      <!-- Week badge + date -->
-                      <div class="flex items-center justify-between mb-3">
-                        <span
-                          class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold"
-                          style={`background: color-mix(in srgb, ${weekColor} 20%, transparent); color: ${weekColor}; border: 1px solid color-mix(in srgb, ${weekColor} 40%, transparent);`}
-                        >
-                          第 {week.num} 週
-                        </span>
-                        <span class="text-xs text-[var(--color-text-muted)]">{dateStr} 起</span>
-                      </div>
-                      <!-- Title -->
-                      <h3
-                        class="text-xl font-extrabold mb-1"
-                        style={`color: ${weekColor};`}
-                      >
-                        {week.title}
-                      </h3>
-                      <!-- Subtitle -->
-                      <p class="text-sm text-[var(--color-text-secondary)]">{week.subtitle}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Center dot (desktop) -->
-                <div class="hidden lg:flex lg:w-2/12 justify-center items-center">
-                  <div
-                    class="w-5 h-5 rounded-full border-2 z-10 shadow-lg"
-                    style={`background: ${weekColor}; border-color: var(--color-bg-dark); --glow-color: ${weekColor};`}
-                  ></div>
-                </div>
-
-                <!-- Spacer (other side) -->
-                <div class="hidden lg:block lg:w-5/12"></div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  </section>
-
   <!-- Team Preview Section -->
   <section class="relative py-24 px-4 sm:px-6 lg:px-8">
     <div class="max-w-5xl mx-auto">
@@ -258,36 +301,43 @@ const features = [
           認識共學夥伴
         </h2>
         <p class="text-[var(--color-text-secondary)] max-w-xl mx-auto">
-          來自不同背景的六位夥伴，一起探索 AI 工作流的無限可能。
+          來自不同背景的 {memberCount} 位夥伴，一起探索 AI 工作流的無限可能。
         </p>
       </div>
 
-      <!-- Members grid -->
-      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-10">
-        {MEMBERS.map((member) => (
+      <!-- Members preview grid (show first 12 + "more") -->
+      <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3 mb-10">
+        {MEMBERS.slice(0, 12).map((member) => (
           <a
             href="/team"
-            class="card-hover group flex flex-col items-center gap-3 p-5 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-card)] hover:border-[var(--color-primary)]/40 transition-all duration-200"
+            class="card-hover group flex flex-col items-center gap-2 p-4 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-card)] hover:border-[var(--color-primary)]/40 transition-all duration-200"
           >
             <!-- Avatar circle -->
             <div
-              class="w-14 h-14 rounded-full flex items-center justify-center text-2xl transition-transform duration-200 group-hover:scale-110"
-              style={`background: ${member.color}20; border: 2px solid ${member.color}40; box-shadow: 0 0 0 0 ${member.color}00;`}
-              onmouseover={`this.style.boxShadow='0 0 16px ${member.color}60'`}
-              onmouseout={`this.style.boxShadow='0 0 0 0 ${member.color}00'`}
+              class="w-12 h-12 rounded-full flex items-center justify-center text-2xl transition-transform duration-200 group-hover:scale-110"
+              style={`background: ${member.color}20; border: 2px solid ${member.color}40;`}
             >
               {member.avatar}
             </div>
             <!-- Name -->
             <div class="text-center">
-              <p class="text-sm font-semibold text-[var(--color-text-primary)] group-hover:text-[var(--color-text-emphasis)] transition-colors leading-tight">
+              <p class="text-xs font-semibold text-[var(--color-text-primary)] group-hover:text-[var(--color-text-emphasis)] transition-colors leading-tight truncate max-w-[80px]">
                 {member.name}
               </p>
-              <p class="text-xs text-[var(--color-text-muted)] mt-0.5">{member.role}</p>
+              <p class="text-[10px] text-[var(--color-text-muted)] mt-0.5">{member.role}</p>
             </div>
           </a>
         ))}
       </div>
+
+      <!-- More members indicator -->
+      {MEMBERS.length > 12 && (
+        <div class="text-center mb-6">
+          <span class="text-sm text-[var(--color-text-muted)]">
+            還有另外 {MEMBERS.length - 12} 位夥伴...
+          </span>
+        </div>
+      )}
 
       <!-- CTA -->
       <div class="text-center">
@@ -316,7 +366,7 @@ const features = [
         <div class="relative z-10">
           <div class="text-4xl mb-4">🌀</div>
           <h2 class="text-2xl sm:text-3xl font-extrabold text-[var(--color-text-primary)] mb-4">
-            準備好打造你的 AI 工作流了嗎？
+            準備好把 AI 用起來了嗎？
           </h2>
           <p class="text-[var(--color-text-secondary)] mb-8 max-w-lg mx-auto">
             前往儀表板查看本週任務、進度追蹤，以及共學成員的最新動態。

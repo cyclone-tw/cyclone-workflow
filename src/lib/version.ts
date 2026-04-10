@@ -1,4 +1,4 @@
-export const VERSION = 'v20260409.1544';
+export const VERSION = 'v20260411.0100';
 
 export interface ChangelogEntry {
   version: string;
@@ -7,6 +7,54 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: 'v20260411.1',
+    date: '2026-04-11 01:00',
+    changes: [
+      'feat: Issue #17 Phase 4 — GitHub Issues 整合（雙分頁：本地 + GitHub）',
+      'feat: GitHub Issues 代理 API（/api/github/issues，可選 GITHUB_TOKEN 提高限額）',
+      'feat: IssueBoard 雙分頁 UI — 本地 Issues / GitHub Issues 切換',
+      'feat: Cyclone 管家 Persona 大幅強化（代號帽、核心使命、6 項能力、網站功能指引）',
+      'feat: 管家 Persona 同步機制 — context.waitUntil() 背景更新 Letta agent',
+      'feat: 管家頁面副標更新為「幫你把 AI 真的用起來」',
+    ],
+  },
+  {
+    version: 'v20260410.3',
+    date: '2026-04-10 21:20',
+    changes: [
+      'feat: Issue #17 Phase 2-3 — 知識庫 CRUD（API + KnowledgeBoard React island）',
+      'feat: 許願樹改版 — WishBoard React island（許願/認領/實作/完成狀態流）',
+      'feat: 儀表板個人化 — DashboardPanel（登入提示/統計/快速打卡）',
+      'feat: 積分榜頁面 — LeaderboardBoard（前三名頒獎台 + 排行表）',
+      'feat: 管理後台 — AdminPanel（站點統計/角色管理/搜尋篩選）',
+      'feat: 討論區按讚 — MessageBoard 心形按讚 toggle（樂觀更新 + rollback）',
+      'feat: API 新增 wishes/:id PATCH/DELETE、knowledge/:id PATCH/DELETE、admin/stats、admin/roles、messages/likes',
+    ],
+  },
+  {
+    version: 'v20260410.2',
+    date: '2026-04-10 19:10',
+    changes: [
+      'feat: Issue #17 Phase 1 — Google OAuth 登入系統（login/callback/logout/me）',
+      'feat: 角色權限 Middleware（RBAC：captain > tech > admin > member > companion）',
+      'feat: 前端 Auth UI — useAuth hook + LoginButton（Google 登入按鈕 + 用戶下拉選單）',
+      'feat: 每日打卡系統 — POST/GET /api/checkin + Streak 連續天數計算',
+      'feat: 打卡統計 API（/api/checkin/stats）+ 公開排行榜（/api/checkin/leaderboard）',
+      'feat: DB 新增 checkins 表（UNIQUE 約束防止重複打卡）',
+    ],
+  },
+  {
+    version: 'v20260410.1',
+    date: '2026-04-10 10:00',
+    changes: [
+      'feat: Issue #17 Phase 0 — 導覽列重新排序（說明提前、移除 QA/兌換區）',
+      'feat: 首頁改版 — 新標語「把 AI 真的用起來」+ 公告區 + 三週時程',
+      'feat: 團隊頁改版 — 29 位成員依角色分組（隊長/技術/行政/隊員/陪跑）',
+      'feat: 移除交換機制與成果展示區塊，團隊頁回歸純成員列表',
+      'feat: 導覽列新增 AI 工具箱提前、管家圖示改為 🎩',
+    ],
+  },
   {
     version: 'v20260409.2',
     date: '2026-04-09 18:20',

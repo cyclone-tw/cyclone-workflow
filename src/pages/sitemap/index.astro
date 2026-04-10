@@ -4,27 +4,26 @@ import { VERSION } from '@/lib/version';
 
 const mermaidDiagram = `flowchart TD
     HOME["🏠 首頁 /"]
+    HOME --> README["📖 使用說明 /readme"]
     HOME --> DASH["📊 儀表板 /dashboard"]
     HOME --> TEAM["👥 團隊 /team"]
     HOME --> KNOW["📚 知識庫 /knowledge"]
-    HOME --> QA["❓ QA 知識集 /qa"]
-    HOME --> AGENT["🏠 Cyclone 管家 /agent"]
+    HOME --> AITOOLS["🤖 AI 工具箱 /ai-tools"]
+    HOME --> AGENT["🎩 Cyclone 管家 /agent"]
     HOME --> WISH["🌳 許願樹 /wishlist"]
     HOME --> DISCUSS["💬 討論區 /discuss"]
     HOME --> ISSUE["📋 Issues /issue"]
-    HOME --> README["📖 使用說明 /readme"]
     HOME --> BUG["🐛 Bug 回報 /bug"]
-    HOME --> EXCHANGE["🏪 兌換區 /exchange"]
     HOME --> LOG["📋 Changelog /changelog"]
     HOME --> MAP["🗺️ Sitemap /sitemap"]
     AGENT --- LETTA[("🧠 Letta Memory")]
-    DISCUSS --- DB[("💾 Turso DB")]
+    AITOOLS --- DB[("💾 Turso DB")]
+    DISCUSS --- DB
     ISSUE --- DB
-    QA --- CRYPTO["🔒 Web Crypto"]
+    KNOW --- DB
     style HOME fill:var(--color-primary),stroke:var(--color-primary-light),color:#fff
     style LETTA fill:var(--color-bg-dark),stroke:var(--color-neon-green),color:var(--color-neon-green)
-    style DB fill:var(--color-bg-dark),stroke:var(--color-neon-blue),color:var(--color-neon-blue)
-    style CRYPTO fill:var(--color-bg-dark),stroke:var(--color-accent),color:var(--color-accent)`;
+    style DB fill:var(--color-bg-dark),stroke:var(--color-neon-blue),color:var(--color-neon-blue)`;
 ---
 
 <Layout title="Sitemap" description="網站架構總覽">
@@ -52,13 +51,13 @@ const mermaidDiagram = `flowchart TD
         <h3 class="text-sm font-bold text-[var(--color-primary)] mb-3">核心頁面</h3>
         <ul class="space-y-2">
           {[
-            { path: '/', icon: '🏠', name: '首頁', desc: '團隊介紹 + 四週時程' },
+            { path: '/', icon: '🏠', name: '首頁', desc: '公告 + 三週時程' },
             { path: '/dashboard', icon: '📊', name: '儀表板', desc: '個人進度追蹤' },
-            { path: '/team', icon: '👥', name: '團隊', desc: '成員 + Project 交換' },
-            { path: '/knowledge', icon: '📚', name: '知識庫', desc: '模板 + 最佳實踐' },
-            { path: '/agent', icon: '🏠', name: 'Cyclone 管家', desc: 'AI 聊天 + 長期記憶' },
-            { path: '/wishlist', icon: '🌳', name: '許願樹', desc: '互助 + 積分' },
-            { path: '/exchange', icon: '🏪', name: '兌換區', desc: 'Cyclone Coin + 道具寶箱' },
+            { path: '/team', icon: '👥', name: '團隊', desc: '成員介紹（依角色分組）' },
+            { path: '/knowledge', icon: '📚', name: '知識庫', desc: '教學資源 + 投稿' },
+            { path: '/ai-tools', icon: '🤖', name: 'AI 工具箱', desc: '工具卡片 + 開源專案' },
+            { path: '/agent', icon: '🎩', name: 'Cyclone 管家', desc: 'AI 聊天 + 長期記憶' },
+            { path: '/wishlist', icon: '🌳', name: '許願樹', desc: '互助許願 + 認領' },
           ].map(p => (
             <li>
               <a href={p.path} class="flex items-center gap-2 text-sm hover:text-[var(--color-primary)] transition-colors">
