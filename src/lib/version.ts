@@ -1,4 +1,4 @@
-export const VERSION = 'v20260409.1544';
+export const VERSION = 'v20260410.1000';
 
 export interface ChangelogEntry {
   version: string;
@@ -7,6 +7,17 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: 'v20260410.1',
+    date: '2026-04-10 10:00',
+    changes: [
+      'feat: Issue #17 Phase 0 — 導覽列重新排序（說明提前、移除 QA/兌換區）',
+      'feat: 首頁改版 — 新標語「把 AI 真的用起來」+ 公告區 + 三週時程',
+      'feat: 團隊頁改版 — 29 位成員依角色分組（隊長/技術/行政/隊員/陪跑）',
+      'feat: 移除交換機制與成果展示區塊，團隊頁回歸純成員列表',
+      'feat: 導覽列新增 AI 工具箱提前、管家圖示改為 🎩',
+    ],
+  },
   {
     version: 'v20260409.2',
     date: '2026-04-09 18:20',
