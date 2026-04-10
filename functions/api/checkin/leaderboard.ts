@@ -42,22 +42,36 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         })
       : { rows: [] as { user_id: string; day: string }[] };
 
-    // Build per-user streak map
+    // Build per-user streak map (local-date aware)
     const streakMap = new Map<string, number>();
     const userDays = new Map<string, Set<string>>();
     for (const dr of dateResult.rows as { user_id: string; day: string }[]) {
       if (!userDays.has(dr.user_id)) userDays.set(dr.user_id, new Set());
       userDays.get(dr.user_id)!.add(dr.day);
     }
+    function toLocalDate(d: Date): string {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    }
     for (const uid of userIds) {
       const days = userDays.get(uid);
-      if (!days) { streakMap.set(uid, 0); continue; }
+      if (!days || days.size === 0) { streakMap.set(uid, 0); continue; }
+      // Start streak from today or yesterday (grace for not-yet-checked-in-today)
+      const now = new Date();
+      let start = toLocalDate(now);
+      if (!days.has(start)) {
+        const yd = new Date(now);
+        yd.setDate(yd.getDate() - 1);
+        start = toLocalDate(yd);
+        if (!days.has(start)) { streakMap.set(uid, 0); continue; }
+      }
       let streak = 0;
-      const today = new Date();
       for (let i = 0; i < 365; i++) {
-        const d = new Date(today);
+        const d = new Date(now);
         d.setDate(d.getDate() - i);
-        const key = d.toISOString().slice(0, 10);
+        const key = toLocalDate(d);
         if (days.has(key)) { streak++; } else { break; }
       }
       streakMap.set(uid, streak);

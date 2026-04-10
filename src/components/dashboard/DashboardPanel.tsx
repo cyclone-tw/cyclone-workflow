@@ -28,11 +28,12 @@ const ROLE_LABELS: Record<GroupRole, string> = {
 
 function isToday(dateStr: string | null): boolean {
   if (!dateStr) return false;
-  const d = new Date(dateStr);
+  // dateStr is "YYYY-MM-DD" local format — compare directly with today's local date
   const now = new Date();
-  return d.getFullYear() === now.getFullYear()
-    && d.getMonth() === now.getMonth()
-    && d.getDate() === now.getDate();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  return dateStr === `${y}-${m}-${d}`;
 }
 
 export default function DashboardPanel() {
