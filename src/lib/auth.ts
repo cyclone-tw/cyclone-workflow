@@ -1,4 +1,4 @@
-import { createClient, type Client } from '@libsql/client/web';
+import { createClient } from '@libsql/client/web';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -83,38 +83,8 @@ export function getEffectiveRole(roles: string[]): string {
 }
 
 // ---------------------------------------------------------------------------
-// Schema init (sessions + user_roles tables)
-// ---------------------------------------------------------------------------
-
-export async function ensureAuthTables(db: Client): Promise<void> {
-  await db.batch([
-    {
-      sql: `CREATE TABLE IF NOT EXISTS user_roles (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id TEXT NOT NULL,
-        role TEXT NOT NULL,
-        granted_by TEXT,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users(id)
-      )`,
-      args: [],
-    },
-    {
-      sql: `CREATE TABLE IF NOT EXISTS sessions (
-        id TEXT PRIMARY KEY,
-        user_id TEXT NOT NULL,
-        token TEXT NOT NULL UNIQUE,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        expires_at DATETIME NOT NULL,
-        FOREIGN KEY (user_id) REFERENCES users(id)
-      )`,
-      args: [],
-    },
-  ]);
-}
-
-// ---------------------------------------------------------------------------
 // Session helpers
+// Tables are created by /api/db/init — auth functions trust they exist.
 // ---------------------------------------------------------------------------
 
 const SESSION_LIFETIME_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
@@ -124,7 +94,6 @@ export async function createSession(
   userId: string,
 ): Promise<{ token: string; setCookie: string }> {
   const db = getDb(env);
-  await ensureAuthTables(db);
 
   const token = generateSessionToken();
   const id = crypto.randomUUID();
@@ -144,7 +113,6 @@ export async function createSession(
 
 export async function destroySession(env: Env, token: string): Promise<void> {
   const db = getDb(env);
-  await ensureAuthTables(db);
   await db.execute({
     sql: `DELETE FROM sessions WHERE token = ?`,
     args: [token],
@@ -167,7 +135,6 @@ export async function getSessionUser(
   if (!token) return null;
 
   const db = getDb(env);
-  await ensureAuthTables(db);
 
   const result = await db.execute({
     sql: `
