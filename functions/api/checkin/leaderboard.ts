@@ -72,7 +72,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         }
       }
       let streak = 0;
-      for (let i = offset; i < 365; i++) {
+      for (let i = offset; i < 365 + offset; i++) {
         const d = new Date(now);
         d.setDate(d.getDate() - i);
         const key = toLocalDate(d);
