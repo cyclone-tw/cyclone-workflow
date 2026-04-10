@@ -58,17 +58,21 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     for (const uid of userIds) {
       const days = userDays.get(uid);
       if (!days || days.size === 0) { streakMap.set(uid, 0); continue; }
-      // Start streak from today or yesterday (grace for not-yet-checked-in-today)
+      // Determine starting offset: 0 = today, 1 = yesterday (grace for not-yet-checked-in-today)
       const now = new Date();
-      let start = toLocalDate(now);
-      if (!days.has(start)) {
+      let offset = 0;
+      if (!days.has(toLocalDate(now))) {
         const yd = new Date(now);
         yd.setDate(yd.getDate() - 1);
-        start = toLocalDate(yd);
-        if (!days.has(start)) { streakMap.set(uid, 0); continue; }
+        if (days.has(toLocalDate(yd))) {
+          offset = 1; // start counting from yesterday
+        } else {
+          streakMap.set(uid, 0);
+          continue;
+        }
       }
       let streak = 0;
-      for (let i = 0; i < 365; i++) {
+      for (let i = offset; i < 365; i++) {
         const d = new Date(now);
         d.setDate(d.getDate() - i);
         const key = toLocalDate(d);
