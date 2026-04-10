@@ -1,4 +1,4 @@
-export const VERSION = 'v20260410.2120';
+export const VERSION = 'v20260411.0100';
 
 export interface ChangelogEntry {
   version: string;
@@ -7,6 +7,18 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: 'v20260411.1',
+    date: '2026-04-11 01:00',
+    changes: [
+      'feat: Issue #17 Phase 4 — GitHub Issues 整合（雙分頁：本地 + GitHub）',
+      'feat: GitHub Issues 代理 API（/api/github/issues，可選 GITHUB_TOKEN 提高限額）',
+      'feat: IssueBoard 雙分頁 UI — 本地 Issues / GitHub Issues 切換',
+      'feat: Cyclone 管家 Persona 大幅強化（代號帽、核心使命、6 項能力、網站功能指引）',
+      'feat: 管家 Persona 同步機制 — context.waitUntil() 背景更新 Letta agent',
+      'feat: 管家頁面副標更新為「幫你把 AI 真的用起來」',
+    ],
+  },
   {
     version: 'v20260410.3',
     date: '2026-04-10 21:20',
