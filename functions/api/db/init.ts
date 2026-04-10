@@ -182,6 +182,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       { sql: `ALTER TABLE users ADD COLUMN avatar_url TEXT DEFAULT ''`, note: 'users.avatar_url' },
       { sql: `ALTER TABLE users ADD COLUMN discord_id TEXT`, note: 'users.discord_id' },
       { sql: `ALTER TABLE users ADD COLUMN preferences TEXT DEFAULT '{}'`, note: 'users.preferences' },
+      { sql: `ALTER TABLE users ADD COLUMN updated_at TEXT NOT NULL DEFAULT ''`, note: 'users.updated_at' },
+      { sql: `ALTER TABLE users ADD COLUMN created_at TEXT NOT NULL DEFAULT ''`, note: 'users.created_at' },
     ];
     for (const m of migrations) {
       try { await db.execute({ sql: m.sql, args: [] }); } catch { /* column already exists */ }
