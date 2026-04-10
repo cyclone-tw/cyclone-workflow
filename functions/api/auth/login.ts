@@ -40,7 +40,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       status: 302,
       headers: {
         Location: googleAuthUrl,
-        'Set-Cookie': `oauth_state=${state}; HttpOnly; ${secureFlag} SameSite=Strict; Path=/api/auth/callback; Max-Age=600`,
+        'Set-Cookie': `oauth_state=${state}; HttpOnly; ${secureFlag} SameSite=Lax; Path=/api/auth/callback; Max-Age=600`,
       },
     });
   } catch (err: unknown) {
