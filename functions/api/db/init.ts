@@ -176,6 +176,22 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       },
     ]);
 
+    // --- Migrations: add missing columns to existing tables ---
+    const migrations: { sql: string; note: string }[] = [
+      { sql: `ALTER TABLE users ADD COLUMN email TEXT NOT NULL DEFAULT ''`, note: 'users.email' },
+      { sql: `ALTER TABLE users ADD COLUMN avatar_url TEXT DEFAULT ''`, note: 'users.avatar_url' },
+      { sql: `ALTER TABLE users ADD COLUMN discord_id TEXT`, note: 'users.discord_id' },
+      { sql: `ALTER TABLE users ADD COLUMN preferences TEXT DEFAULT '{}'`, note: 'users.preferences' },
+    ];
+    for (const m of migrations) {
+      try { await db.execute({ sql: m.sql, args: [] }); } catch { /* column already exists */ }
+    }
+
+    // Recreate UNIQUE index on email if missing
+    try {
+      await db.execute({ sql: `CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email) WHERE email != ''`, args: [] });
+    } catch { /* index already exists */ }
+
     // --- Seed members (from constants) ---
     // Each entry: [id, name, groupRole, tag]
     const members: [string, string, string, string][] = [
