@@ -8,8 +8,8 @@ const pages = [
     icon: '🏠',
     title: '首頁',
     color: 'var(--color-primary)',
-    description: '共學團介紹、成員列表、四週時程總覽。第一次來訪從這裡開始，掌握整個計畫的全貌。',
-    tips: ['了解共學目標', '認識隊員', '查看四週時程'],
+    description: '共學團介紹、成員列表、三週時程總覽。第一次來訪從這裡開始，掌握整個計畫的全貌。',
+    tips: ['了解共學目標', '認識隊員', '查看三週時程'],
   },
   {
     href: '/dashboard',
@@ -24,16 +24,24 @@ const pages = [
     icon: '👥',
     title: '團隊頁面',
     color: 'var(--color-neon-green)',
-    description: '六位成員的個人頁面、Project 交換計畫、成果展示牆。第三週用這裡抽籤交換 Project。',
-    tips: ['成員個人頁', 'Project 抽籤', '成果展示'],
+    description: '29 位成員依角色分組：隊長、技術維護、行政協作、正式隊員、陪跑員。認識你的共學夥伴！',
+    tips: ['角色分組瀏覽', '認識夥伴', '成員自我介紹'],
   },
   {
     href: '/knowledge',
     icon: '📚',
     title: '知識庫',
     color: 'var(--color-primary)',
-    description: '共學過程中沉澱的工作流模板、最佳實踐、問答精華。有好資源歡迎投稿！',
-    tips: ['工作流模板', '最佳實踐', '投稿分享'],
+    description: '「怎麼學」— 教學資源、文章、學習路線。所有成員都可以投稿分享！',
+    tips: ['教學資源', '標籤篩選', '投稿分享'],
+  },
+  {
+    href: '/ai-tools',
+    icon: '🤖',
+    title: 'AI 工具箱',
+    color: 'var(--color-accent)',
+    description: '「用什麼」— 學員產出的工具、公開的 repo、可用的小工具。有開源專案歡迎提交！',
+    tips: ['工具卡片', '開源專案', '分享你的作品'],
   },
   {
     href: '/qa',
@@ -56,8 +64,24 @@ const pages = [
     icon: '🌳',
     title: '許願樹',
     color: 'var(--color-neon-green)',
-    description: '互助共學的核心機制。許下你需要的幫助，或認領他人的願望，累積點數互相成就。',
-    tips: ['許願/認領', '點數系統', '互助共學'],
+    description: '互助共學的核心機制。拋出你的需求或想法，讓其他人幫忙實現；也可以認領他人的願望。',
+    tips: ['許願提案', '認領實作', '互助共學'],
+  },
+  {
+    href: '/discuss',
+    icon: '💬',
+    title: '討論區',
+    color: 'var(--color-neon-blue)',
+    description: '公開討論空間，分享學習心得、提問交流、互相激盪想法。',
+    tips: ['發文討論', '學習交流', '想法激盪'],
+  },
+  {
+    href: '/issue',
+    icon: '📋',
+    title: 'Issues',
+    color: 'var(--color-text-muted)',
+    description: '問題追蹤系統。回報功能需求、改進建議，管理專案的待辦事項。',
+    tips: ['功能需求', '問題追蹤', '待辦管理'],
   },
   {
     href: '/bug',
@@ -331,7 +355,7 @@ const faqs = [
     <div class="mb-14 text-center">
       <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium mb-5 border"
         style="background: color-mix(in srgb, var(--color-primary) 15%, transparent); border-color: color-mix(in srgb, var(--color-primary) 30%, transparent); color: var(--color-primary-light);">
-        2026 Q2・四週共學計畫
+        2026 Q2・三週共學計畫
       </div>
       <h1 class="text-4xl sm:text-5xl font-bold mb-4">
         <span class="text-4xl sm:text-5xl mr-3">📖</span>
@@ -339,7 +363,7 @@ const faqs = [
       </h1>
       <p class="text-[var(--color-text-secondary)] text-lg max-w-xl mx-auto leading-relaxed">
         歡迎加入 <span class="text-[var(--color-text-primary)] font-medium">Cyclone 隊長 × 生活黑客共學團</span>！<br />
-        這份說明幫你快速上手所有功能，開啟四週的 AI 工作流旅程。
+        這份說明幫你快速上手所有功能，開啟三週的 AI 工作流旅程。
       </p>
     </div>
 
@@ -351,13 +375,13 @@ const faqs = [
       </div>
       <div class="glass rounded-2xl p-7 mb-5" style="background: linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 12%, transparent) 0%, color-mix(in srgb, var(--color-neon-blue) 8%, transparent) 100%); border-color: color-mix(in srgb, var(--color-primary) 25%, transparent);">
         <p class="text-[var(--color-text-secondary)] leading-relaxed mb-5 text-base">
-          這是一個專為 <strong class="text-[var(--color-text-primary)]">六人小型共學團</strong> 設計的專屬平台。六位成員將在四週內，從零開始打造屬於自己的 AI 工作流，互相學習、互相督促、互相幫助。
+          這是一個專為 <strong class="text-[var(--color-text-primary)]">共學團</strong> 設計的專屬平台。29 位成員將在三週內，從盤點需求到做出雛形，真正把 AI 整合進自己的工作流。
         </p>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
-            { icon: '🌀', title: '打造個人 AI 工作流', desc: '四週從環境建置到成果發表，每人產出一套可實際運用的個人工作流。' },
+            { icon: '🌀', title: '打造個人 AI 工作流', desc: '三週從盤點定義到成果展示，每人產出一套可實際運用的個人工作流。' },
             { icon: '🤖', title: '專屬 AI 管家', desc: '每位成員都有專屬的 Cyclone 管家，具備長期記憶，記得你的偏好與進度。' },
-            { icon: '🌳', title: '互助共學機制', desc: '透過許願樹、Project 交換、知識庫，把個人學習變成集體智慧。' },
+            { icon: '🌳', title: '互助共學機制', desc: '透過許願樹、知識庫、AI 工具箱，把個人學習變成集體智慧。' },
           ].map((item) => (
             <div class="rounded-xl p-4 border" style="background: var(--color-glass-bg); border-color: var(--color-border);">
               <div class="text-2xl mb-2">{item.icon}</div>
@@ -437,26 +461,27 @@ const faqs = [
     <section class="mb-16">
       <div class="flex items-center gap-3 mb-6">
         <span class="w-1 h-6 rounded-full" style="background: var(--color-accent);"></span>
-        <h2 class="text-xl font-bold text-[var(--color-text-primary)]">四週共學旅程</h2>
+        <h2 class="text-xl font-bold text-[var(--color-text-primary)]">三週共學旅程</h2>
       </div>
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {WEEKS.map((week, i) => {
           const colors = [
+            'var(--color-text-muted)',
             'var(--color-primary)',
-            'var(--color-neon-blue)',
             'var(--color-neon-green)',
             'var(--color-accent)',
           ];
           const color = colors[i] ?? colors[0];
-          const dateObj = new Date(week.start);
-          const dateStr = `${dateObj.getMonth() + 1}/${dateObj.getDate()}`;
+          const isPrep = week.num === 0;
+          const startStr = week.start.slice(5).replace('-', '/');
+          const endStr = week.end.slice(5).replace('-', '/');
           return (
-            <div class="glass rounded-xl p-5 flex flex-col gap-3 text-center" style={`border-top: 3px solid ${color};`}>
-              <div class="text-xs font-medium" style={`color: ${color};`}>Week {week.num}</div>
-              <div class="text-2xl font-bold text-[var(--color-text-primary)]">{week.title}</div>
+            <div class={`glass rounded-xl p-5 flex flex-col gap-3 text-center ${isPrep ? 'opacity-60' : ''}`} style={`border-top: 3px solid ${color};`}>
+              <div class="text-xs font-medium" style={`color: ${color};`}>{isPrep ? '預備' : `W${week.num}`}</div>
+              <div class="text-lg font-bold text-[var(--color-text-primary)]">{week.title}</div>
               <div class="text-xs text-[var(--color-text-secondary)] leading-relaxed">{week.subtitle}</div>
               <div class="text-xs text-[var(--color-text-muted)] mt-auto pt-2 border-t border-[var(--color-border)]">
-                {dateStr} 啟動
+                {startStr} ~ {endStr}
               </div>
             </div>
           );
@@ -465,7 +490,7 @@ const faqs = [
       <div class="mt-4 glass rounded-xl p-4 flex items-start gap-3">
         <span class="text-xl shrink-0">💡</span>
         <p class="text-sm text-[var(--color-text-secondary)] leading-relaxed">
-          每週一為新的一週開始。第三週（4/21）會進行 <strong class="text-[var(--color-text-primary)]">Project 抽籤交換</strong>，你的工作流會換給隊友繼續發展，你也會接手別人的成果——這是共學精華！
+          每週都有明確目標。W1 盤點自己的需求與工具、W2 動手做出 MVP、W3 展示成果與收穫。所有成員一起共學、互相幫助！
         </p>
       </div>
     </section>
@@ -561,7 +586,7 @@ const faqs = [
       <div class="relative z-10">
         <div class="text-4xl mb-3">🌀</div>
         <h3 class="text-xl font-bold text-[var(--color-text-primary)] mb-2">準備好了嗎？</h3>
-        <p class="text-[var(--color-text-secondary)] mb-6 text-sm">四週後，你將擁有一套真正屬於自己的 AI 工作流。</p>
+        <p class="text-[var(--color-text-secondary)] mb-6 text-sm">三週後，你將擁有一套真正屬於自己的 AI 工作流。</p>
         <div class="flex flex-wrap items-center justify-center gap-3">
           <a href="/dashboard"
             class="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm text-white transition-all hover:opacity-90 active:scale-95"
