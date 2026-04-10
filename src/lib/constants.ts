@@ -35,18 +35,18 @@ export const MEMBERS: Member[] = [
 
   // 行政協作
   { id: 'tiffanyhou', name: 'Tiffanyhou', tag: '#2623', role: '行政協作', avatar: '🐋', color: '#A78BFA', groupRole: 'admin', intro: '我要做 Agent' },
-  { id: 'sandy', name: '珊迪', tag: '', role: '行政協作', avatar: '🐹', color: '#00F5A0', groupRole: 'admin', intro: '想用 AI Agent 自動化管理共學團的流程' },
+  { id: 'sandy', name: '珊迪', tag: '', role: '行政協作', avatar: '🐹', color: '#00F5A0', groupRole: 'admin', intro: '想用 AI Agent 自動化管理共學團的流程；輔助學習筆記中化輸入為輸出的過程' },
 
   // 正式隊員
-  { id: 'benson', name: 'Benson', tag: '#2808', role: '正式隊員', avatar: '🎏', color: '#6C63FF', groupRole: 'member', intro: '謙虛地過每一天，好好學習，好好生活' },
-  { id: 'chijie', name: '志傑', tag: '', role: '正式隊員', avatar: '☀️', color: '#1E3A8A', groupRole: 'member', intro: '希望透過學習讓我更活用 AI 在工作上' },
+  { id: 'benson', name: 'Benson', tag: '', role: '陪跑員', avatar: '🎏', color: '#6C63FF', groupRole: 'companion', intro: '謙虛地過每一天，好好學習，好好生活' },
+  { id: 'chijie', name: '志傑', tag: '', role: '正式隊員', avatar: '☀️', color: '#1E3A8A', groupRole: 'member', intro: '接觸 n8n、OpenClaw 等工具，希望透過學習讓 AI 更活用在工作上' },
   { id: 'cake', name: '蛋糕', tag: '', role: '正式隊員', avatar: '🍰', color: '#FF6B6B', groupRole: 'member', intro: '想要用 AI 打造自己的工作流' },
   { id: 'winnie', name: '維尼熊', tag: '', role: '正式隊員', avatar: '🐝', color: '#FFD93D', groupRole: 'member', intro: '想把跟 AI 協作的方式升級成更聰明的方式' },
   { id: 'lucy', name: 'Lucy', tag: '', role: '正式隊員', avatar: '🍄', color: '#FFD93D', groupRole: 'member', intro: '第十屆訓練營結業生，希望大家一起前進' },
   { id: 'myra', name: 'Myra', tag: '#2716', role: '正式隊員', avatar: '🙏', color: '#A78BFA', groupRole: 'member', intro: '13 年活動企劃，好奇心求知慾讓我熱愛學習' },
 
   // 陪跑員
-  { id: 'vision', name: 'Vision', tag: '獻謚', role: '陪跑員', avatar: '⭐', color: '#00F5A0', groupRole: 'companion', intro: '軟體工程師，想用 AI 打造自動化工作流程' },
+  { id: 'vision', name: 'Vision', tag: '獻謚', role: '陪跑員', avatar: '⭐', color: '#00F5A0', groupRole: 'companion', intro: '軟體工程師，想用 AI、Notion 和 Claude Code 打造自動化工作流程' },
   { id: 'yawen', name: '雅雯', tag: '', role: '陪跑員', avatar: '🎨', color: '#6C63FF', groupRole: 'companion', intro: '想來了解 AI 工作流到底能多強大' },
   { id: 'annie', name: '安妮想要飛', tag: '', role: '陪跑員', avatar: '🚀', color: '#00D9FF', groupRole: 'companion', intro: '想用 AI 解決我懶得做的事' },
   { id: 'innoblue', name: 'innoblue', tag: '', role: '陪跑員', avatar: '😎', color: '#1E3A8A', groupRole: 'companion', intro: '一起學 AI' },
@@ -57,13 +57,13 @@ export const MEMBERS: Member[] = [
   { id: 'ding', name: 'Ding', tag: '', role: '陪跑員', avatar: '🐶', color: '#FFD93D', groupRole: 'companion', intro: '想透過共學找到用 AI 改善工作流的靈感' },
   { id: 'lucia', name: 'Lucia', tag: '', role: '陪跑員', avatar: '👻', color: '#A78BFA', groupRole: 'companion', intro: '想用 AI 打造分身' },
   { id: 'panda', name: '熊貓', tag: '', role: '陪跑員', avatar: '🐼', color: '#94A3B8', groupRole: 'companion', intro: 'AI 初學者，想學習如何設計 AI 協助處理重複性任務' },
-  { id: 'rupert', name: 'Rupert', tag: '', role: '陪跑員', avatar: '🐸', color: '#166534', groupRole: 'companion', intro: 'AI agent user，最近在研究 Agent Skill' },
+  { id: 'rupert', name: 'Rupert', tag: '', role: '陪跑員', avatar: '🐸', color: '#166534', groupRole: 'companion', intro: 'AI agent user，使用 OpenClaw + Claude Code 處理日常事務，最近在研究 Agent Skill' },
   { id: 'mengxuan', name: '孟璇', tag: '', role: '陪跑員', avatar: '🐈', color: '#94A3B8', groupRole: 'companion', intro: '設計領域多年，想成為一邊偷懶一邊專注創作的新人類' },
   { id: 'beast', name: 'Beast', tag: '', role: '陪跑員', avatar: '🐻', color: '#FF8FAB', groupRole: 'companion', intro: '想一起創造好玩的生活' },
   { id: 'maggie', name: 'Maggie', tag: '#0696', role: '陪跑員', avatar: '👣', color: '#FF6B6B', groupRole: 'companion', intro: '愛吃也愛做、愛學也愛遊玩，正在學習把人生活得更好玩' },
   { id: 'rycen', name: 'Rycen', tag: '', role: '陪跑員', avatar: '🦥', color: '#A78BFA', groupRole: 'companion', intro: '十屆訓練營的樹懶' },
-  { id: 'muye', name: '牧野悠', tag: '', role: '陪跑員', avatar: '🔮', color: '#FF6B6B', groupRole: 'companion', intro: '一秒熱度停滯者，心血來潮手搓黑洞' },
-  { id: 'jerry', name: 'Jerry', tag: '', role: '陪跑員', avatar: '🏄', color: '#6C63FF', groupRole: 'companion', intro: '想看大家如何運用 AI 解決不同問題' },
+  { id: 'muye', name: '牧野悠', tag: '', role: '陪跑員', avatar: '🔮', color: '#FF6B6B', groupRole: 'companion', intro: 'BIMer，一秒熱度停滯者，心血來潮手搓黑洞' },
+  { id: 'jerry', name: 'Jerry', tag: '', role: '陪跑員', avatar: '🏄', color: '#6C63FF', groupRole: 'companion', intro: '想看大家如何運用 AI 解決不同問題，去想像力到不了的地方' },
 ];
 
 export const WEEKS = [
