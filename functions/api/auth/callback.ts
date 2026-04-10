@@ -118,23 +118,38 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         args: [googleUser.name, googleUser.picture, userId],
       });
     } else {
-      // Create new user
-      userId = crypto.randomUUID();
-      await db.execute({
-        sql: `INSERT INTO users (id, email, name, avatar_url, preferences, created_at, updated_at) VALUES (?, ?, ?, ?, '{}', datetime('now'), datetime('now'))`,
-        args: [userId, googleUser.email, googleUser.name, googleUser.picture],
+      // No email match — try to claim a seed user with same name and empty email
+      const seedMatch = await db.execute({
+        sql: `SELECT id FROM users WHERE name = ? AND (email = '' OR email IS NULL) LIMIT 1`,
+        args: [googleUser.name],
       });
 
-      // Assign companion role to new user
-      const roleId = crypto.randomUUID();
-      await db.execute({
-        sql: `INSERT INTO user_roles (id, user_id, role) VALUES (?, ?, 'companion')`,
-        args: [roleId, userId],
-      });
+      if (seedMatch.rows.length > 0) {
+        // Claim existing seed user: set email + avatar, keep their roles
+        userId = seedMatch.rows[0].id as string;
+        await db.execute({
+          sql: `UPDATE users SET email = ?, avatar_url = ?, updated_at = datetime('now') WHERE id = ?`,
+          args: [googleUser.email, googleUser.picture, userId],
+        });
+      } else {
+        // Truly new user — create with companion role
+        userId = crypto.randomUUID();
+        await db.execute({
+          sql: `INSERT INTO users (id, email, name, avatar_url, preferences, created_at, updated_at) VALUES (?, ?, ?, ?, '{}', datetime('now'), datetime('now'))`,
+          args: [userId, googleUser.email, googleUser.name, googleUser.picture],
+        });
+
+        const roleId = crypto.randomUUID();
+        await db.execute({
+          sql: `INSERT INTO user_roles (id, user_id, role) VALUES (?, ?, 'companion')`,
+          args: [roleId, userId],
+        });
+      }
     }
 
-    // Create session
-    const { setCookie } = await createSession(context.env, userId);
+    // Create session (detect HTTPS for Secure cookie flag)
+    const isSecure = url.protocol === 'https:';
+    const { setCookie } = await createSession(context.env, userId, isSecure);
 
     // Redirect to homepage with session cookie
     return new Response(null, {

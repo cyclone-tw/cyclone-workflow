@@ -60,8 +60,9 @@ export function generateSessionToken(): string {
   return crypto.randomUUID();
 }
 
-export function createSessionCookie(token: string): string {
-  return `session=${token}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=${30 * 24 * 60 * 60}`;
+export function createSessionCookie(token: string, secure = true): string {
+  const secureFlag = secure ? 'Secure;' : '';
+  return `session=${token}; HttpOnly; ${secureFlag} SameSite=Strict; Path=/; Max-Age=${30 * 24 * 60 * 60}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -92,6 +93,7 @@ const SESSION_LIFETIME_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 export async function createSession(
   env: Env,
   userId: string,
+  secure = true,
 ): Promise<{ token: string; setCookie: string }> {
   const db = getDb(env);
 
@@ -107,7 +109,7 @@ export async function createSession(
 
   return {
     token,
-    setCookie: createSessionCookie(token),
+    setCookie: createSessionCookie(token, secure),
   };
 }
 

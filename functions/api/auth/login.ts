@@ -34,12 +34,13 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
 
     // Set state in a short-lived cookie so we can verify it in callback
     const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
+    const secureFlag = url.protocol === 'https:' ? 'Secure;' : '';
 
     return new Response(null, {
       status: 302,
       headers: {
         Location: googleAuthUrl,
-        'Set-Cookie': `oauth_state=${state}; HttpOnly; Secure; SameSite=Strict; Path=/api/auth/callback; Max-Age=600`,
+        'Set-Cookie': `oauth_state=${state}; HttpOnly; ${secureFlag} SameSite=Strict; Path=/api/auth/callback; Max-Age=600`,
       },
     });
   } catch (err: unknown) {
