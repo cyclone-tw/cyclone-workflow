@@ -1,4 +1,4 @@
-export const VERSION = 'v20260410.1000';
+export const VERSION = 'v20260410.1910';
 
 export interface ChangelogEntry {
   version: string;
@@ -7,6 +7,18 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: 'v20260410.2',
+    date: '2026-04-10 19:10',
+    changes: [
+      'feat: Issue #17 Phase 1 — Google OAuth 登入系統（login/callback/logout/me）',
+      'feat: 角色權限 Middleware（RBAC：captain > tech > admin > member > companion）',
+      'feat: 前端 Auth UI — useAuth hook + LoginButton（Google 登入按鈕 + 用戶下拉選單）',
+      'feat: 每日打卡系統 — POST/GET /api/checkin + Streak 連續天數計算',
+      'feat: 打卡統計 API（/api/checkin/stats）+ 公開排行榜（/api/checkin/leaderboard）',
+      'feat: DB 新增 checkins 表（UNIQUE 約束防止重複打卡）',
+    ],
+  },
   {
     version: 'v20260410.1',
     date: '2026-04-10 10:00',

@@ -2,6 +2,7 @@
 import '@/styles/global.css';
 import { NAV_ITEMS, SITE } from '@/lib/constants';
 import { VERSION } from '@/lib/version';
+import LoginButton from '@/components/auth/LoginButton';
 
 interface Props {
   title?: string;
@@ -89,6 +90,8 @@ const currentPath = Astro.url.pathname;
             ))}
           </div>
           <div class="flex items-center gap-1">
+            {/* Login button */}
+            <LoginButton client:load />
             <!-- Theme toggle -->
             <button
               id="theme-toggle"
