@@ -114,6 +114,66 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         )`,
         args: [],
       },
+      {
+        sql: `CREATE TABLE IF NOT EXISTS tags (
+          id TEXT PRIMARY KEY,
+          name TEXT NOT NULL,
+          category TEXT DEFAULT 'both' CHECK(category IN ('knowledge', 'ai-tools', 'both')),
+          color TEXT DEFAULT '#6C63FF',
+          created_at TEXT DEFAULT (datetime('now'))
+        )`,
+        args: [],
+      },
+      {
+        sql: `CREATE TABLE IF NOT EXISTS resource_tags (
+          id TEXT PRIMARY KEY,
+          resource_id TEXT NOT NULL,
+          resource_type TEXT NOT NULL CHECK(resource_type IN ('knowledge', 'ai-tool', 'wish')),
+          tag_id TEXT NOT NULL REFERENCES tags(id),
+          UNIQUE(resource_id, resource_type, tag_id)
+        )`,
+        args: [],
+      },
+      {
+        sql: `CREATE TABLE IF NOT EXISTS knowledge_entries (
+          id TEXT PRIMARY KEY,
+          title TEXT NOT NULL,
+          content TEXT NOT NULL,
+          category TEXT DEFAULT 'template' CHECK(category IN ('template', 'best-practice', 'qa', 'other')),
+          icon TEXT DEFAULT '📘',
+          contributor_id TEXT NOT NULL REFERENCES users(id),
+          upvotes INTEGER DEFAULT 0,
+          created_at TEXT DEFAULT (datetime('now')),
+          updated_at TEXT DEFAULT (datetime('now'))
+        )`,
+        args: [],
+      },
+      {
+        sql: `CREATE TABLE IF NOT EXISTS wishes (
+          id TEXT PRIMARY KEY,
+          title TEXT NOT NULL,
+          description TEXT NOT NULL,
+          category TEXT DEFAULT 'personal' CHECK(category IN ('personal', 'site')),
+          status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'claimed', 'in-progress', 'completed')),
+          wisher_id TEXT NOT NULL REFERENCES users(id),
+          claimer_id TEXT REFERENCES users(id),
+          icon TEXT DEFAULT '✨',
+          points INTEGER DEFAULT 10,
+          created_at TEXT DEFAULT (datetime('now')),
+          updated_at TEXT DEFAULT (datetime('now'))
+        )`,
+        args: [],
+      },
+      {
+        sql: `CREATE TABLE IF NOT EXISTS discussion_likes (
+          id TEXT PRIMARY KEY,
+          message_id INTEGER NOT NULL,
+          user_id TEXT NOT NULL REFERENCES users(id),
+          created_at TEXT DEFAULT (datetime('now')),
+          UNIQUE(message_id, user_id)
+        )`,
+        args: [],
+      },
     ]);
 
     // --- Seed members (from constants) ---

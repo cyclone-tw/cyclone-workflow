@@ -77,6 +77,7 @@ export const NAV_ITEMS = [
   { label: '首頁', href: '/', icon: '🏠' },
   { label: '說明', href: '/readme', icon: '📖' },
   { label: '儀表板', href: '/dashboard', icon: '📊' },
+  { label: '積分榜', href: '/leaderboard', icon: '🏆' },
   { label: '團隊', href: '/team', icon: '👥' },
   { label: '知識庫', href: '/knowledge', icon: '📚' },
   { label: 'AI工具箱', href: '/ai-tools', icon: '🤖' },

@@ -1,4 +1,4 @@
-export const VERSION = 'v20260410.1910';
+export const VERSION = 'v20260410.2120';
 
 export interface ChangelogEntry {
   version: string;
@@ -7,6 +7,19 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: 'v20260410.3',
+    date: '2026-04-10 21:20',
+    changes: [
+      'feat: Issue #17 Phase 2-3 — 知識庫 CRUD（API + KnowledgeBoard React island）',
+      'feat: 許願樹改版 — WishBoard React island（許願/認領/實作/完成狀態流）',
+      'feat: 儀表板個人化 — DashboardPanel（登入提示/統計/快速打卡）',
+      'feat: 積分榜頁面 — LeaderboardBoard（前三名頒獎台 + 排行表）',
+      'feat: 管理後台 — AdminPanel（站點統計/角色管理/搜尋篩選）',
+      'feat: 討論區按讚 — MessageBoard 心形按讚 toggle（樂觀更新 + rollback）',
+      'feat: API 新增 wishes/:id PATCH/DELETE、knowledge/:id PATCH/DELETE、admin/stats、admin/roles、messages/likes',
+    ],
+  },
   {
     version: 'v20260410.2',
     date: '2026-04-10 19:10',

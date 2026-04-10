@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { useAuth } from '@/components/auth/useAuth';
 
 interface Message {
   id: number;
@@ -7,6 +8,7 @@ interface Message {
   tag: string;
   category: string;
   created_at: string;
+  like_count: number;
 }
 
 const CATEGORIES = ['一般討論', '功能建議', '許願樹討論', '技術問題', '成果分享'];
@@ -29,8 +31,22 @@ function timeAgo(dateStr: string): string {
   return `${Math.floor(diff / 86400)} 天前`;
 }
 
-function MessageCard({ msg }: { msg: Message }) {
+function MessageCard({
+  msg,
+  likedIds,
+  onToggleLike,
+  isLoggedIn,
+  likeLoading,
+}: {
+  msg: Message;
+  likedIds: Set<number>;
+  onToggleLike: (messageId: number, currentLiked: boolean) => void;
+  isLoggedIn: boolean;
+  likeLoading: boolean;
+}) {
   const color = CATEGORY_COLORS[msg.category] || 'var(--color-primary)';
+  const liked = likedIds.has(msg.id);
+
   return (
     <div
       className="rounded-xl p-4 transition-all"
@@ -78,6 +94,24 @@ function MessageCard({ msg }: { msg: Message }) {
       >
         {msg.content}
       </p>
+      <div className="flex items-center justify-end mt-2">
+        <button
+          onClick={() => onToggleLike(msg.id, liked)}
+          disabled={!isLoggedIn || likeLoading}
+          className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs transition-all"
+          style={{
+            background: liked ? 'rgba(255, 77, 106, 0.1)' : 'transparent',
+            color: liked ? '#FF4D6A' : 'var(--color-text-muted)',
+            cursor: !isLoggedIn || likeLoading ? 'not-allowed' : 'pointer',
+            opacity: !isLoggedIn ? 0.5 : 1,
+            border: 'none',
+          }}
+          title={!isLoggedIn ? '請先登入才能按讚' : liked ? '收回讚' : '按讚'}
+        >
+          <span style={{ fontSize: '14px' }}>{liked ? '\u2764\uFE0F' : '\U0001F90D'}</span>
+          <span>{msg.like_count > 0 ? msg.like_count : ''}</span>
+        </button>
+      </div>
     </div>
   );
 }
@@ -93,23 +127,113 @@ export default function MessageBoard() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [filter, setFilter] = useState('全部');
+  const [likedIds, setLikedIds] = useState<Set<number>>(new Set());
+  const [likeLoading, setLikeLoading] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
+  const { user, loading: authLoading } = useAuth();
 
-  const fetchMessages = async () => {
+  const fetchMessages = useCallback(async () => {
     try {
       const res = await fetch('/api/messages');
       const data = await res.json();
-      if (data.ok) setMessages(data.messages);
+      if (data.ok) {
+        const msgs = data.messages as Message[];
+        setMessages(msgs);
+
+        // If logged in, fetch which messages the user has liked
+        if (user && msgs.length > 0) {
+          try {
+            const likeChecks = await Promise.all(
+              msgs.map((m: Message) =>
+                fetch(`/api/messages/likes?message_id=${m.id}`)
+                  .then((r) => r.json())
+                  .then((d) => ({ id: m.id, liked: d.ok ? d.liked : false }))
+                  .catch(() => ({ id: m.id, liked: false }))
+              )
+            );
+            const newLiked = new Set<number>();
+            for (const lc of likeChecks) {
+              if (lc.liked) newLiked.add(lc.id);
+            }
+            setLikedIds(newLiked);
+          } catch {
+            // Non-critical — proceed without like state
+          }
+        }
+      }
     } catch {
       setError('載入留言失敗');
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
-    fetchMessages();
-  }, []);
+    if (!authLoading) {
+      fetchMessages();
+    }
+  }, [authLoading, fetchMessages]);
+
+  const handleToggleLike = async (messageId: number, currentLiked: boolean) => {
+    if (!user) return;
+
+    // Optimistic update
+    const prevLikedIds = new Set(likedIds);
+    setLikedIds((prev) => {
+      const next = new Set(prev);
+      if (currentLiked) {
+        next.delete(messageId);
+      } else {
+        next.add(messageId);
+      }
+      return next;
+    });
+
+    // Optimistic count update
+    setMessages((prev) =>
+      prev.map((m) =>
+        m.id === messageId
+          ? { ...m, like_count: Math.max(0, m.like_count + (currentLiked ? -1 : 1)) }
+          : m
+      )
+    );
+
+    setLikeLoading(true);
+    try {
+      const res = await fetch('/api/messages/likes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message_id: messageId }),
+      });
+      const data = await res.json();
+      if (!data.ok) {
+        // Revert on failure
+        setLikedIds(prevLikedIds);
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === messageId
+              ? { ...m, like_count: m.like_count + (currentLiked ? 1 : -1) }
+              : m
+          )
+        );
+        if (res.status === 401) {
+          setError('請先登入才能按讚');
+        }
+      }
+    } catch {
+      // Revert on network error
+      setLikedIds(prevLikedIds);
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === messageId
+            ? { ...m, like_count: m.like_count + (currentLiked ? 1 : -1) }
+            : m
+        )
+      );
+    } finally {
+      setLikeLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -167,7 +291,7 @@ export default function MessageBoard() {
             type="text"
             value={author}
             onChange={(e) => setAuthor(e.target.value)}
-            placeholder="你的暱稱 *"
+            placeholder={user ? user.name : '你的暱稱 *'}
             required
             className="px-3 py-2 rounded-lg text-sm outline-none"
             style={{
@@ -293,7 +417,14 @@ export default function MessageBoard() {
       ) : (
         <div className="space-y-3">
           {filtered.map((msg) => (
-            <MessageCard key={msg.id} msg={msg} />
+            <MessageCard
+              key={msg.id}
+              msg={msg}
+              likedIds={likedIds}
+              onToggleLike={handleToggleLike}
+              isLoggedIn={!!user}
+              likeLoading={likeLoading}
+            />
           ))}
         </div>
       )}

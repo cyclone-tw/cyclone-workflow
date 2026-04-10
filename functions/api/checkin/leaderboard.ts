@@ -20,26 +20,56 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       sql: `
         SELECT
           c.user_id,
-          u.name,
+          u.name AS user_name,
           u.avatar_url,
-          SUM(c.points) AS totalPoints,
-          COUNT(c.id) AS totalCheckins
+          SUM(c.points) AS total_points,
+          COUNT(c.id) AS total_checkins
         FROM checkins c
         JOIN users u ON u.id = c.user_id
         GROUP BY c.user_id
-        ORDER BY totalPoints DESC
+        ORDER BY total_points DESC
         LIMIT 20
       `,
       args: [],
     });
 
-    const leaderboard = result.rows.map((r, index) => ({
-      rank: index + 1,
-      userId: r.user_id,
-      name: r.name,
-      avatarUrl: r.avatar_url,
-      totalPoints: Number(r.totalPoints),
-      totalCheckins: Number(r.totalCheckins),
+    // Batch-fetch all checkin dates for the top-20 users, then compute streaks in JS
+    const userIds = result.rows.map((r) => r.user_id as string);
+    const dateResult = userIds.length > 0
+      ? await db.execute({
+          sql: `SELECT user_id, DATE(checked_at) AS day FROM checkins WHERE user_id IN (${userIds.map(() => '?').join(',')}) ORDER BY user_id, day DESC`,
+          args: userIds,
+        })
+      : { rows: [] as { user_id: string; day: string }[] };
+
+    // Build per-user streak map
+    const streakMap = new Map<string, number>();
+    const userDays = new Map<string, Set<string>>();
+    for (const dr of dateResult.rows as { user_id: string; day: string }[]) {
+      if (!userDays.has(dr.user_id)) userDays.set(dr.user_id, new Set());
+      userDays.get(dr.user_id)!.add(dr.day);
+    }
+    for (const uid of userIds) {
+      const days = userDays.get(uid);
+      if (!days) { streakMap.set(uid, 0); continue; }
+      let streak = 0;
+      const today = new Date();
+      for (let i = 0; i < 365; i++) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        const key = d.toISOString().slice(0, 10);
+        if (days.has(key)) { streak++; } else { break; }
+      }
+      streakMap.set(uid, streak);
+    }
+
+    const leaderboard = result.rows.map((r) => ({
+      user_id: r.user_id as string,
+      user_name: (r.user_name as string) ?? '',
+      avatar_url: r.avatar_url as string | null,
+      total_points: Number(r.total_points),
+      total_checkins: Number(r.total_checkins),
+      current_streak: streakMap.get(r.user_id as string) ?? 0,
     }));
 
     return new Response(
