@@ -69,25 +69,98 @@ const currentPath = Astro.url.pathname;
     <nav class="fixed top-0 left-0 right-0 z-50 glass border-b border-[var(--color-border)]">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
-          <a href="/" class="flex items-center gap-1.5 text-base 2xl:text-lg font-bold shrink-0">
-            <span class="text-xl 2xl:text-2xl">🌀</span>
-            <span class="gradient-text hidden xl:inline text-sm 2xl:text-base whitespace-nowrap">AI 工作流共學團</span>
+          <a href="/" class="flex items-center gap-2 text-lg font-bold shrink-0">
+            <span class="text-2xl">🌀</span>
+            <span class="gradient-text hidden sm:inline">AI 工作流共學團</span>
           </a>
-          <div data-testid="desktop-nav" class="hidden xl:flex items-center gap-0 2xl:gap-1">
-            {NAV_ITEMS.map((item) => (
+          <div data-testid="desktop-nav" class="hidden xl:flex items-center gap-1">
+            {/* Top-level nav items */}
+            {[
+              { label: '首頁', href: '/', icon: '🏠' },
+              { label: '說明', href: '/readme', icon: '📖' },
+              { label: '儀表板', href: '/dashboard', icon: '📊' },
+            ].map((item) => (
               <a
                 href={item.href}
                 class:list={[
-                  'px-2 py-1.5 2xl:px-3 2xl:py-2 rounded-lg text-xs 2xl:text-sm font-medium transition-colors whitespace-nowrap',
+                  'px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap',
                   currentPath === item.href || (item.href !== '/' && currentPath.startsWith(item.href))
                     ? 'bg-[var(--color-primary)]/20 text-[var(--color-primary-light)]'
                     : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-overlay-neutral-weak)]',
                 ]}
               >
-                <span class="mr-1">{item.icon}</span>
-                {item.label}
+                <span class="mr-1.5">{item.icon}</span>{item.label}
               </a>
             ))}
+
+            {/* "更多" dropdown */}
+            <div class="relative" id="more-menu-wrapper">
+              <button
+                id="more-menu-btn"
+                class:list={[
+                  'flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap',
+                  ['/leaderboard','/team','/knowledge','/ai-tools','/agent','/wishlist','/discuss','/issue','/bug'].some(p => currentPath === p || currentPath.startsWith(p + '/'))
+                    ? 'bg-[var(--color-primary)]/20 text-[var(--color-primary-light)]'
+                    : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-overlay-neutral-weak)]',
+                ]}
+              >
+                更多
+                <svg class="w-3.5 h-3.5 transition-transform" id="more-menu-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {/* Dropdown panel */}
+              <div
+                id="more-menu-panel"
+                class="hidden absolute left-0 top-full mt-2 w-52 rounded-xl shadow-lg py-2 z-50 border border-[var(--color-border)] bg-[var(--color-bg-surface)]"
+              >
+                {/* Group 1: 功能 */}
+                <p class="px-4 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">功能</p>
+                {[
+                  { label: '積分榜', href: '/leaderboard', icon: '🏆' },
+                  { label: '團隊', href: '/team', icon: '👥' },
+                  { label: '知識庫', href: '/knowledge', icon: '📚' },
+                  { label: 'AI工具箱', href: '/ai-tools', icon: '🤖' },
+                  { label: '管家', href: '/agent', icon: '🎩' },
+                ].map((item) => (
+                  <a
+                    href={item.href}
+                    class:list={[
+                      'flex items-center gap-2 px-4 py-2 text-sm transition-colors',
+                      currentPath === item.href || currentPath.startsWith(item.href + '/')
+                        ? 'text-[var(--color-primary-light)] bg-[var(--color-primary)]/10'
+                        : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-overlay-neutral-weak)]',
+                    ]}
+                  >
+                    <span>{item.icon}</span>{item.label}
+                  </a>
+                ))}
+
+                <div class="my-1 mx-3 border-t border-[var(--color-border)]" />
+
+                {/* Group 2: 許願 & 反饋 */}
+                <p class="px-4 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">許願 & 反饋</p>
+                {[
+                  { label: '許願樹', href: '/wishlist', icon: '🌳' },
+                  { label: '討論', href: '/discuss', icon: '💬' },
+                  { label: 'Issues', href: '/issue', icon: '📋' },
+                  { label: 'Bug', href: '/bug', icon: '🐛' },
+                ].map((item) => (
+                  <a
+                    href={item.href}
+                    class:list={[
+                      'flex items-center gap-2 px-4 py-2 text-sm transition-colors',
+                      currentPath === item.href || currentPath.startsWith(item.href + '/')
+                        ? 'text-[var(--color-primary-light)] bg-[var(--color-primary)]/10'
+                        : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-overlay-neutral-weak)]',
+                    ]}
+                  >
+                    <span>{item.icon}</span>{item.label}
+                  </a>
+                ))}
+              </div>
+            </div>
           </div>
           <div class="flex items-center gap-1">
             {/* Login button */}
@@ -160,6 +233,23 @@ const currentPath = Astro.url.pathname;
       const btn = document.getElementById('mobile-menu-btn');
       const menu = document.getElementById('mobile-menu');
       btn?.addEventListener('click', () => menu?.classList.toggle('hidden'));
+
+      // "更多" dropdown
+      const moreBtn = document.getElementById('more-menu-btn');
+      const morePanel = document.getElementById('more-menu-panel');
+      const moreChevron = document.getElementById('more-menu-chevron');
+      moreBtn?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = !morePanel?.classList.contains('hidden');
+        morePanel?.classList.toggle('hidden', isOpen);
+        moreChevron?.classList.toggle('rotate-180', !isOpen);
+      });
+      document.addEventListener('click', (e) => {
+        if (!document.getElementById('more-menu-wrapper')?.contains(e.target as Node)) {
+          morePanel?.classList.add('hidden');
+          moreChevron?.classList.remove('rotate-180');
+        }
+      });
 
       // Theme toggle — click flips data-theme and persists to localStorage
       const themeBtn = document.getElementById('theme-toggle');
