@@ -118,11 +118,21 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         args: [googleUser.name, googleUser.picture, userId],
       });
     } else {
-      // No email match — try to claim a seed user with same name and empty email
-      const seedMatch = await db.execute({
+      // No email match — try to claim a seed user with matching name and empty email
+      // 1. Exact name match (fast path)
+      let seedMatch = await db.execute({
         sql: `SELECT id FROM users WHERE name = ? AND (email = '' OR email IS NULL) LIMIT 1`,
         args: [googleUser.name],
       });
+
+      // 2. Substring fallback: Google name contains seed name
+      //    e.g. Google "Cyclone Kang" → seed "Cyclone"
+      if (seedMatch.rows.length === 0) {
+        seedMatch = await db.execute({
+          sql: `SELECT id FROM users WHERE (email = '' OR email IS NULL) AND INSTR(?, name) > 0 ORDER BY LENGTH(name) DESC LIMIT 1`,
+          args: [googleUser.name],
+        });
+      }
 
       if (seedMatch.rows.length > 0) {
         // Claim existing seed user: set email + avatar, keep their roles
