@@ -40,15 +40,15 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         SELECT
           w.id, w.title, w.description, w.category, w.status, w.icon, w.points,
           w.created_at, w.updated_at,
-          w.wisher_id,
+          wisher.id AS wisher_id,
           wisher.name AS wisher_name,
           wisher.avatar_url AS wisher_avatar,
-          w.claimer_id,
+          claimer.id AS claimer_id,
           claimer.name AS claimer_name,
           claimer.avatar_url AS claimer_avatar
         FROM wishes w
-        JOIN users wisher ON wisher.id = w.wisher_id
-        LEFT JOIN users claimer ON claimer.id = w.claimer_id
+        JOIN users wisher ON wisher.id = w.wisher_id AND wisher.archived_at IS NULL AND wisher.status = 'active'
+        LEFT JOIN users claimer ON claimer.id = w.claimer_id AND claimer.archived_at IS NULL AND claimer.status = 'active'
         ${where}
         ORDER BY w.created_at DESC
       `,
