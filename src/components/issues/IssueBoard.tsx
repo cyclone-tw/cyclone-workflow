@@ -96,7 +96,10 @@ const PRIORITY_COLORS: Record<IssuePriority, { bg: string; color: string }> = {
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function timeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
+  // SQLite stores UTC timestamps without timezone info (e.g. "2024-04-11 12:00:00").
+  // GitHub API returns ISO 8601 with 'Z' already. Normalise to proper UTC ISO string.
+  const utcStr = dateStr.includes('T') ? dateStr : dateStr.replace(' ', 'T') + 'Z';
+  const diff = Date.now() - new Date(utcStr).getTime();
   const mins = Math.floor(diff / 60000);
   const hours = Math.floor(mins / 60);
   const days = Math.floor(hours / 24);
@@ -104,7 +107,7 @@ function timeAgo(dateStr: string): string {
   if (mins < 60) return `${mins} 分鐘前`;
   if (hours < 24) return `${hours} 小時前`;
   if (days < 30) return `${days} 天前`;
-  return new Date(dateStr).toLocaleDateString('zh-TW');
+  return new Date(utcStr).toLocaleDateString('zh-TW');
 }
 
 // ─── Shared styles ────────────────────────────────────────────────────────────
@@ -726,6 +729,7 @@ function GitHubIssuesTab() {
         const res = await fetch('/api/github/issues');
         if (!res.ok) throw new Error('載入 GitHub Issues 失敗');
         const data = await res.json();
+        if (!data.ok) throw new Error(data.error || '載入 GitHub Issues 失敗');
         setIssues(data.issues || []);
       } catch {
         setError('無法載入 GitHub Issues，請稍後再試');
@@ -775,18 +779,43 @@ function GitHubIssuesTab() {
 
   if (error) {
     return (
-      <div
-        style={{
-          textAlign: 'center',
-          padding: '4rem 2rem',
-          background: 'rgba(18,18,42,0.5)',
-          border: '1px solid #2A2A4A',
-          borderRadius: '1rem',
-          color: '#9090B0',
-        }}
-      >
-        <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>⚠️</div>
-        <p style={{ fontSize: '0.95rem' }}>{error}</p>
+      <div>
+        <div
+          style={{
+            textAlign: 'center',
+            padding: '3rem 2rem',
+            background: 'rgba(18,18,42,0.5)',
+            border: '1px solid #2A2A4A',
+            borderRadius: '1rem',
+            color: '#9090B0',
+            marginBottom: '1rem',
+          }}
+        >
+          <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>⚠️</div>
+          <p style={{ fontSize: '0.95rem' }}>{error}</p>
+        </div>
+        <div style={{ textAlign: 'center' }}>
+          <a
+            href="https://github.com/cyclone-tw/cyclone-workflow/issues"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              color: '#8B83FF',
+              fontSize: '0.85rem',
+              fontWeight: 600,
+              textDecoration: 'none',
+              padding: '0.5rem 1rem',
+              borderRadius: '0.5rem',
+              border: '1px solid rgba(108,99,255,0.3)',
+              background: 'rgba(108,99,255,0.08)',
+            }}
+          >
+            前往 GitHub 查看 Issues →
+          </a>
+        </div>
       </div>
     );
   }

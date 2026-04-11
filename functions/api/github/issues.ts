@@ -6,6 +6,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   try {
     const headers: Record<string, string> = {
       Accept: 'application/vnd.github.v3+json',
+      'User-Agent': 'cyclone-workflow/1.0',
     };
 
     if (context.env.GITHUB_TOKEN) {

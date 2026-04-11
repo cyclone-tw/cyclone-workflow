@@ -59,7 +59,10 @@ const FILTER_STATUSES = [
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function timeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
+  // SQLite stores UTC timestamps without timezone info (e.g. "2024-04-11 12:00:00").
+  // Append 'Z' to force UTC interpretation; ISO strings with 'T' already carry tz info.
+  const utcStr = dateStr.includes('T') ? dateStr : dateStr.replace(' ', 'T') + 'Z';
+  const diff = Date.now() - new Date(utcStr).getTime();
   const mins = Math.floor(diff / 60000);
   const hours = Math.floor(mins / 60);
   const days = Math.floor(hours / 24);
@@ -67,7 +70,7 @@ function timeAgo(dateStr: string): string {
   if (mins < 60) return `${mins} 分鐘前`;
   if (hours < 24) return `${hours} 小時前`;
   if (days < 30) return `${days} 天前`;
-  return new Date(dateStr).toLocaleDateString('zh-TW');
+  return new Date(utcStr).toLocaleDateString('zh-TW');
 }
 
 function getInitial(name: string): string {

@@ -90,7 +90,7 @@ function MessageCard({
       </div>
       <p
         className="text-sm leading-relaxed whitespace-pre-wrap"
-        style={{ color: 'var(--color-text-secondary)' }}
+        style={{ color: 'var(--color-text-secondary)', overflowWrap: 'break-word', wordBreak: 'break-word' }}
       >
         {msg.content}
       </p>
@@ -108,7 +108,7 @@ function MessageCard({
           }}
           title={!isLoggedIn ? '請先登入才能按讚' : liked ? '收回讚' : '按讚'}
         >
-          <span style={{ fontSize: '14px' }}>{liked ? '\u2764\uFE0F' : '\U0001F90D'}</span>
+          <span style={{ fontSize: '14px' }}>{liked ? '\u2764\uFE0F' : '🤍'}</span>
           <span>{msg.like_count > 0 ? msg.like_count : ''}</span>
         </button>
       </div>

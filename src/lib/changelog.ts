@@ -6,6 +6,18 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: 'v20260411.4',
+    date: '2026-04-11 12:20',
+    changes: [
+      'fix: 許願樹時間顯示異常 — timeAgo 補 UTC 時區標記，解決台灣時區 +8 小時誤差',
+      'fix: 討論區長文顯示異常 — 訊息內容加入 overflow-wrap: break-word 防止溢出',
+      'fix: 討論區按讚圖示損壞 — 修正 \\U0001F90D 非法 Unicode 跳脫序列（改為 🤍）',
+      'fix: Issues 時間顯示異常 — IssueBoard timeAgo 同步 UTC 修正（相容 SQLite 與 GitHub ISO 8601）',
+      'fix: GitHub Issues 載入失敗時顯示跳轉連結，方便直接前往 GitHub 查看',
+      'fix: GitHub Issues API 加入 User-Agent header，避免 GitHub API 403 拒絕',
+    ],
+  },
+  {
     version: 'v20260411.3',
     date: '2026-04-11 12:00',
     changes: [
