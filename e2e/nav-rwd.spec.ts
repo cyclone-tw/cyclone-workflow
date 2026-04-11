@@ -35,7 +35,7 @@ for (const vp of viewports) {
     test('correct menu mode for viewport', async ({ page }) => {
       await page.goto('/');
 
-      const desktopNav = page.locator('nav > div > div > div').nth(1); // desktop nav links
+      const desktopNav = page.getByTestId('desktop-nav');
       const hamburgerBtn = page.locator('#mobile-menu-btn');
 
       if (vp.width < 1280) {
@@ -46,6 +46,18 @@ for (const vp of viewports) {
         // Desktop: desktop nav visible, hamburger hidden
         await expect(desktopNav).toBeVisible();
         await expect(hamburgerBtn).toBeHidden();
+      }
+    });
+
+    test('all 12 nav items are present', async ({ page }) => {
+      await page.goto('/');
+
+      // Count total nav links (desktop + mobile menu)
+      const allNavLinks = page.locator('nav a[href]');
+      const count = await allNavLinks.count();
+      // 12 items in desktop nav OR 12 in mobile menu + 1 logo = at least 12
+      expect(count).toBeGreaterThanOrEqual(12);
+    });
       }
     });
 

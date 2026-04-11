@@ -73,7 +73,7 @@ const currentPath = Astro.url.pathname;
             <span class="text-2xl">🌀</span>
             <span class="gradient-text hidden sm:inline">AI 工作流共學團</span>
           </a>
-          <div class="hidden xl:flex items-center gap-1">
+          <div data-testid="desktop-nav" class="hidden xl:flex items-center gap-1">
             {NAV_ITEMS.map((item) => (
               <a
                 href={item.href}
