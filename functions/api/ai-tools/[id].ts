@@ -30,8 +30,8 @@ async function ensureMigration(db: ReturnType<typeof createClient>) {
   } catch { /* column already exists */ }
 }
 
-function isCaptainOrAbove(user: { effectiveRole: string }): boolean {
-  return (ROLE_LEVEL[user.effectiveRole] ?? 0) >= (ROLE_LEVEL['captain'] ?? 0);
+function isAdminOrAbove(user: { effectiveRole: string }): boolean {
+  return (ROLE_LEVEL[user.effectiveRole] ?? 0) >= (ROLE_LEVEL['admin'] ?? 0);
 }
 
 export const onRequestGet: PagesFunction<Env> = async (context) => {
@@ -69,7 +69,7 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
     await db.execute({ sql: INIT_SQL, args: [] });
     await ensureMigration(db);
 
-    // Permission check: owner or captain+
+    // Permission check: owner or admin+ can edit
     const existing = await db.execute({ sql: 'SELECT contributor_id FROM ai_tools WHERE id = ?', args: [id] });
     if (existing.rows.length === 0) {
       return new Response(JSON.stringify({ ok: false, error: '找不到這個工具' }), {
@@ -78,8 +78,8 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
     }
 
     const isOwner = existing.rows[0].contributor_id === user.id;
-    if (!isOwner && !isCaptainOrAbove(user)) {
-      return new Response(JSON.stringify({ ok: false, error: '權限不足：只有投稿者本人或隊長以上可以編輯' }), {
+    if (!isOwner && !isAdminOrAbove(user)) {
+      return new Response(JSON.stringify({ ok: false, error: '權限不足：只有投稿者本人或行政以上可以編輯' }), {
         status: 403, headers: { 'Content-Type': 'application/json' },
       });
     }
@@ -126,7 +126,7 @@ export const onRequestDelete: PagesFunction<Env> = async (context) => {
     await db.execute({ sql: INIT_SQL, args: [] });
     await ensureMigration(db);
 
-    // Permission check: owner or captain+ (companion cannot delete others' posts)
+    // Permission check: owner or admin+ (companion/member cannot delete others' posts)
     const existing = await db.execute({ sql: 'SELECT contributor_id FROM ai_tools WHERE id = ?', args: [id] });
     if (existing.rows.length === 0) {
       return new Response(JSON.stringify({ ok: false, error: '找不到這個工具' }), {
@@ -135,8 +135,8 @@ export const onRequestDelete: PagesFunction<Env> = async (context) => {
     }
 
     const isOwner = existing.rows[0].contributor_id === user.id;
-    if (!isOwner && !isCaptainOrAbove(user)) {
-      return new Response(JSON.stringify({ ok: false, error: '權限不足：只有投稿者本人或隊長以上可以刪除' }), {
+    if (!isOwner && !isAdminOrAbove(user)) {
+      return new Response(JSON.stringify({ ok: false, error: '權限不足：只有投稿者本人或行政以上可以刪除' }), {
         status: 403, headers: { 'Content-Type': 'application/json' },
       });
     }
