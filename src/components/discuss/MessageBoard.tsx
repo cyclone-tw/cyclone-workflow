@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@/components/auth/useAuth';
+import { timeAgo } from '@/lib/time';
 
 interface Message {
   id: number;
@@ -21,35 +22,26 @@ const CATEGORY_COLORS: Record<string, string> = {
   '成果分享': '#FFD93D',
 };
 
-function timeAgo(dateStr: string): string {
-  const now = new Date();
-  const date = new Date(dateStr + 'Z');
-  const diff = Math.floor((now.getTime() - date.getTime()) / 1000);
-  if (diff < 60) return '剛剛';
-  if (diff < 3600) return `${Math.floor(diff / 60)} 分鐘前`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)} 小時前`;
-  return `${Math.floor(diff / 86400)} 天前`;
-}
-
 function MessageCard({
   msg,
   likedIds,
   onToggleLike,
   isLoggedIn,
-  likeLoading,
+  likeLoadingIds,
 }: {
   msg: Message;
   likedIds: Set<number>;
   onToggleLike: (messageId: number, currentLiked: boolean) => void;
   isLoggedIn: boolean;
-  likeLoading: boolean;
+  likeLoadingIds: Set<number>;
 }) {
   const color = CATEGORY_COLORS[msg.category] || 'var(--color-primary)';
   const liked = likedIds.has(msg.id);
+  const isLikeLoading = likeLoadingIds.has(msg.id);
 
   return (
     <div
-      className="rounded-xl p-4 transition-all"
+      className="rounded-xl p-4 transition-all min-w-0 overflow-hidden"
       style={{
         background: 'var(--color-bg-card)',
         border: '1px solid var(--color-border)',
@@ -57,16 +49,16 @@ function MessageCard({
         borderLeftColor: color,
       }}
     >
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between mb-2 gap-2 min-w-0">
+        <div className="flex items-center gap-2 min-w-0">
           <span
-            className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
             style={{ background: `${color}20`, color }}
           >
             {msg.author[0]}
           </span>
-          <div>
-            <span className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+          <div className="min-w-0">
+            <span className="text-sm font-semibold truncate" style={{ color: 'var(--color-text-primary)' }}>
               {msg.author}
             </span>
             {msg.tag && (
@@ -76,7 +68,7 @@ function MessageCard({
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
           <span
             className="text-xs px-2 py-0.5 rounded-full"
             style={{ background: `${color}20`, color }}
@@ -89,26 +81,26 @@ function MessageCard({
         </div>
       </div>
       <p
-        className="text-sm leading-relaxed whitespace-pre-wrap"
-        style={{ color: 'var(--color-text-secondary)' }}
+        className="text-sm leading-relaxed whitespace-pre-wrap break-words"
+        style={{ color: 'var(--color-text-secondary)', overflowWrap: 'anywhere' }}
       >
         {msg.content}
       </p>
       <div className="flex items-center justify-end mt-2">
         <button
           onClick={() => onToggleLike(msg.id, liked)}
-          disabled={!isLoggedIn || likeLoading}
+          disabled={!isLoggedIn || isLikeLoading}
           className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs transition-all"
           style={{
             background: liked ? 'rgba(255, 77, 106, 0.1)' : 'transparent',
             color: liked ? '#FF4D6A' : 'var(--color-text-muted)',
-            cursor: !isLoggedIn || likeLoading ? 'not-allowed' : 'pointer',
+            cursor: !isLoggedIn || isLikeLoading ? 'not-allowed' : 'pointer',
             opacity: !isLoggedIn ? 0.5 : 1,
             border: 'none',
           }}
           title={!isLoggedIn ? '請先登入才能按讚' : liked ? '收回讚' : '按讚'}
         >
-          <span style={{ fontSize: '14px' }}>{liked ? '\u2764\uFE0F' : '\U0001F90D'}</span>
+          <span style={{ fontSize: '14px' }}>{liked ? '❤️' : '🤍'}</span>
           <span>{msg.like_count > 0 ? msg.like_count : ''}</span>
         </button>
       </div>
@@ -128,7 +120,7 @@ export default function MessageBoard() {
   const [success, setSuccess] = useState(false);
   const [filter, setFilter] = useState('全部');
   const [likedIds, setLikedIds] = useState<Set<number>>(new Set());
-  const [likeLoading, setLikeLoading] = useState(false);
+  const [likeLoadingIds, setLikeLoadingIds] = useState<Set<number>>(new Set());
   const formRef = useRef<HTMLFormElement>(null);
   const { user, loading: authLoading } = useAuth();
 
@@ -176,9 +168,12 @@ export default function MessageBoard() {
 
   const handleToggleLike = async (messageId: number, currentLiked: boolean) => {
     if (!user) return;
+    if (likeLoadingIds.has(messageId)) return;
+
+    // Snapshot current liked state so we can revert on failure
+    const prevLiked = currentLiked;
 
     // Optimistic update
-    const prevLikedIds = new Set(likedIds);
     setLikedIds((prev) => {
       const next = new Set(prev);
       if (currentLiked) {
@@ -198,40 +193,70 @@ export default function MessageBoard() {
       )
     );
 
-    setLikeLoading(true);
+    // Mark this message as in-flight (other messages stay clickable)
+    setLikeLoadingIds((prev) => {
+      const next = new Set(prev);
+      next.add(messageId);
+      return next;
+    });
+
+    const revert = () => {
+      setLikedIds((prev) => {
+        const next = new Set(prev);
+        if (prevLiked) {
+          next.add(messageId);
+        } else {
+          next.delete(messageId);
+        }
+        return next;
+      });
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === messageId
+            ? { ...m, like_count: m.like_count + (prevLiked ? 1 : -1) }
+            : m
+        )
+      );
+    };
+
     try {
       const res = await fetch('/api/messages/likes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message_id: messageId }),
       });
-      const data = await res.json();
-      if (!data.ok) {
-        // Revert on failure
-        setLikedIds(prevLikedIds);
+      const data = await res.json().catch(() => ({ ok: false }));
+      if (data.ok) {
+        // Sync authoritative values from the server
+        setLikedIds((prev) => {
+          const next = new Set(prev);
+          if (data.liked) {
+            next.add(messageId);
+          } else {
+            next.delete(messageId);
+          }
+          return next;
+        });
         setMessages((prev) =>
           prev.map((m) =>
-            m.id === messageId
-              ? { ...m, like_count: m.like_count + (currentLiked ? 1 : -1) }
-              : m
+            m.id === messageId ? { ...m, like_count: Number(data.count ?? m.like_count) } : m
           )
         );
+      } else {
+        revert();
         if (res.status === 401) {
           setError('請先登入才能按讚');
         }
       }
-    } catch {
-      // Revert on network error
-      setLikedIds(prevLikedIds);
-      setMessages((prev) =>
-        prev.map((m) =>
-          m.id === messageId
-            ? { ...m, like_count: m.like_count + (currentLiked ? 1 : -1) }
-            : m
-        )
-      );
+    } catch (err) {
+      console.error('Toggle like failed:', err);
+      revert();
     } finally {
-      setLikeLoading(false);
+      setLikeLoadingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(messageId);
+        return next;
+      });
     }
   };
 
@@ -423,7 +448,7 @@ export default function MessageBoard() {
               likedIds={likedIds}
               onToggleLike={handleToggleLike}
               isLoggedIn={!!user}
-              likeLoading={likeLoading}
+              likeLoadingIds={likeLoadingIds}
             />
           ))}
         </div>

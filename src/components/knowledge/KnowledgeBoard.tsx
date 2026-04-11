@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/components/auth/useAuth';
+import { timeAgo } from '@/lib/time';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -36,20 +37,6 @@ const CATEGORY_CONFIG: Record<KnowledgeCategory, { label: string; color: string 
 };
 
 const ICON_OPTIONS = ['📘', '⚙️', '💻', '🎙️', '✍️', '🧠', '💬', '🎯', '📊', '🛠️', '✨', '🔮'];
-
-// ─── Helpers ───────────────────────────────────────────────────────────────────
-
-function timeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  const hours = Math.floor(mins / 60);
-  const days = Math.floor(hours / 24);
-  if (mins < 1) return '剛剛';
-  if (mins < 60) return `${mins} 分鐘前`;
-  if (hours < 24) return `${hours} 小時前`;
-  if (days < 30) return `${days} 天前`;
-  return new Date(dateStr).toLocaleDateString('zh-TW');
-}
 
 // ─── Shared styles ─────────────────────────────────────────────────────────────
 
