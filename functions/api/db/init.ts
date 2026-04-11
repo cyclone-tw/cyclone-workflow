@@ -184,6 +184,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       { sql: `ALTER TABLE users ADD COLUMN preferences TEXT DEFAULT '{}'`, note: 'users.preferences' },
       { sql: `ALTER TABLE users ADD COLUMN updated_at TEXT NOT NULL DEFAULT ''`, note: 'users.updated_at' },
       { sql: `ALTER TABLE users ADD COLUMN created_at TEXT NOT NULL DEFAULT ''`, note: 'users.created_at' },
+      { sql: `ALTER TABLE users ADD COLUMN status TEXT NOT NULL DEFAULT 'active'`, note: 'users.status' },
+      { sql: `ALTER TABLE users ADD COLUMN archived_at TEXT`, note: 'users.archived_at' },
     ];
     for (const m of migrations) {
       try { await db.execute({ sql: m.sql, args: [] }); } catch { /* column already exists */ }
@@ -192,6 +194,11 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     // Recreate UNIQUE index on email if missing
     try {
       await db.execute({ sql: `CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email) WHERE email != ''`, args: [] });
+    } catch { /* index already exists */ }
+
+    // Index for active/archived filtering (added for admin members management)
+    try {
+      await db.execute({ sql: `CREATE INDEX IF NOT EXISTS idx_users_status_archived ON users(status, archived_at)`, args: [] });
     } catch { /* index already exists */ }
 
     // --- Seed members (from constants) ---

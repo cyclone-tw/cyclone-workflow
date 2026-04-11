@@ -1,0 +1,74 @@
+---
+import Layout from '@/layouts/Layout.astro';
+---
+
+<Layout title="帳號審核中" description="等待管理員審核">
+  <div class="max-w-xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+    <div
+      class="rounded-2xl p-8 text-center"
+      style={{
+        background: 'var(--color-bg-card)',
+        border: '1px solid var(--color-border)',
+      }}
+    >
+      <div class="text-6xl mb-4">⏳</div>
+      <h1 class="text-2xl font-bold mb-3" style={{ color: 'var(--color-text-primary)' }}>
+        帳號正在等待審核
+      </h1>
+      <p class="text-sm mb-2" style={{ color: 'var(--color-text-muted)' }}>
+        你用 Google 登入成功，但尚未被管理員加入共學團成員名單。
+      </p>
+      <p class="text-sm mb-6" style={{ color: 'var(--color-text-muted)' }}>
+        請聯絡 Cyclone 或隊長協助審核，審核通過後重新登入即可使用所有功能。
+      </p>
+      <div class="flex items-center justify-center gap-3">
+        <button
+          id="pending-logout"
+          class="px-5 py-2 rounded-lg text-sm font-medium text-white transition-opacity hover:opacity-90"
+          style={{ background: 'var(--color-primary)' }}
+        >
+          登出
+        </button>
+        <a
+          href="/"
+          class="px-5 py-2 rounded-lg text-sm font-medium transition-opacity hover:opacity-90"
+          style={{
+            background: 'var(--color-bg-dark)',
+            border: '1px solid var(--color-border)',
+            color: 'var(--color-text-secondary)',
+          }}
+        >
+          回首頁
+        </a>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  // Redirect away if user is not pending (or not logged in)
+  (async () => {
+    try {
+      const res = await fetch('/api/auth/me');
+      const data = await res.json();
+      if (!data.ok || !data.user) {
+        window.location.href = '/';
+        return;
+      }
+      if (data.user.status !== 'pending') {
+        window.location.href = '/';
+      }
+    } catch {
+      window.location.href = '/';
+    }
+  })();
+
+  document.getElementById('pending-logout')?.addEventListener('click', async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch {
+      // ignore
+    }
+    window.location.href = '/';
+  });
+</script>

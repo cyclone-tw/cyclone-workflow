@@ -27,7 +27,19 @@ interface AdminUser {
   name: string;
   email: string;
   avatar_url: string | null;
+  discord_id: string | null;
+  status: 'active' | 'pending';
+  archived_at: string | null;
+  updated_at: string | null;
   roles: string[];
+}
+
+interface RelatedCounts {
+  checkins: number;
+  wishes: number;
+  knowledge: number;
+  likes: number;
+  sessions: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -69,6 +81,51 @@ const STAT_BORDER_COLORS: Record<string, string> = {
 };
 
 // ---------------------------------------------------------------------------
+// Modal wrapper
+// ---------------------------------------------------------------------------
+
+function Modal({
+  title,
+  onClose,
+  children,
+}: {
+  title: string;
+  onClose: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: 'rgba(0,0,0,0.6)' }}
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-md rounded-2xl p-6"
+        style={{
+          background: 'var(--color-bg-card)',
+          border: '1px solid var(--color-border)',
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+            {title}
+          </h3>
+          <button
+            onClick={onClose}
+            className="text-2xl leading-none opacity-60 hover:opacity-100 transition-opacity"
+            style={{ color: 'var(--color-text-muted)' }}
+          >
+            ×
+          </button>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Main component
 // ---------------------------------------------------------------------------
 
@@ -80,7 +137,14 @@ export default function AdminPanel() {
   const [dataLoading, setDataLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [updating, setUpdating] = useState<string | null>(null); // user_id being updated
+  const [updating, setUpdating] = useState<string | null>(null);
+  const [includeArchived, setIncludeArchived] = useState(false);
+
+  // Modals
+  const [addOpen, setAddOpen] = useState(false);
+  const [editing, setEditing] = useState<AdminUser | null>(null);
+  const [deleting, setDeleting] = useState<{ user: AdminUser; relatedCounts: RelatedCounts | null; loading: boolean } | null>(null);
+  const [roleConfirm, setRoleConfirm] = useState<{ user: AdminUser; role: string; action: 'add' | 'remove' } | null>(null);
 
   const isAdmin = isRole('admin');
 
@@ -88,9 +152,10 @@ export default function AdminPanel() {
     setDataLoading(true);
     setError(null);
     try {
+      const qs = includeArchived ? '?status=all&includeArchived=1' : '?status=all';
       const [statsRes, usersRes, analyticsRes] = await Promise.all([
         fetch('/api/admin/stats'),
-        fetch('/api/admin/roles'),
+        fetch(`/api/admin/users${qs}`),
         fetch('/api/admin/analytics'),
       ]);
       const statsData = await statsRes.json();
@@ -108,19 +173,18 @@ export default function AdminPanel() {
     } finally {
       setDataLoading(false);
     }
-  }, []);
+  }, [includeArchived]);
 
   useEffect(() => {
     if (isAdmin) fetchData();
   }, [isAdmin, fetchData]);
 
   // ---------------------------------------------------------------------------
-  // Role mutation
+  // Role mutation (with confirmation)
   // ---------------------------------------------------------------------------
 
   async function mutateRole(userId: string, role: string, action: 'add' | 'remove') {
     setUpdating(userId);
-    // Optimistic update
     const prev = users;
     setUsers((us) =>
       us.map((u) => {
@@ -141,9 +205,76 @@ export default function AdminPanel() {
       const data = await res.json();
       if (!data.ok) throw new Error(data.error || '操作失敗');
     } catch (err) {
-      // Rollback
       setUsers(prev);
       setError(err instanceof Error ? err.message : '操作失敗');
+    } finally {
+      setUpdating(null);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Member mutations
+  // ---------------------------------------------------------------------------
+
+  async function createMember(body: { name: string; email: string; role: string; discord_id: string }) {
+    const res = await fetch('/api/admin/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || '新增失敗');
+    await fetchData();
+  }
+
+  async function updateMember(
+    id: string,
+    body: { name?: string; email?: string; discord_id?: string },
+  ) {
+    const res = await fetch(`/api/admin/users/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || '更新失敗');
+    await fetchData();
+  }
+
+  async function previewArchive(u: AdminUser) {
+    setDeleting({ user: u, relatedCounts: null, loading: true });
+    try {
+      const res = await fetch(`/api/admin/users/${u.id}?preview=1`, { method: 'DELETE' });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || '預覽失敗');
+      setDeleting({ user: u, relatedCounts: data.relatedCounts, loading: false });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '預覽失敗');
+      setDeleting(null);
+    }
+  }
+
+  async function confirmArchive(id: string) {
+    try {
+      const res = await fetch(`/api/admin/users/${id}?force=1`, { method: 'DELETE' });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || '封存失敗');
+      setDeleting(null);
+      await fetchData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '封存失敗');
+    }
+  }
+
+  async function approveMember(id: string) {
+    setUpdating(id);
+    try {
+      const res = await fetch(`/api/admin/users/${id}/approve`, { method: 'POST' });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || '核可失敗');
+      await fetchData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '核可失敗');
     } finally {
       setUpdating(null);
     }
@@ -184,10 +315,6 @@ export default function AdminPanel() {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Data loading
-  // ---------------------------------------------------------------------------
-
   if (dataLoading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -197,10 +324,13 @@ export default function AdminPanel() {
   }
 
   // ---------------------------------------------------------------------------
-  // Filter users
+  // Partition users by status
   // ---------------------------------------------------------------------------
 
-  const filtered = users.filter((u) => {
+  const pendingUsers = users.filter((u) => u.status === 'pending' && !u.archived_at);
+  const activeUsers = users.filter((u) => u.status === 'active' && (includeArchived || !u.archived_at));
+
+  const filtered = activeUsers.filter((u) => {
     if (!search) return true;
     const q = search.toLowerCase();
     return (
@@ -224,7 +354,7 @@ export default function AdminPanel() {
             管理後台
           </h1>
           <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
-            角色管理與站點統計
+            成員、角色與站點統計
           </p>
         </div>
       </div>
@@ -232,11 +362,7 @@ export default function AdminPanel() {
       {error && (
         <div
           className="rounded-xl px-4 py-3 text-sm"
-          style={{
-            background: '#E9456020',
-            border: '1px solid #E9456040',
-            color: '#E94560',
-          }}
+          style={{ background: '#E9456020', border: '1px solid #E9456040', color: '#E94560' }}
         >
           {error}
           <button
@@ -343,40 +469,135 @@ export default function AdminPanel() {
         </div>
       )}
 
+      {/* Pending Approvals */}
+      <section>
+        <div className="flex items-center gap-2 mb-4">
+          <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+            待審核使用者
+          </h2>
+          {pendingUsers.length > 0 && (
+            <span
+              className="text-[10px] font-semibold px-2 py-0.5 rounded-full text-white"
+              style={{ backgroundColor: '#E94560' }}
+            >
+              {pendingUsers.length}
+            </span>
+          )}
+        </div>
+        <div
+          className="rounded-xl overflow-hidden"
+          style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}
+        >
+          {pendingUsers.length === 0 ? (
+            <div
+              className="px-4 py-8 text-center text-sm"
+              style={{ color: 'var(--color-text-muted)' }}
+            >
+              目前沒有待審核的使用者
+            </div>
+          ) : (
+            <div className="divide-y" style={{ borderColor: 'var(--color-border)' }}>
+              {pendingUsers.map((u) => (
+                <div
+                  key={u.id}
+                  className="flex items-center gap-3 px-4 py-3"
+                  style={{ borderBottom: '1px solid var(--color-border)' }}
+                >
+                  {u.avatar_url ? (
+                    <img src={u.avatar_url} alt={u.name} className="w-10 h-10 rounded-full object-cover" />
+                  ) : (
+                    <div
+                      className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white"
+                      style={{ backgroundColor: '#9090B0' }}
+                    >
+                      {u.name.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium truncate" style={{ color: 'var(--color-text-primary)' }}>
+                      {u.name}
+                    </div>
+                    <div className="text-xs truncate" style={{ color: 'var(--color-text-muted)' }}>
+                      {u.email || '（無 email）'}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => approveMember(u.id)}
+                    disabled={updating === u.id}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                    style={{ background: '#00F5A0' }}
+                  >
+                    核可
+                  </button>
+                  <button
+                    onClick={() => previewArchive(u)}
+                    disabled={updating === u.id}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium transition-opacity hover:opacity-90 disabled:opacity-50"
+                    style={{
+                      background: 'var(--color-bg-dark)',
+                      border: '1px solid var(--color-border)',
+                      color: 'var(--color-text-secondary)',
+                    }}
+                  >
+                    拒絕
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
       {/* Member Management */}
       <section>
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
           <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text-primary)' }}>
             成員管理
           </h2>
-          <div className="relative">
-            <svg
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4"
+          <div className="flex items-center gap-2 flex-wrap">
+            <label
+              className="flex items-center gap-1.5 text-xs cursor-pointer"
               style={{ color: 'var(--color-text-muted)' }}
-              fill="none" stroke="currentColor" viewBox="0 0 24 24"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <input
-              type="text"
-              placeholder="搜尋成員..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 pr-4 py-2 rounded-lg text-sm w-48
-                bg-[var(--color-bg-card)] border border-[var(--color-border)]
-                text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)]
-                focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/50"
-            />
+              <input
+                type="checkbox"
+                checked={includeArchived}
+                onChange={(e) => setIncludeArchived(e.target.checked)}
+              />
+              顯示已封存
+            </label>
+            <div className="relative">
+              <svg
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4"
+                style={{ color: 'var(--color-text-muted)' }}
+                fill="none" stroke="currentColor" viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                type="text"
+                placeholder="搜尋成員..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9 pr-4 py-2 rounded-lg text-sm w-48
+                  bg-[var(--color-bg-card)] border border-[var(--color-border)]
+                  text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)]
+                  focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/50"
+              />
+            </div>
+            <button
+              onClick={() => setAddOpen(true)}
+              className="px-3 py-2 rounded-lg text-xs font-medium text-white transition-opacity hover:opacity-90"
+              style={{ background: 'var(--color-primary)' }}
+            >
+              + 新增成員
+            </button>
           </div>
         </div>
 
-        {/* Table */}
         <div
           className="rounded-xl overflow-hidden"
-          style={{
-            background: 'var(--color-bg-card)',
-            border: '1px solid var(--color-border)',
-          }}
+          style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}
         >
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -399,21 +620,17 @@ export default function AdminPanel() {
               <tbody>
                 {filtered.map((u) => {
                   const isUpdating = updating === u.id;
+                  const isArchived = !!u.archived_at;
                   return (
                     <tr
                       key={u.id}
                       className="transition-colors hover:bg-[var(--color-overlay-neutral-weak)]"
-                      style={{ borderBottom: '1px solid var(--color-border)' }}
+                      style={{ borderBottom: '1px solid var(--color-border)', opacity: isArchived ? 0.5 : 1 }}
                     >
-                      {/* Avatar + Name */}
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           {u.avatar_url ? (
-                            <img
-                              src={u.avatar_url}
-                              alt={u.name}
-                              className="w-8 h-8 rounded-full object-cover"
-                            />
+                            <img src={u.avatar_url} alt={u.name} className="w-8 h-8 rounded-full object-cover" />
                           ) : (
                             <div
                               className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white"
@@ -422,18 +639,21 @@ export default function AdminPanel() {
                               {u.name.charAt(0).toUpperCase()}
                             </div>
                           )}
-                          <span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>
-                            {u.name}
-                          </span>
+                          <div className="flex flex-col min-w-0">
+                            <span className="font-medium truncate" style={{ color: 'var(--color-text-primary)' }}>
+                              {u.name}
+                            </span>
+                            {isArchived && (
+                              <span className="text-[10px]" style={{ color: '#E94560' }}>已封存</span>
+                            )}
+                          </div>
                         </div>
                       </td>
 
-                      {/* Email */}
                       <td className="px-4 py-3 hidden sm:table-cell" style={{ color: 'var(--color-text-muted)' }}>
-                        {u.email}
+                        {u.email || <span className="italic opacity-60">（未設定）</span>}
                       </td>
 
-                      {/* Roles */}
                       <td className="px-4 py-3">
                         <div className="flex flex-wrap gap-1">
                           {u.roles.length === 0 && (
@@ -449,8 +669,8 @@ export default function AdminPanel() {
                             >
                               {ROLE_LABELS[role] || role}
                               <button
-                                onClick={() => mutateRole(u.id, role, 'remove')}
-                                disabled={isUpdating || (u.id === user?.id && ['captain', 'tech', 'admin'].includes(role))}
+                                onClick={() => setRoleConfirm({ user: u, role, action: 'remove' })}
+                                disabled={isUpdating || isArchived || (u.id === user?.id && ['captain', 'tech', 'admin'].includes(role))}
                                 className="opacity-60 hover:opacity-100 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed"
                                 title={
                                   u.id === user?.id && ['captain', 'tech', 'admin'].includes(role)
@@ -458,39 +678,63 @@ export default function AdminPanel() {
                                     : `移除 ${ROLE_LABELS[role] || role}`
                                 }
                               >
-                                x
+                                ×
                               </button>
                             </span>
                           ))}
                         </div>
                       </td>
 
-                      {/* Actions */}
                       <td className="px-4 py-3 text-right">
-                        <select
-                          className="text-xs px-2 py-1 rounded-lg
-                            bg-[var(--color-bg-dark)] border border-[var(--color-border)]
-                            text-[var(--color-text-secondary)] cursor-pointer
-                            disabled:opacity-50"
-                          disabled={isUpdating}
-                          defaultValue=""
-                          onChange={(e) => {
-                            const role = e.target.value as GroupRole;
-                            if (role && !u.roles.includes(role)) {
-                              mutateRole(u.id, role, 'add');
-                            }
-                            e.target.value = '';
-                          }}
-                        >
-                          <option value="" disabled>
-                            + 新增角色
-                          </option>
-                          {ROLE_LEVEL_ORDER.filter((r) => !u.roles.includes(r)).map((role) => (
-                            <option key={role} value={role}>
-                              {ROLE_LABELS[role]}
-                            </option>
-                          ))}
-                        </select>
+                        <div className="flex items-center justify-end gap-2 flex-wrap">
+                          <select
+                            className="text-xs px-2 py-1 rounded-lg
+                              bg-[var(--color-bg-dark)] border border-[var(--color-border)]
+                              text-[var(--color-text-secondary)] cursor-pointer
+                              disabled:opacity-50"
+                            disabled={isUpdating || isArchived}
+                            value=""
+                            onChange={(e) => {
+                              const role = e.target.value as GroupRole;
+                              if (role && !u.roles.includes(role)) {
+                                setRoleConfirm({ user: u, role, action: 'add' });
+                              }
+                              e.target.value = '';
+                            }}
+                          >
+                            <option value="" disabled>+ 角色</option>
+                            {ROLE_LEVEL_ORDER.filter((r) => !u.roles.includes(r)).map((role) => (
+                              <option key={role} value={role}>
+                                {ROLE_LABELS[role]}
+                              </option>
+                            ))}
+                          </select>
+                          <button
+                            onClick={() => setEditing(u)}
+                            disabled={isUpdating || isArchived}
+                            className="text-xs px-2 py-1 rounded-lg transition-opacity hover:opacity-90 disabled:opacity-50"
+                            style={{
+                              background: 'var(--color-bg-dark)',
+                              border: '1px solid var(--color-border)',
+                              color: 'var(--color-text-secondary)',
+                            }}
+                          >
+                            編輯
+                          </button>
+                          <button
+                            onClick={() => previewArchive(u)}
+                            disabled={isUpdating || isArchived || u.id === user?.id}
+                            className="text-xs px-2 py-1 rounded-lg transition-opacity hover:opacity-90 disabled:opacity-50"
+                            style={{
+                              background: '#E9456020',
+                              border: '1px solid #E9456040',
+                              color: '#E94560',
+                            }}
+                            title={u.id === user?.id ? '不能封存自己' : '封存成員'}
+                          >
+                            封存
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -515,10 +759,7 @@ export default function AdminPanel() {
       {/* Role Legend */}
       <section
         className="rounded-xl p-5"
-        style={{
-          background: 'var(--color-bg-card)',
-          border: '1px solid var(--color-border)',
-        }}
+        style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}
       >
         <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--color-text-primary)' }}>
           角色階級說明
@@ -547,6 +788,352 @@ export default function AdminPanel() {
           左側為較高等級。高等級角色自動擁有低等級的所有權限。
         </p>
       </section>
+
+      {/* Add Member Modal */}
+      {addOpen && (
+        <Modal title="新增成員" onClose={() => setAddOpen(false)}>
+          <AddMemberForm
+            onSubmit={async (body) => {
+              try {
+                await createMember(body);
+                setAddOpen(false);
+              } catch (err) {
+                setError(err instanceof Error ? err.message : '新增失敗');
+              }
+            }}
+            onCancel={() => setAddOpen(false)}
+          />
+        </Modal>
+      )}
+
+      {/* Edit Member Modal */}
+      {editing && (
+        <Modal title={`編輯：${editing.name}`} onClose={() => setEditing(null)}>
+          <EditMemberForm
+            user={editing}
+            onSubmit={async (body) => {
+              try {
+                await updateMember(editing.id, body);
+                setEditing(null);
+              } catch (err) {
+                setError(err instanceof Error ? err.message : '更新失敗');
+              }
+            }}
+            onCancel={() => setEditing(null)}
+          />
+        </Modal>
+      )}
+
+      {/* Archive Confirm Modal */}
+      {deleting && (
+        <Modal title={`封存：${deleting.user.name}`} onClose={() => setDeleting(null)}>
+          {deleting.loading ? (
+            <div className="py-4 text-center text-sm" style={{ color: 'var(--color-text-muted)' }}>
+              載入關聯資料...
+            </div>
+          ) : (
+            <>
+              <p className="text-sm mb-3" style={{ color: 'var(--color-text-secondary)' }}>
+                封存後該成員會從公開列表消失，session 也會被清除。可重新設為 active 恢復。
+              </p>
+              {deleting.relatedCounts && (
+                <div
+                  className="rounded-lg p-3 mb-4 text-xs space-y-1"
+                  style={{ background: 'var(--color-bg-dark)', border: '1px solid var(--color-border)', color: 'var(--color-text-muted)' }}
+                >
+                  <div>關聯資料（封存後仍保留但會被過濾）：</div>
+                  <div className="grid grid-cols-2 gap-1 mt-1">
+                    <span>打卡：{deleting.relatedCounts.checkins}</span>
+                    <span>願望：{deleting.relatedCounts.wishes}</span>
+                    <span>知識：{deleting.relatedCounts.knowledge}</span>
+                    <span>按讚：{deleting.relatedCounts.likes}</span>
+                    <span>Session：{deleting.relatedCounts.sessions}</span>
+                  </div>
+                </div>
+              )}
+              <div className="flex items-center justify-end gap-2">
+                <button
+                  onClick={() => setDeleting(null)}
+                  className="px-4 py-2 rounded-lg text-sm font-medium transition-opacity hover:opacity-90"
+                  style={{
+                    background: 'var(--color-bg-dark)',
+                    border: '1px solid var(--color-border)',
+                    color: 'var(--color-text-secondary)',
+                  }}
+                >
+                  取消
+                </button>
+                <button
+                  onClick={() => confirmArchive(deleting.user.id)}
+                  className="px-4 py-2 rounded-lg text-sm font-medium text-white transition-opacity hover:opacity-90"
+                  style={{ background: '#E94560' }}
+                >
+                  確認封存
+                </button>
+              </div>
+            </>
+          )}
+        </Modal>
+      )}
+
+      {/* Role Mutation Confirm Modal */}
+      {roleConfirm && (
+        <Modal
+          title={roleConfirm.action === 'add' ? '確認指派角色' : '確認移除角色'}
+          onClose={() => setRoleConfirm(null)}
+        >
+          <p className="text-sm mb-4" style={{ color: 'var(--color-text-secondary)' }}>
+            {roleConfirm.action === 'add' ? '將指派' : '將移除'}{' '}
+            <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+              {roleConfirm.user.name}
+            </span>{' '}
+            的{' '}
+            <span
+              className="inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full text-white"
+              style={{ backgroundColor: ROLE_BADGE_COLORS[roleConfirm.role] || '#9090B0' }}
+            >
+              {ROLE_LABELS[roleConfirm.role] || roleConfirm.role}
+            </span>{' '}
+            角色。
+          </p>
+          <div className="flex items-center justify-end gap-2">
+            <button
+              onClick={() => setRoleConfirm(null)}
+              className="px-4 py-2 rounded-lg text-sm font-medium transition-opacity hover:opacity-90"
+              style={{
+                background: 'var(--color-bg-dark)',
+                border: '1px solid var(--color-border)',
+                color: 'var(--color-text-secondary)',
+              }}
+            >
+              取消
+            </button>
+            <button
+              onClick={() => {
+                const { user: u, role, action } = roleConfirm;
+                setRoleConfirm(null);
+                mutateRole(u.id, role, action);
+              }}
+              className="px-4 py-2 rounded-lg text-sm font-medium text-white transition-opacity hover:opacity-90"
+              style={{ background: 'var(--color-primary)' }}
+            >
+              確認
+            </button>
+          </div>
+        </Modal>
+      )}
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Sub forms
+// ---------------------------------------------------------------------------
+
+function AddMemberForm({
+  onSubmit,
+  onCancel,
+}: {
+  onSubmit: (body: { name: string; email: string; role: string; discord_id: string }) => Promise<void>;
+  onCancel: () => void;
+}) {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [role, setRole] = useState<GroupRole>('member');
+  const [discordId, setDiscordId] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  return (
+    <form
+      onSubmit={async (e) => {
+        e.preventDefault();
+        if (!name.trim()) return;
+        setSubmitting(true);
+        try {
+          await onSubmit({ name: name.trim(), email: email.trim(), role, discord_id: discordId.trim() });
+        } finally {
+          setSubmitting(false);
+        }
+      }}
+      className="space-y-3"
+    >
+      <FormField label="姓名 / 暱稱 *">
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+          className="form-input"
+          placeholder="Cyclone"
+        />
+      </FormField>
+      <FormField label="Email">
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="form-input"
+          placeholder="member@example.com（可留空）"
+        />
+      </FormField>
+      <FormField label="Discord ID">
+        <input
+          value={discordId}
+          onChange={(e) => setDiscordId(e.target.value)}
+          className="form-input"
+          placeholder="#1234（選填）"
+        />
+      </FormField>
+      <FormField label="角色">
+        <select
+          value={role}
+          onChange={(e) => setRole(e.target.value as GroupRole)}
+          className="form-input"
+        >
+          {ROLE_LEVEL_ORDER.map((r) => (
+            <option key={r} value={r}>{ROLE_LABELS[r]}</option>
+          ))}
+        </select>
+      </FormField>
+      <div className="flex items-center justify-end gap-2 pt-2">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="px-4 py-2 rounded-lg text-sm font-medium transition-opacity hover:opacity-90"
+          style={{
+            background: 'var(--color-bg-dark)',
+            border: '1px solid var(--color-border)',
+            color: 'var(--color-text-secondary)',
+          }}
+        >
+          取消
+        </button>
+        <button
+          type="submit"
+          disabled={submitting || !name.trim()}
+          className="px-4 py-2 rounded-lg text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+          style={{ background: 'var(--color-primary)' }}
+        >
+          {submitting ? '新增中...' : '新增'}
+        </button>
+      </div>
+      <FormStyles />
+    </form>
+  );
+}
+
+function EditMemberForm({
+  user: u,
+  onSubmit,
+  onCancel,
+}: {
+  user: AdminUser;
+  onSubmit: (body: { name?: string; email?: string; discord_id?: string }) => Promise<void>;
+  onCancel: () => void;
+}) {
+  const [name, setName] = useState(u.name);
+  const [email, setEmail] = useState(u.email);
+  const [discordId, setDiscordId] = useState(u.discord_id ?? '');
+  const [submitting, setSubmitting] = useState(false);
+
+  return (
+    <form
+      onSubmit={async (e) => {
+        e.preventDefault();
+        if (!name.trim()) return;
+        setSubmitting(true);
+        try {
+          await onSubmit({
+            name: name.trim(),
+            email: email.trim(),
+            discord_id: discordId.trim(),
+          });
+        } finally {
+          setSubmitting(false);
+        }
+      }}
+      className="space-y-3"
+    >
+      <FormField label="姓名 / 暱稱 *">
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+          className="form-input"
+        />
+      </FormField>
+      <FormField label="Email">
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="form-input"
+          placeholder="member@example.com（可留空）"
+        />
+      </FormField>
+      <FormField label="Discord ID">
+        <input
+          value={discordId}
+          onChange={(e) => setDiscordId(e.target.value)}
+          className="form-input"
+        />
+      </FormField>
+      <div className="flex items-center justify-end gap-2 pt-2">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="px-4 py-2 rounded-lg text-sm font-medium transition-opacity hover:opacity-90"
+          style={{
+            background: 'var(--color-bg-dark)',
+            border: '1px solid var(--color-border)',
+            color: 'var(--color-text-secondary)',
+          }}
+        >
+          取消
+        </button>
+        <button
+          type="submit"
+          disabled={submitting || !name.trim()}
+          className="px-4 py-2 rounded-lg text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+          style={{ background: 'var(--color-primary)' }}
+        >
+          {submitting ? '儲存中...' : '儲存'}
+        </button>
+      </div>
+      <FormStyles />
+    </form>
+  );
+}
+
+function FormField({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label className="block">
+      <span
+        className="block text-xs font-medium mb-1"
+        style={{ color: 'var(--color-text-muted)' }}
+      >
+        {label}
+      </span>
+      {children}
+    </label>
+  );
+}
+
+function FormStyles() {
+  return (
+    <style>{`
+      .form-input {
+        width: 100%;
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.5rem;
+        background: var(--color-bg-dark);
+        border: 1px solid var(--color-border);
+        color: var(--color-text-primary);
+        font-size: 0.875rem;
+      }
+      .form-input:focus {
+        outline: 2px solid var(--color-primary);
+        outline-offset: -1px;
+      }
+    `}</style>
   );
 }

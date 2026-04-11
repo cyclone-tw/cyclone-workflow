@@ -1,5 +1,6 @@
 import { createClient } from '@libsql/client/web';
 import { requireRole, requireAuth } from '../../../src/lib/auth.ts';
+import { listUsersWithRoles } from '../../../src/lib/members.ts';
 
 interface Env {
   TURSO_DATABASE_URL: string;
@@ -7,36 +8,14 @@ interface Env {
 }
 
 // ---------------------------------------------------------------------------
-// GET /api/admin/roles — list all users with roles
+// GET /api/admin/roles — list all active users with roles
 // ---------------------------------------------------------------------------
 
 export const onRequestGet: PagesFunction<Env> = async (context) => {
   try {
     await requireRole(context.request, context.env, 'admin');
 
-    const db = createClient({
-      url: context.env.TURSO_DATABASE_URL,
-      authToken: context.env.TURSO_AUTH_TOKEN,
-    });
-
-    const result = await db.execute({
-      sql: `
-        SELECT u.id, u.name, u.email, u.avatar_url, GROUP_CONCAT(ur.role) as roles
-        FROM users u
-        LEFT JOIN user_roles ur ON ur.user_id = u.id
-        GROUP BY u.id
-        ORDER BY u.name
-      `,
-      args: [],
-    });
-
-    const users = result.rows.map((r) => ({
-      id: r.id as string,
-      name: r.name as string,
-      email: (r.email as string) ?? '',
-      avatar_url: (r.avatar_url as string) ?? null,
-      roles: r.roles ? (r.roles as string).split(',') : [],
-    }));
+    const users = await listUsersWithRoles(context.env, { status: 'active' });
 
     return new Response(
       JSON.stringify({ ok: true, users }),
