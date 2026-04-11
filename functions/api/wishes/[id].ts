@@ -26,9 +26,12 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     const result = await db.execute({
       sql: `
         SELECT
-          w.*,
+          w.id, w.title, w.description, w.category, w.status, w.icon, w.points,
+          w.created_at, w.updated_at,
+          wisher.id AS wisher_id,
           wisher.name AS wisher_name,
           wisher.avatar_url AS wisher_avatar,
+          claimer.id AS claimer_id,
           claimer.name AS claimer_name,
           claimer.avatar_url AS claimer_avatar
         FROM wishes w
