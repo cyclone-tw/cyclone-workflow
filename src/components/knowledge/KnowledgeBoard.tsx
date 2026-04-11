@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/components/auth/useAuth';
 import { timeAgo } from '@/lib/time';
+import { MEMBERS } from '@/lib/constants';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -561,6 +562,7 @@ export default function KnowledgeBoard() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState<KnowledgeCategory | 'all'>('all');
+  const [contributorFilter, setContributorFilter] = useState<string>('');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingEntry, setEditingEntry] = useState<KnowledgeEntry | null>(null);
   const [deletingEntry, setDeletingEntry] = useState<KnowledgeEntry | null>(null);
@@ -571,6 +573,7 @@ export default function KnowledgeBoard() {
     try {
       const params = new URLSearchParams();
       if (categoryFilter !== 'all') params.set('category', categoryFilter);
+      if (contributorFilter) params.set('contributor_id', contributorFilter);
       const res = await fetch(`/api/knowledge?${params}`);
       if (!res.ok) throw new Error('載入失敗');
       const data = await res.json();
@@ -585,7 +588,7 @@ export default function KnowledgeBoard() {
 
   useEffect(() => {
     fetchEntries();
-  }, [categoryFilter]);
+  }, [categoryFilter, contributorFilter]);
 
   // Permission check: owner or admin+
   function canEdit(entry: KnowledgeEntry): boolean {
@@ -651,7 +654,7 @@ export default function KnowledgeBoard() {
         style={{
           background: 'rgba(18,18,42,0.7)', backdropFilter: 'blur(12px)',
           border: '1px solid #2A2A4A', borderRadius: '0.75rem',
-          padding: '0.5rem', marginBottom: '1.5rem',
+          padding: '0.5rem', marginBottom: '0.75rem',
           display: 'flex', gap: '0.25rem', flexWrap: 'wrap',
         }}
       >
@@ -680,6 +683,30 @@ export default function KnowledgeBoard() {
             </button>
           );
         })}
+      </div>
+
+      {/* Contributor filter */}
+      <div style={{ marginBottom: '1.5rem' }}>
+        <select
+          value={contributorFilter}
+          onChange={(e) => setContributorFilter(e.target.value)}
+          style={{
+            ...inputStyle,
+            width: 'auto',
+            minWidth: 160,
+            maxWidth: 240,
+            fontSize: '0.8rem',
+            padding: '0.4rem 0.75rem',
+            cursor: 'pointer',
+          }}
+        >
+          <option value="">全部成員</option>
+          {MEMBERS.map((m) => (
+            <option key={m.id} value={m.id} style={{ background: '#12122A' }}>
+              {m.avatar} {m.name}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* Content */}

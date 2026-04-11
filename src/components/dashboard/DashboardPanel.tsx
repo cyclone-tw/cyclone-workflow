@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/components/auth/useAuth';
 import type { GroupRole } from '@/lib/constants';
+import { WEEKS } from '@/lib/constants';
 
 interface CheckinStats {
   totalPoints: number;
@@ -8,6 +9,7 @@ interface CheckinStats {
   currentStreak: number;
   longestStreak: number;
   lastCheckinDate: string | null;
+  knowledgeCount: number;
 }
 
 const ROLE_BADGE_COLORS: Record<GroupRole, string> = {
@@ -220,15 +222,15 @@ export default function DashboardPanel() {
 
       {/* Personal Stats Grid */}
       {statsLoading ? (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((i) => (
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+          {[1, 2, 3, 4, 5].map((i) => (
             <div key={i} className="glass rounded-2xl p-5 border border-[var(--color-border)]">
               <div className="h-24 animate-pulse rounded bg-[var(--color-overlay-neutral-strong)]" />
             </div>
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
           {/* Streak */}
           <div className="glass rounded-2xl p-5 card-hover border border-[var(--color-border)]">
             <div className="flex items-center justify-between mb-3">
@@ -297,6 +299,82 @@ export default function DashboardPanel() {
                 {checkingIn ? '處理中...' : '→ 立即打卡'}
               </button>
             )}
+          </div>
+
+          {/* Knowledge Contributions */}
+          <div className="glass rounded-2xl p-5 card-hover border border-[var(--color-border)]">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-2xl">📚</span>
+              <span className="text-xs text-[var(--color-text-muted)] bg-[var(--color-bg-surface)] rounded-full px-2 py-0.5">知識</span>
+            </div>
+            <div className="text-2xl font-bold text-[var(--color-text-primary)] mb-1">
+              {stats?.knowledgeCount ?? 0}
+              <span className="text-[var(--color-text-muted)] text-base font-normal"> 筆</span>
+            </div>
+            <div className="text-xs text-[var(--color-text-secondary)]">知識貢獻</div>
+          </div>
+        </div>
+      )}
+
+      {/* Weekly Checkpoints */}
+      {WEEKS.length > 0 && (
+        <div className="glass rounded-2xl border border-[var(--color-border)] p-5">
+          <h2 className="text-base font-bold text-[var(--color-text-primary)] mb-4 flex items-center gap-2">
+            <span className="text-lg">📅</span> 週檢核點
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {WEEKS.filter((w) => w.num >= 1).map((week) => {
+              const now = new Date();
+              const start = new Date(week.start + 'T00:00:00');
+              const end = new Date(week.end + 'T23:59:59');
+              const isActive = now >= start && now <= end;
+              const isPast = now > end;
+              return (
+                <div
+                  key={week.num}
+                  className={[
+                    'rounded-xl p-4 border transition-all',
+                    isActive
+                      ? 'border-[var(--color-primary)]/50 bg-[var(--color-primary)]/5'
+                      : isPast
+                      ? 'border-[var(--color-neon-green)]/30 bg-[var(--color-neon-green)]/5'
+                      : 'border-[var(--color-border)] bg-[var(--color-bg-surface)]/50',
+                  ].join(' ')}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-bold text-[var(--color-text-primary)]">
+                      W{week.num}：{week.title}
+                    </span>
+                    {isActive && (
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[var(--color-primary)]/20 text-[var(--color-primary)]">
+                        進行中
+                      </span>
+                    )}
+                    {isPast && (
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[var(--color-neon-green)]/20 text-[var(--color-neon-green)]">
+                        已結束
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-[var(--color-text-secondary)] mb-2">{week.subtitle}</p>
+                  <ul className="space-y-1">
+                    {week.goals.map((goal, i) => (
+                      <li key={i} className="flex items-start gap-1.5 text-xs">
+                        <input
+                          type="checkbox"
+                          disabled
+                          className="mt-0.5 rounded border-[var(--color-border)]"
+                        />
+                        <span className="text-[var(--color-text-muted)]">{goal}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-2 text-[10px] text-[var(--color-text-muted)]">
+                    {week.start} ~ {week.end}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

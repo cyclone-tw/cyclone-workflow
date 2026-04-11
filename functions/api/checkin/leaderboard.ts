@@ -28,7 +28,6 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         JOIN users u ON u.id = c.user_id AND u.archived_at IS NULL AND u.status = 'active'
         GROUP BY c.user_id
         ORDER BY total_points DESC
-        LIMIT 20
       `,
       args: [],
     });

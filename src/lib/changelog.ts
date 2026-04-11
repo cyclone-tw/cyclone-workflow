@@ -6,6 +6,20 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: 'v20260412.1',
+    date: '2026-04-12 16:00',
+    changes: [
+      'fix(#30): AI 工具箱權限修正 — 編輯/刪除需投稿者本人或隊長以上（HIGH）',
+      'feat(#30): 儀表板知識貢獻統計卡片 — 顯示知識庫投稿數量（MEDIUM）',
+      'feat(#30): 儀表板週檢核點 — 顯示當週進度、目標與時間範圍（MEDIUM）',
+      'feat(#30): 積分榜顯示全部成員 — 移除 20 人限制（MEDIUM）',
+      'feat(#30): 知識庫成員篩選 — 支援按貢獻者過濾（MEDIUM）',
+      'feat(#30): AI 工具箱標籤共用 — 支援 resource_tags 顯示標籤（MEDIUM）',
+      'feat(#30): AI 工具箱投稿者顯示 + 成員篩選 — 顯示投稿者頭像與名稱（MEDIUM）',
+      'feat(#30): 許願樹狀態歷程追蹤 — 新增 wish_history 表，卡片顯示狀態變化時間軸（MEDIUM）',
+    ],
+  },
+  {
     version: 'v20260411.5',
     date: '2026-04-12 00:00',
     changes: [

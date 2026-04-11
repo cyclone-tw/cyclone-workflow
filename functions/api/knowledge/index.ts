@@ -18,6 +18,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     const url = new URL(context.request.url);
     const category = url.searchParams.get('category');
     const tag = url.searchParams.get('tag');
+    const contributor_id = url.searchParams.get('contributor_id');
 
     let sql = `
       SELECT
@@ -35,6 +36,10 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     if (category && category !== 'all') {
       conditions.push('ke.category = ?');
       args.push(category);
+    }
+    if (contributor_id) {
+      conditions.push('ke.contributor_id = ?');
+      args.push(contributor_id);
     }
     if (tag) {
       sql += ` JOIN resource_tags rt ON rt.resource_id = ke.id AND rt.resource_type = 'knowledge'
