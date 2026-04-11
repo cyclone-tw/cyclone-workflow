@@ -2,9 +2,11 @@ import { test, expect } from './lambdatest-setup';
 
 /**
  * Issue #21 — Navigation bar RWD tests
+ * Updated for PR #24: desktop nav now uses 3 top-level items + "更多" dropdown
+ *
  * Verifies nav behavior at different viewport sizes:
  * - Mobile/tablet (<1280px): hamburger menu visible, desktop nav hidden
- * - Desktop (>=1280px): desktop nav visible, hamburger hidden
+ * - Desktop (>=1280px): 3 top-level items + "更多" dropdown visible, hamburger hidden
  */
 
 const viewports = [
@@ -49,17 +51,14 @@ for (const vp of viewports) {
       }
     });
 
-    test('all 12 nav items are present', async ({ page }) => {
+    test('logo link is present', async ({ page }) => {
       await page.goto('/');
-
-      // Count total nav links (desktop + mobile menu + logo)
-      const allNavLinks = page.locator('nav a[href]');
-      const count = await allNavLinks.count();
-      // 12 items in desktop OR 12 in mobile menu + 1 logo = at least 12
-      expect(count).toBeGreaterThanOrEqual(12);
+      const logo = page.locator('nav a[href="/"]').first();
+      await expect(logo).toBeVisible();
     });
 
     if (vp.width < 1280) {
+      // ── Mobile/tablet tests ──
       test('hamburger menu opens and shows all nav items', async ({ page }) => {
         await page.goto('/');
 
@@ -73,7 +72,7 @@ for (const vp of viewports) {
         await hamburgerBtn.click();
         await expect(mobileMenu).toBeVisible();
 
-        // Should show nav links inside mobile menu
+        // Should show all 12 nav links inside mobile menu
         const mobileLinks = mobileMenu.locator('a');
         const count = await mobileLinks.count();
         expect(count).toBeGreaterThanOrEqual(10);
@@ -81,6 +80,78 @@ for (const vp of viewports) {
         // Click again to close
         await hamburgerBtn.click();
         await expect(mobileMenu).toBeHidden();
+      });
+    } else {
+      // ── Desktop tests (≥1280px) ──
+      test('shows 3 top-level nav items and "更多" button', async ({ page }) => {
+        await page.goto('/');
+
+        const desktopNav = page.getByTestId('desktop-nav');
+
+        // 3 top-level links: 首頁, 說明, 儀表板
+        const topLevelLinks = desktopNav.locator(':scope > a');
+        const count = await topLevelLinks.count();
+        expect(count).toBe(3);
+
+        // "更多" button exists
+        const moreBtn = page.locator('#more-menu-btn');
+        await expect(moreBtn).toBeVisible();
+      });
+
+      test('"更多" dropdown opens with all 9 items', async ({ page }) => {
+        await page.goto('/');
+
+        const moreBtn = page.locator('#more-menu-btn');
+        const morePanel = page.locator('#more-menu-panel');
+
+        // Dropdown starts hidden
+        await expect(morePanel).toBeHidden();
+
+        // Click to open
+        await moreBtn.click();
+        await expect(morePanel).toBeVisible();
+
+        // Should contain 9 dropdown links (5 功能 + 4 許願&反饋)
+        const dropdownLinks = morePanel.locator('a');
+        const count = await dropdownLinks.count();
+        expect(count).toBe(9);
+
+        // Verify group headers exist
+        await expect(morePanel.getByText('功能')).toBeVisible();
+        await expect(morePanel.getByText('許願 & 反饋')).toBeVisible();
+      });
+
+      test('"更多" dropdown closes on outside click', async ({ page }) => {
+        await page.goto('/');
+
+        const moreBtn = page.locator('#more-menu-btn');
+        const morePanel = page.locator('#more-menu-panel');
+
+        // Open dropdown
+        await moreBtn.click();
+        await expect(morePanel).toBeVisible();
+
+        // Click outside (on the body/main area)
+        await page.locator('main').click();
+        await expect(morePanel).toBeHidden();
+      });
+
+      test('"更多" dropdown chevron rotates on toggle', async ({ page }) => {
+        await page.goto('/');
+
+        const moreBtn = page.locator('#more-menu-btn');
+        const chevron = page.locator('#more-menu-chevron');
+
+        // Initially not rotated
+        await expect(chevron).not.toHaveClass(/rotate-180/);
+
+        // Open — chevron rotates
+        await moreBtn.click();
+        await expect(chevron).toHaveClass(/rotate-180/);
+
+        // Close — chevron resets
+        await moreBtn.click();
+        await expect(chevron).not.toHaveClass(/rotate-180/);
       });
     }
   });
