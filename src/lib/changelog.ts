@@ -6,6 +6,18 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: 'v20260411.4',
+    date: '2026-04-11 15:00',
+    changes: [
+      'feat: Issue #28 — 管理後台成員 CRUD（新增 / 編輯暱稱與 email / 軟刪除封存）',
+      'feat: Issue #28 — 未授權 Google 登入者進入待審核狀態，導向 /pending 等待頁',
+      'feat: Issue #28 — 管理後台新增「待審核使用者」區塊，一鍵核可 / 拒絕',
+      'feat: Issue #28 — 角色指派 / 移除加入二次確認 dialog，防止誤操作',
+      'feat: users 表新增 status / archived_at 欄位 + 專用索引',
+      'fix: 公開查詢（leaderboard / wishes / knowledge）自動過濾 archived 與 pending 使用者',
+    ],
+  },
+  {
     version: 'v20260411.3',
     date: '2026-04-11 12:00',
     changes: [

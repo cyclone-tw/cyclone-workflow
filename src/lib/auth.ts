@@ -15,6 +15,7 @@ export interface SessionUser {
   discord_id: string | null;
   roles: string[];
   effectiveRole: string;
+  status: 'active' | 'pending';
 }
 
 // ---------------------------------------------------------------------------
@@ -141,9 +142,11 @@ export async function getSessionUser(
   const result = await db.execute({
     sql: `
       SELECT
-        u.id        AS user_id,
-        u.name      AS user_name,
-        u.discord_id AS user_discord_id,
+        u.id          AS user_id,
+        u.name        AS user_name,
+        u.discord_id  AS user_discord_id,
+        u.status      AS user_status,
+        u.archived_at AS user_archived_at,
         s.expires_at
       FROM sessions s
       JOIN users u ON u.id = s.user_id
@@ -162,7 +165,14 @@ export async function getSessionUser(
     return null;
   }
 
+  // Archived users are effectively logged out — destroy their session
+  if (row.user_archived_at) {
+    await db.execute({ sql: `DELETE FROM sessions WHERE token = ?`, args: [token] });
+    return null;
+  }
+
   const userId = row.user_id as string;
+  const status = ((row.user_status as string) || 'active') as 'active' | 'pending';
 
   // Fetch roles
   const rolesResult = await db.execute({
@@ -171,22 +181,26 @@ export async function getSessionUser(
   });
 
   const roles = rolesResult.rows.map((r) => r.role as string);
-  // If no roles assigned, default to 'companion'
-  const effectiveRole = roles.length > 0 ? getEffectiveRole(roles) : 'companion';
+  // Pending users have no effective role regardless of any stray role rows;
+  // active users with no roles default to 'companion'.
+  const effectiveRole = status === 'pending'
+    ? 'pending'
+    : (roles.length > 0 ? getEffectiveRole(roles) : 'companion');
 
   return {
     id: userId,
     name: row.user_name as string,
     discord_id: (row.user_discord_id as string) ?? null,
-    roles: roles.length > 0 ? roles : ['companion'],
+    roles: status === 'pending' ? [] : (roles.length > 0 ? roles : ['companion']),
     effectiveRole,
+    status,
   };
 }
 
 /**
- * requireAuth — returns the authenticated user or throws a 401 Response.
- * Usage inside a PagesFunction handler:
- *   const user = await requireAuth(context.request, context.env);
+ * requireAuth — returns the authenticated active user or throws a 401/403 Response.
+ * Pending users (awaiting admin approval) are rejected with 403; they can still reach
+ * /api/auth/me and /api/auth/logout via getSessionUser directly.
  */
 export async function requireAuth(
   request: Request,
@@ -198,6 +212,12 @@ export async function requireAuth(
       status: 401,
       headers: { 'Content-Type': 'application/json' },
     });
+  }
+  if (user.status === 'pending') {
+    throw new Response(
+      JSON.stringify({ ok: false, error: '帳號待審核', status: 'pending' }),
+      { status: 403, headers: { 'Content-Type': 'application/json' } },
+    );
   }
   return user;
 }

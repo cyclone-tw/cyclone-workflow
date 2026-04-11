@@ -27,7 +27,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         u.name AS contributor_name,
         u.avatar_url AS contributor_avatar
       FROM knowledge_entries ke
-      JOIN users u ON u.id = ke.contributor_id
+      JOIN users u ON u.id = ke.contributor_id AND u.archived_at IS NULL AND u.status = 'active'
     `;
     const conditions: string[] = [];
     const args: string[] = [];

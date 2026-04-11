@@ -102,28 +102,31 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
 
     const db = getDb(context.env);
 
-    // Check if user exists by email
+    // Check if user exists by email (excluding archived)
     const existingUser = await db.execute({
-      sql: `SELECT id FROM users WHERE email = ?`,
+      sql: `SELECT id, status FROM users WHERE email = ? AND archived_at IS NULL`,
       args: [googleUser.email],
     });
 
     let userId: string;
+    let isPending = false;
 
     if (existingUser.rows.length > 0) {
       // Update existing user's name and avatar
       userId = existingUser.rows[0].id as string;
+      isPending = (existingUser.rows[0].status as string) === 'pending';
       await db.execute({
         sql: `UPDATE users SET name = ?, avatar_url = ?, updated_at = datetime('now') WHERE id = ?`,
         args: [googleUser.name, googleUser.picture, userId],
       });
     } else {
       // No email match — try to claim a seed user with matching name and empty email
-      // Only allow claiming low-privilege seed users (no admin/tech/captain roles) to prevent role hijacking
+      // Only allow claiming active, non-archived, low-privilege seed users
       // 1. Exact name match (fast path)
       let seedMatch = await db.execute({
         sql: `SELECT id FROM users
               WHERE name = ? AND (email = '' OR email IS NULL)
+              AND archived_at IS NULL AND status = 'active'
               AND NOT EXISTS (SELECT 1 FROM user_roles WHERE user_id = users.id AND role IN ('admin', 'tech', 'captain'))
               LIMIT 1`,
         args: [googleUser.name],
@@ -136,6 +139,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         seedMatch = await db.execute({
           sql: `SELECT id FROM users
                 WHERE (email = '' OR email IS NULL) AND LENGTH(name) >= 4 AND INSTR(?, name) = 1
+                AND archived_at IS NULL AND status = 'active'
                 AND NOT EXISTS (SELECT 1 FROM user_roles WHERE user_id = users.id AND role IN ('admin', 'tech', 'captain'))
                 ORDER BY LENGTH(name) DESC LIMIT 1`,
           args: [googleUser.name],
@@ -150,17 +154,12 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
           args: [googleUser.email, googleUser.picture, userId],
         });
       } else {
-        // Truly new user — create with companion role
+        // Truly new user — create as pending, no role until admin approves
         userId = crypto.randomUUID();
+        isPending = true;
         await db.execute({
-          sql: `INSERT INTO users (id, email, name, avatar_url, preferences, created_at, updated_at) VALUES (?, ?, ?, ?, '{}', datetime('now'), datetime('now'))`,
+          sql: `INSERT INTO users (id, email, name, avatar_url, status, preferences, created_at, updated_at) VALUES (?, ?, ?, ?, 'pending', '{}', datetime('now'), datetime('now'))`,
           args: [userId, googleUser.email, googleUser.name, googleUser.picture],
-        });
-
-        const roleId = crypto.randomUUID();
-        await db.execute({
-          sql: `INSERT INTO user_roles (id, user_id, role) VALUES (?, ?, 'companion')`,
-          args: [roleId, userId],
         });
       }
     }
@@ -169,11 +168,11 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     const isSecure = url.protocol === 'https:';
     const { setCookie } = await createSession(context.env, userId, isSecure);
 
-    // Redirect to homepage with session cookie
+    // Pending users land on the waiting-for-approval page; everyone else goes home
     return new Response(null, {
       status: 302,
       headers: {
-        Location: '/',
+        Location: isPending ? '/pending' : '/',
         'Set-Cookie': setCookie,
       },
     });

@@ -43,6 +43,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
           avatar_url: avatar_url || null,
           roles: user.roles,
           effectiveRole: user.effectiveRole,
+          status: user.status,
         },
       }),
       { headers: { 'Content-Type': 'application/json' } },

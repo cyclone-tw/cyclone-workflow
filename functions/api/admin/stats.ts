@@ -15,6 +15,18 @@ async function safeCount(db: ReturnType<typeof createClient>, table: string): Pr
   }
 }
 
+async function safeCountActiveUsers(db: ReturnType<typeof createClient>): Promise<number> {
+  try {
+    const result = await db.execute({
+      sql: `SELECT COUNT(*) as count FROM users WHERE archived_at IS NULL AND status = 'active'`,
+      args: [],
+    });
+    return Number(result.rows[0]?.count ?? 0);
+  } catch {
+    return 0;
+  }
+}
+
 // ---------------------------------------------------------------------------
 // GET /api/admin/stats — aggregate site statistics
 // ---------------------------------------------------------------------------
@@ -30,7 +42,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
 
     const [totalUsers, totalCheckins, totalKnowledge, totalWishes, totalMessages] =
       await Promise.all([
-        safeCount(db, 'users'),
+        safeCountActiveUsers(db),
         safeCount(db, 'checkins'),
         safeCount(db, 'knowledge_entries'),
         safeCount(db, 'wishes'),
