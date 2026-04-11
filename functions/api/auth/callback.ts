@@ -125,11 +125,12 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         args: [googleUser.name],
       });
 
-      // 2. Substring fallback: Google name contains seed name
-      //    e.g. Google "Cyclone Kang" → seed "Cyclone"
+      // 2. Prefix fallback: Google name starts with seed name (min 4 chars)
+      //    e.g. Google "Cyclone Kang" → seed "Cyclone" (prefix, 7 chars ✓)
+      //    NOT: Google "Darren Smith" → seed "Dar" (3 chars ✗, too short)
       if (seedMatch.rows.length === 0) {
         seedMatch = await db.execute({
-          sql: `SELECT id FROM users WHERE (email = '' OR email IS NULL) AND INSTR(?, name) > 0 ORDER BY LENGTH(name) DESC LIMIT 1`,
+          sql: `SELECT id FROM users WHERE (email = '' OR email IS NULL) AND LENGTH(name) >= 4 AND INSTR(?, name) = 1 ORDER BY LENGTH(name) DESC LIMIT 1`,
           args: [googleUser.name],
         });
       }

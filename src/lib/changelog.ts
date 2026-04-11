@@ -6,6 +6,13 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: 'v20260411.3',
+    date: '2026-04-11 12:00',
+    changes: [
+      'fix: OAuth name matching 安全強化 — prefix-only + 最少 4 字元防誤匹配',
+    ],
+  },
+  {
     version: 'v20260411.2',
     date: '2026-04-11 09:00',
     changes: [
