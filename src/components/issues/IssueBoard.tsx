@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { timeAgo } from '@/lib/time';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -94,18 +95,7 @@ const PRIORITY_COLORS: Record<IssuePriority, { bg: string; color: string }> = {
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-
-function timeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  const hours = Math.floor(mins / 60);
-  const days = Math.floor(hours / 24);
-  if (mins < 1) return '剛剛';
-  if (mins < 60) return `${mins} 分鐘前`;
-  if (hours < 24) return `${hours} 小時前`;
-  if (days < 30) return `${days} 天前`;
-  return new Date(dateStr).toLocaleDateString('zh-TW');
-}
+// `timeAgo` is imported from `@/lib/time`.
 
 // ─── Shared styles ────────────────────────────────────────────────────────────
 
@@ -724,10 +714,21 @@ function GitHubIssuesTab() {
       setError(null);
       try {
         const res = await fetch('/api/github/issues');
-        if (!res.ok) throw new Error('載入 GitHub Issues 失敗');
-        const data = await res.json();
+        const data = await res.json().catch(() => null);
+        if (!res.ok || !data?.ok) {
+          const serverError = data?.error ?? `HTTP ${res.status}`;
+          console.error('GitHub Issues fetch failed:', serverError);
+          if (res.status === 403 || /rate limit/i.test(String(serverError))) {
+            setError('GitHub API 限流中，請稍後再試（或請管理員設定 GITHUB_TOKEN）');
+          } else {
+            setError(`無法載入 GitHub Issues：${serverError}`);
+          }
+          setIssues([]);
+          return;
+        }
         setIssues(data.issues || []);
-      } catch {
+      } catch (err) {
+        console.error('GitHub Issues fetch error:', err);
         setError('無法載入 GitHub Issues，請稍後再試');
         setIssues([]);
       } finally {
@@ -736,6 +737,33 @@ function GitHubIssuesTab() {
     }
     fetchGitHub();
   }, []);
+
+  const repoIssuesUrl = 'https://github.com/cyclone-tw/cyclone-workflow/issues';
+
+  const fallbackLink = (
+    <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+      <a
+        href={repoIssuesUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.4rem',
+          color: '#8B83FF',
+          fontSize: '0.85rem',
+          fontWeight: 600,
+          textDecoration: 'none',
+          padding: '0.5rem 1rem',
+          borderRadius: '0.5rem',
+          border: '1px solid rgba(108,99,255,0.3)',
+          background: 'rgba(108,99,255,0.08)',
+        }}
+      >
+        前往 GitHub 儲存庫 →
+      </a>
+    </div>
+  );
 
   const cardBase: React.CSSProperties = {
     background: 'rgba(18,18,42,0.7)',
@@ -775,36 +803,42 @@ function GitHubIssuesTab() {
 
   if (error) {
     return (
-      <div
-        style={{
-          textAlign: 'center',
-          padding: '4rem 2rem',
-          background: 'rgba(18,18,42,0.5)',
-          border: '1px solid #2A2A4A',
-          borderRadius: '1rem',
-          color: '#9090B0',
-        }}
-      >
-        <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>⚠️</div>
-        <p style={{ fontSize: '0.95rem' }}>{error}</p>
+      <div>
+        <div
+          style={{
+            textAlign: 'center',
+            padding: '4rem 2rem',
+            background: 'rgba(18,18,42,0.5)',
+            border: '1px solid #2A2A4A',
+            borderRadius: '1rem',
+            color: '#9090B0',
+          }}
+        >
+          <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>⚠️</div>
+          <p style={{ fontSize: '0.95rem' }}>{error}</p>
+        </div>
+        {fallbackLink}
       </div>
     );
   }
 
   if (issues.length === 0) {
     return (
-      <div
-        style={{
-          textAlign: 'center',
-          padding: '4rem 2rem',
-          background: 'rgba(18,18,42,0.5)',
-          border: '1px solid #2A2A4A',
-          borderRadius: '1rem',
-          color: '#606080',
-        }}
-      >
-        <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🎉</div>
-        <p style={{ fontSize: '0.95rem' }}>目前沒有 Open 的 GitHub Issues</p>
+      <div>
+        <div
+          style={{
+            textAlign: 'center',
+            padding: '4rem 2rem',
+            background: 'rgba(18,18,42,0.5)',
+            border: '1px solid #2A2A4A',
+            borderRadius: '1rem',
+            color: '#606080',
+          }}
+        >
+          <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🎉</div>
+          <p style={{ fontSize: '0.95rem' }}>目前沒有 Open 的 GitHub Issues</p>
+        </div>
+        {fallbackLink}
       </div>
     );
   }

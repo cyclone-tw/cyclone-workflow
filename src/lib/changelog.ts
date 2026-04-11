@@ -6,6 +6,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: 'v20260411.5',
+    date: '2026-04-12 00:00',
+    changes: [
+      'fix: 許願樹/知識庫/工具箱/Issues 相對時間顯示修正 — SQLite UTC naive 字串現在會被視為 UTC 而非本地時間（Issue #27）',
+      'fix: 討論區長文顯示異常 — 加上 break-words/overflow-wrap 讓 2000 字長字串正常換行（Issue #27）',
+      'fix: 討論區按讚 — 修正 emoji 逸出、likeLoading 改為 per-message、成功時同步伺服器 count（Issue #27）',
+      'fix: Issues 頁面 GitHub 代理 API — 加上 User-Agent header、5 分鐘邊緣快取，錯誤狀態加上 fallback 連結（Issue #27）',
+      'chore: 新增共用 src/lib/time.ts helper（parseServerDate + timeAgo）',
+    ],
+  },
+  {
     version: 'v20260411.4',
     date: '2026-04-11 15:00',
     changes: [
