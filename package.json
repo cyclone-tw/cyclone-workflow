@@ -8,10 +8,16 @@
     "preview": "astro preview",
     "astro": "astro",
     "bump:version": "bun scripts/bump-version.ts",
-    "deploy": "astro build && wrangler pages deploy dist"
+    "deploy": "astro build && wrangler pages deploy dist",
+    "test:e2e": "playwright test",
+    "test:e2e:local": "E2E_BASE_URL=http://localhost:4321 playwright test",
+    "test:e2e:lt": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
   },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@playwright/test": "^1.59.1",
+    "@types/bun": "latest",
+    "playwright": "^1.59.1"
   },
   "peerDependencies": {
     "typescript": "^5"
