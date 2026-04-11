@@ -80,7 +80,7 @@ function handleFocusOut(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaEleme
 function canModifyTool(user: { id: string; effectiveRole: string } | null | undefined, tool: Tool): boolean {
   if (!user) return false;
   if (tool.contributor_id === user.id) return true;
-  return (ROLE_LEVEL[user.effectiveRole] ?? 0) >= (ROLE_LEVEL['captain'] ?? 0);
+  return (ROLE_LEVEL[user.effectiveRole] ?? 0) >= (ROLE_LEVEL['admin'] ?? 0);
 }
 
 // ─── Modal ────────────────────────────────────────────────────────────────────
