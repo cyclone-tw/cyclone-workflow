@@ -3,7 +3,7 @@ import { test, expect } from './lambdatest-setup';
 /**
  * Issue #21 — Navigation bar RWD tests
  * Verifies nav behavior at different viewport sizes:
- * - Mobile (<1024px): hamburger menu visible, desktop nav hidden
+ * - Mobile/tablet (<1280px): hamburger menu visible, desktop nav hidden
  * - Desktop (>=1280px): desktop nav visible, hamburger hidden
  */
 
@@ -52,13 +52,11 @@ for (const vp of viewports) {
     test('all 12 nav items are present', async ({ page }) => {
       await page.goto('/');
 
-      // Count total nav links (desktop + mobile menu)
+      // Count total nav links (desktop + mobile menu + logo)
       const allNavLinks = page.locator('nav a[href]');
       const count = await allNavLinks.count();
-      // 12 items in desktop nav OR 12 in mobile menu + 1 logo = at least 12
+      // 12 items in desktop OR 12 in mobile menu + 1 logo = at least 12
       expect(count).toBeGreaterThanOrEqual(12);
-    });
-      }
     });
 
     if (vp.width < 1280) {
