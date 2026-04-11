@@ -13,12 +13,22 @@ interface Env {
  * Development-only endpoint that creates a captain session for testing.
  * Returns a Set-Cookie header with the session token.
  *
- * ONLY works when ENVIRONMENT !== "production".
+ * ONLY works on localhost — blocked on any deployed environment.
  */
 export const onRequestPost: PagesFunction<Env> = async (context) => {
-  // Guard: never allow in production
+  // Guard: ONLY allow requests from localhost
+  const url = new URL(context.request.url);
+  const host = url.hostname;
+  if (host !== 'localhost' && host !== '127.0.0.1' && host !== '::1') {
+    return new Response(JSON.stringify({ ok: false, error: 'Not available' }), {
+      status: 403,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  // Guard: never allow in production env
   if (context.env.ENVIRONMENT === 'production') {
-    return new Response(JSON.stringify({ ok: false, error: 'Not available in production' }), {
+    return new Response(JSON.stringify({ ok: false, error: 'Not available' }), {
       status: 403,
       headers: { 'Content-Type': 'application/json' },
     });
