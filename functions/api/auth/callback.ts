@@ -119,13 +119,12 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       });
     } else {
       // No email match — try to claim a seed user with matching name and empty email
-      // Only allow claiming low-privilege seed users (companion/member) to prevent role hijacking
+      // Only allow claiming low-privilege seed users (no admin/tech/captain roles) to prevent role hijacking
       // 1. Exact name match (fast path)
       let seedMatch = await db.execute({
-        sql: `SELECT u.id FROM users u
-              LEFT JOIN user_roles ur ON ur.user_id = u.id
-              WHERE u.name = ? AND (u.email = '' OR u.email IS NULL)
-              AND (ur.role IN ('companion', 'member') OR ur.role IS NULL)
+        sql: `SELECT id FROM users
+              WHERE name = ? AND (email = '' OR email IS NULL)
+              AND NOT EXISTS (SELECT 1 FROM user_roles WHERE user_id = users.id AND role IN ('admin', 'tech', 'captain'))
               LIMIT 1`,
         args: [googleUser.name],
       });
@@ -135,11 +134,10 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       //    NOT: Google "Darren Smith" → seed "Dar" (3 chars ✗, too short)
       if (seedMatch.rows.length === 0) {
         seedMatch = await db.execute({
-          sql: `SELECT u.id FROM users u
-                LEFT JOIN user_roles ur ON ur.user_id = u.id
-                WHERE (u.email = '' OR u.email IS NULL) AND LENGTH(u.name) >= 4 AND INSTR(?, u.name) = 1
-                AND (ur.role IN ('companion', 'member') OR ur.role IS NULL)
-                ORDER BY LENGTH(u.name) DESC LIMIT 1`,
+          sql: `SELECT id FROM users
+                WHERE (email = '' OR email IS NULL) AND LENGTH(name) >= 4 AND INSTR(?, name) = 1
+                AND NOT EXISTS (SELECT 1 FROM user_roles WHERE user_id = users.id AND role IN ('admin', 'tech', 'captain'))
+                ORDER BY LENGTH(name) DESC LIMIT 1`,
           args: [googleUser.name],
         });
       }
