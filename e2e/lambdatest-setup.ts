@@ -26,7 +26,7 @@ const capabilities = {
 };
 
 export const test = base.test.extend({
-  page: async ({ page }, use, testInfo) => {
+  page: async ({ page, viewport }, use, testInfo) => {
     const isLT = !!process.env.LT_USERNAME && testInfo.project.name.includes('lambdatest');
 
     if (isLT) {
@@ -40,6 +40,15 @@ export const test = base.test.extend({
       });
 
       const ltPage = await browser.newPage(testInfo.project.use);
+
+      // LambdaTest cloud browser ignores viewport in newPage().
+      // Force it via CDP setViewportSize so per-test viewports work.
+      // Must use the 'viewport' fixture (not testInfo.project.use) to get
+      // describe-level overrides from test.use({ viewport }).
+      if (viewport) {
+        await ltPage.setViewportSize(viewport);
+      }
+
       await use(ltPage);
 
       // Report test status
