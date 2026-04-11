@@ -146,6 +146,12 @@ export default function AdminPanel() {
   const [deleting, setDeleting] = useState<{ user: AdminUser; relatedCounts: RelatedCounts | null; loading: boolean } | null>(null);
   const [roleConfirm, setRoleConfirm] = useState<{ user: AdminUser; role: string; action: 'add' | 'remove' } | null>(null);
 
+  // AI Insights
+  const [insights, setInsights] = useState<string | null>(null);
+  const [insightsLoading, setInsightsLoading] = useState(false);
+  const [insightsError, setInsightsError] = useState<string | null>(null);
+  const [quotaExceeded, setQuotaExceeded] = useState(false);
+
   const isAdmin = isRole('admin');
 
   const fetchData = useCallback(async () => {
@@ -277,6 +283,36 @@ export default function AdminPanel() {
       setError(err instanceof Error ? err.message : '核可失敗');
     } finally {
       setUpdating(null);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // AI Insights
+  // ---------------------------------------------------------------------------
+
+  async function fetchInsights() {
+    if (!analytics) return;
+    setInsightsLoading(true);
+    setInsightsError(null);
+    setInsights(null);
+    try {
+      const res = await fetch('/api/admin/ai-insights', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ analytics }),
+      });
+      const data = await res.json();
+      if (res.status === 429 || data.quotaExceeded) {
+        setQuotaExceeded(true);
+        setInsightsError(data.error || '目前 API 用量已滿，等待明天再試。');
+        return;
+      }
+      if (!data.ok) throw new Error(data.error || 'AI 分析失敗');
+      setInsights(data.insights);
+    } catch (err) {
+      setInsightsError(err instanceof Error ? err.message : 'AI 分析失敗');
+    } finally {
+      setInsightsLoading(false);
     }
   }
 
@@ -547,6 +583,65 @@ export default function AdminPanel() {
           )}
         </div>
       </section>
+
+      {/* AI Insights */}
+      {analytics && !analytics.error && (
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+              AI 分析建議
+            </h2>
+            <button
+              onClick={fetchInsights}
+              disabled={insightsLoading || quotaExceeded}
+              className="px-4 py-2 rounded-lg text-sm font-medium transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ background: 'linear-gradient(135deg, #6C63FF, #00D9FF)', color: '#fff' }}
+            >
+              {insightsLoading ? '分析中...' : quotaExceeded ? '用量已滿' : '生成 AI 建議'}
+            </button>
+          </div>
+
+          {insightsLoading && (
+            <div className="rounded-xl p-6 flex items-center justify-center gap-3" style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}>
+              <div className="w-5 h-5 border-2 border-[#6C63FF] border-t-transparent rounded-full animate-spin" />
+              <span className="text-sm" style={{ color: 'var(--color-text-muted)' }}>正在分析數據，請稍候...</span>
+            </div>
+          )}
+
+          {insightsError && !insightsLoading && (
+            <div className="rounded-xl px-4 py-3 text-sm" style={{ background: quotaExceeded ? '#FF980020' : '#E9456020', border: `1px solid ${quotaExceeded ? '#FF980040' : '#E9456040'}`, color: quotaExceeded ? '#FF9800' : '#E94560' }}>
+              {insightsError}
+            </div>
+          )}
+
+          {insights && !insightsLoading && (
+            <div
+              className="rounded-xl p-5 space-y-3 text-sm"
+              style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}
+            >
+              {insights.split('\n').map((line, i) => {
+                const headingMatch = line.match(/^###\s+(\d+)\.\s+(.+)/);
+                if (headingMatch) {
+                  return (
+                    <h3 key={i} className="font-semibold mt-4 first:mt-0" style={{ color: '#6C63FF' }}>
+                      {headingMatch[1]}. {headingMatch[2]}
+                    </h3>
+                  );
+                }
+                if (line.startsWith('→')) {
+                  return (
+                    <p key={i} style={{ color: '#00D9FF' }}>{line}</p>
+                  );
+                }
+                if (line.trim() === '') return <div key={i} className="h-1" />;
+                return (
+                  <p key={i} style={{ color: 'var(--color-text-secondary)' }}>{line}</p>
+                );
+              })}
+            </div>
+          )}
+        </section>
+      )}
 
       {/* Member Management */}
       <section>

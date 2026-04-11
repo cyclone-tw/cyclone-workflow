@@ -6,6 +6,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: 'v20260413.1',
+    date: '2026-04-13 18:00',
+    changes: [
+      'feat(#23): Gemini AI 分析建議功能 — 管理後台 GA4 數據智慧建議',
+      'feat(#23): 新增 /api/admin/ai-insights 端點，呼叫 Gemini 2.0 Flash 分析 GA4 數據',
+      'feat(#23): AdminPanel AI 建議區塊 — 生成按鈕、載入動畫、配額耗盡提示',
+    ],
+  },
+  {
     version: 'v20260412.2',
     date: '2026-04-12 18:00',
     changes: [
