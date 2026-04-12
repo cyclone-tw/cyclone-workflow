@@ -40,7 +40,7 @@ async function recordStatusChange(
   });
 }
 
-function isAdmin(user: { effectiveRole: string }): boolean {
+function isAdminOrAbove(user: { effectiveRole: string }): boolean {
   return (ROLE_LEVEL[user.effectiveRole] ?? 0) >= (ROLE_LEVEL['admin'] ?? 0);
 }
 
@@ -184,7 +184,7 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
       }
 
       const canChangeStatus =
-        wish.claimer_id === user.id || isAdmin(user);
+        wish.claimer_id === user.id || isAdminOrAbove(user);
       if (!canChangeStatus) {
         return new Response(JSON.stringify({ ok: false, error: '權限不足' }), {
           status: 403,
@@ -205,7 +205,7 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
     }
 
     // ── Edit fields ───────────────────────────────────────────────────────
-    const canEdit = wish.wisher_id === user.id || isAdmin(user);
+    const canEdit = wish.wisher_id === user.id || isAdminOrAbove(user);
     if (!canEdit) {
       return new Response(JSON.stringify({ ok: false, error: '權限不足' }), {
         status: 403,
@@ -273,7 +273,7 @@ export const onRequestDelete: PagesFunction<Env> = async (context) => {
       });
     }
 
-    const canDelete = existing.rows[0].wisher_id === user.id || isAdmin(user);
+    const canDelete = existing.rows[0].wisher_id === user.id || isAdminOrAbove(user);
     if (!canDelete) {
       return new Response(JSON.stringify({ ok: false, error: '權限不足' }), {
         status: 403,
