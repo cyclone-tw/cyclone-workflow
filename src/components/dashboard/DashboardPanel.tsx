@@ -77,6 +77,21 @@ export default function DashboardPanel() {
     return () => clearTimeout(timer);
   }, [toast]);
 
+  // Optimistic stats update from checkin API response
+  // Only increments counts when this was a new checkin (not already checked in)
+  function updateStatsFromCheckin(data: { alreadyCheckedIn?: boolean; streak?: number; points?: number; checkinDate?: string }) {
+    const newStreak = data.streak ?? 1;
+    const wasNew = !data.alreadyCheckedIn;
+    setStats((prev) => prev ? {
+      ...prev,
+      totalPoints: prev.totalPoints + (wasNew ? (data.points ?? 10) : 0),
+      totalCheckins: prev.totalCheckins + (wasNew ? 1 : 0),
+      currentStreak: newStreak,
+      longestStreak: Math.max(prev.longestStreak, newStreak),
+      lastCheckinDate: data.checkinDate ?? new Date().toISOString(),
+    } : prev);
+  }
+
   const handleCheckin = useCallback(async () => {
     if (checkingIn || checkedInToday) return;
     setCheckingIn(true);
@@ -97,28 +112,10 @@ export default function DashboardPanel() {
           if (statsData.ok && statsData.stats) {
             setStats(statsData.stats);
           } else {
-            // Fallback: use streak from checkin response for optimistic update
-            const newStreak = data.streak ?? 1;
-            setStats((prev) => prev ? {
-              ...prev,
-              totalPoints: prev.totalPoints + (data.points ?? 10),
-              totalCheckins: prev.totalCheckins + 1,
-              currentStreak: newStreak,
-              longestStreak: Math.max(prev.longestStreak, newStreak),
-              lastCheckinDate: data.checkinDate ?? new Date().toISOString(),
-            } : prev);
+            updateStatsFromCheckin(data);
           }
         } catch {
-          // Stats re-fetch failed — use data from checkin response
-          const newStreak = data.streak ?? 1;
-          setStats((prev) => prev ? {
-            ...prev,
-            totalPoints: prev.totalPoints + (data.points ?? 10),
-            totalCheckins: prev.totalCheckins + 1,
-            currentStreak: newStreak,
-            longestStreak: Math.max(prev.longestStreak, newStreak),
-            lastCheckinDate: data.checkinDate ?? new Date().toISOString(),
-          } : prev);
+          updateStatsFromCheckin(data);
         }
       } else {
         setToast(data.error || '打卡失敗，請稍後再試');
