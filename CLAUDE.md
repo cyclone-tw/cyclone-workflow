@@ -1,119 +1,44 @@
----
-description: Use Bun instead of Node.js, npm, pnpm, or vite.
-globs: "*.ts, *.tsx, *.html, *.css, *.js, *.jsx, package.json"
-alwaysApply: false
----
+# CLAUDE.md — Claude Code 專屬補充
 
-Default to using Bun instead of Node.js.
+> 本專案**共用規則請先讀 `AGENTS.md`**(跨 AI 共讀主檔)。本檔只記錄 Claude Code 專屬設定。
 
-- Use `bun <file>` instead of `node <file>` or `ts-node <file>`
-- Use `bun test` instead of `jest` or `vitest`
-- Use `bun build <file.html|file.ts|file.css>` instead of `webpack` or `esbuild`
-- Use `bun install` instead of `npm install` or `yarn install` or `pnpm install`
-- Use `bun run <script>` instead of `npm run <script>` or `yarn run <script>` or `pnpm run <script>`
-- Use `bunx <package> <command>` instead of `npx <package> <command>`
-- Bun automatically loads .env, so don't use dotenv.
+## Superpowers
 
-## APIs
+已啟用 `superpowers@claude-plugins-official`(見 `.claude/settings.local.json`)。
 
-- `Bun.serve()` supports WebSockets, HTTPS, and routes. Don't use `express`.
-- `bun:sqlite` for SQLite. Don't use `better-sqlite3`.
-- `Bun.redis` for Redis. Don't use `ioredis`.
-- `Bun.sql` for Postgres. Don't use `pg` or `postgres.js`.
-- `WebSocket` is built-in. Don't use `ws`.
-- Prefer `Bun.file` over `node:fs`'s readFile/writeFile
-- Bun.$`ls` instead of execa.
+建議在以下情境主動 invoke:
 
-## Testing
+- 有 spec 要實作 → `superpowers:writing-plans`
+- 拿既有 plan 繼續執行 → `superpowers:executing-plans`
+- 宣告完成前 → `superpowers:verification-before-completion`
+- 修 bug → `superpowers:systematic-debugging`
+- 收到 PR review → `superpowers:receiving-code-review`
 
-Use `bun test` to run tests.
+## Subagent 路由
 
-```ts#index.test.ts
-import { test, expect } from "bun:test";
+- **可以 offload**:plan 類、search / explore 類、debug 類、research 類
+- **不要 offload**:UI 文案、配色、微動畫、CSS 調整(風格敏感任務,subagent 看不到完整設計脈絡)
 
-test("hello world", () => {
-  expect(1).toBe(1);
-});
-```
+詳細理由見 `AGENTS.md` 黃金規則第 6 條。
 
-## Frontend
+## Hooks
 
-Use HTML imports with `Bun.serve()`. Don't use `vite`. HTML imports fully support React, CSS, Tailwind.
+目前未設定專案層級 hooks。
 
-Server:
+若日後需要加,放在 `.claude/settings.json`(**不是** `settings.local.json`),
+這樣其他使用 Claude Code 的協作者也能共享。
 
-```ts#index.ts
-import index from "./index.html"
+## Changelog 維護
 
-Bun.serve({
-  routes: {
-    "/": index,
-    "/api/users/:id": {
-      GET: (req) => {
-        return new Response(JSON.stringify({ id: req.params.id }));
-      },
-    },
-  },
-  // optional websocket support
-  websocket: {
-    open: (ws) => {
-      ws.send("Hello, world!");
-    },
-    message: (ws, message) => {
-      ws.send(message);
-    },
-    close: (ws) => {
-      // handle close
-    }
-  },
-  development: {
-    hmr: true,
-    console: true,
-  }
-})
-```
+每次功能或修復變更,應同步更新 **`src/lib/changelog.ts`** 的 `CHANGELOG`:
 
-HTML files can import .tsx, .jsx or .js files directly and Bun's bundler will transpile & bundle automatically. `<link>` tags can point to stylesheets and Bun's CSS bundler will bundle.
-
-```html#index.html
-<html>
-  <body>
-    <h1>Hello, world!</h1>
-    <script type="module" src="./frontend.tsx"></script>
-  </body>
-</html>
-```
-
-With the following `frontend.tsx`:
-
-```tsx#frontend.tsx
-import React from "react";
-import { createRoot } from "react-dom/client";
-
-// import .css files directly and it works
-import './index.css';
-
-const root = createRoot(document.body);
-
-export default function Frontend() {
-  return <h1>Hello, world!</h1>;
-}
-
-root.render(<Frontend />);
-```
-
-Then, run index.ts
-
-```sh
-bun --hot ./index.ts
-```
-
-For more information, read the Bun API docs in `node_modules/bun-types/docs/**.mdx`.
-
-## Changelog
-
-每次功能或修復變更，**應同步更新 `src/lib/version.ts`** 的 `CHANGELOG`：
-- 新增一筆 `ChangelogEntry`（version 改為新版本，date 為當下時間）
+- 新增一筆 `ChangelogEntry`(version 用當下 bump 的版號,date 用 UTC+8)
 - 確保 `CHANGELOG[0]` 是最新版本
-- push 到 main 會自動部署 + 自動更新版本號，但 changelog 內容需手動維護
-- 線上 Changelog 頁面：https://cyclone.tw/changelog/（由 `src/lib/version.ts` 的 `CHANGELOG` 陣列生成）
+- push 到 main 會自動部署 + 自動 bump 版本號,但 **changelog 內容需手動維護**
+- 線上 Changelog 頁面:https://cyclone.tw/changelog/(由 `src/lib/changelog.ts` 的 `CHANGELOG` 陣列生成)
+
+> **注意**:不是 `src/lib/version.ts`。那個檔案只存版本號字串,不要手動改它的版本號欄位(自動部署會覆蓋)。PR #11 review 曾因此誤報 missing changelog update。
+
+## 其他規則
+
+見 `AGENTS.md`。
