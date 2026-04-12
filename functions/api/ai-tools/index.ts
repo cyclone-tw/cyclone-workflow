@@ -36,6 +36,12 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     const db = getDb(context.env);
     await db.execute({ sql: INIT_SQL, args: [] });
     await ensureMigration(db);
+    await db.execute({ sql: `CREATE TABLE IF NOT EXISTS resource_favorites (
+      id TEXT PRIMARY KEY, user_id TEXT NOT NULL,
+      resource_type TEXT NOT NULL CHECK(resource_type IN ('knowledge', 'ai-tool')),
+      resource_id TEXT NOT NULL, created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(user_id, resource_type, resource_id)
+    )`, args: [] });
 
     const url = new URL(context.request.url);
     const category = url.searchParams.get('category');
