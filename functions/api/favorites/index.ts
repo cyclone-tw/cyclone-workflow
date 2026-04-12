@@ -92,8 +92,22 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     const db = getDb(context.env);
     await db.execute({ sql: INIT_SQL, args: [] });
 
-    // Atomic toggle: try INSERT first; if unique key exists, DELETE instead.
-    // Avoids race condition from concurrent "select-then-insert/delete" flows.
+    // Atomic toggle: DELETE first, then INSERT if nothing was deleted.
+    // Order matters — DELETE-then-INSERT avoids the race where a concurrent
+    // request deletes the row that THIS request just inserted (INSERT-first
+    // pattern can leave the DB in the wrong state on double-click).
+    const deleteResult = await db.execute({
+      sql: 'DELETE FROM resource_favorites WHERE user_id = ? AND resource_type = ? AND resource_id = ?',
+      args: [user.id, resource_type, String(resource_id)],
+    });
+
+    if ((deleteResult.rowsAffected ?? 0) > 0) {
+      return new Response(JSON.stringify({ ok: true, favorited: false }), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Nothing deleted → wasn't favorited → insert
     const id = crypto.randomUUID();
     const insertResult = await db.execute({
       sql: `INSERT INTO resource_favorites (id, user_id, resource_type, resource_id)
@@ -102,17 +116,10 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       args: [id, user.id, resource_type, String(resource_id)],
     });
 
-    if ((insertResult.rowsAffected ?? 0) > 0) {
-      return new Response(JSON.stringify({ ok: true, favorited: true }), {
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-
-    await db.execute({
-      sql: 'DELETE FROM resource_favorites WHERE user_id = ? AND resource_type = ? AND resource_id = ?',
-      args: [user.id, resource_type, String(resource_id)],
-    });
-    return new Response(JSON.stringify({ ok: true, favorited: false }), {
+    return new Response(JSON.stringify({
+      ok: true,
+      favorited: (insertResult.rowsAffected ?? 0) > 0,
+    }), {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (err: unknown) {
