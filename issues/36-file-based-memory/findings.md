@@ -78,10 +78,11 @@ updated: 2026-04-12
 - **理由**:使用者明確反對 over-engineering,一個樣板資料夾解決「新 issue 怎麼開」的問題,不需要打包成 skill
 - **放棄自訂 skill**:等未來多個專案都需要這個模式,再抽成 `~/.claude/skills/cyclone-issue-flow/`
 
-### 決策 7:搬家工作放在另一個 commit
-- **選分 2 個 commit**:commit 1 新架構、commit 2 搬家
+### 決策 7:搬家工作獨立成另一個 commit
+- **選把搬家獨立出建立新架構的 commit**(不混在同一個 commit)
 - **理由**:搬家是 mechanical,和新增規則混在一起會讓 PR review 難讀
 - **也可以**:搬家放另一個 PR(另一個 issue)—— 若使用者偏好更小顆 PR
+- **注意**:本決策只規範「搬家不混新架構」,不對 PR 總共多少個 commit 做任何保證(self-correction 系列產生了多個 commit,見 `git log`)
 
 ## 相關檔案路徑
 

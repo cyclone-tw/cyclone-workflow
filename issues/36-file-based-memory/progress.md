@@ -106,13 +106,13 @@ updated: 2026-04-12
 - **GitHub issue**:#36(https://github.com/cyclone-tw/cyclone-workflow/issues/36)
 - **branch**:`docs/36_agents-md`(在 origin 上)
 - **PR**:#37(https://github.com/cyclone-tw/cyclone-workflow/pull/37,draft)
-- **commit 歷史**:見上方「當前 PR commit 歷史」區(以 SHA 為準,不以 count 為準)
-- **搬家工作**(`issue-17.md` / `pr-11.md` / `worklog-20260411-1437.md`)**不在 `99dda4e`**,可加到本 PR 的新 commit 或另開 issue
+- **commit 狀態**:動態資訊,請跑 `git log --oneline origin/docs/36_agents-md` 或 `gh pr view 37 --json commits` —— 見 `issues/README.md`「progress.md 穩定性原則」
+- **搬家工作**(`issue-17.md` / `pr-11.md` / `worklog-20260411-1437.md`)**尚未**搬入 `issues/`,可加到本 PR 的新 commit 或另開 issue
 - **TODO 留給 Dar 親自填**:
   - `AGENTS.md` 黃金規則第 4-6 條的 war story(Turso / LEFT JOIN / offload 各是哪次事件)—— 檔內已用 `<!-- TODO (Dar) -->` 標記
   - `task_plan.md` 驗收條件的「成功標準」定義(跨 AI 冷啟動算通過的門檻)
   - `issues/README.md`「什麼時候該開新 issue」的使用者偏好
-- **設計決定全紀錄**:見 `findings.md` 的「決策記錄」區(7 個決定)
+- **設計決定全紀錄**:見 `findings.md` 的「決策記錄」區
 - **原始計畫檔**:`~/.claude/plans/lucky-imagining-pixel.md`
 
 ## 驗證結果
