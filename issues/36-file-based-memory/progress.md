@@ -56,11 +56,20 @@ updated: 2026-04-12
 
 ### 2026-04-12 後段 — Claude Opus 4.6 (self-correction 3)
 
-- Codex stop-time review 第三次指出:交棒筆記寫「Draft PR #37 開立(2 個 commit)」,但該文字是在 `cd0e200` 寫入的,push 後 PR 已經變 3 個 commit,count 馬上過期
+- Codex stop-time review 指出:交棒筆記寫「Draft PR #37 開立(2 個 commit)」,但該文字是在 `cd0e200` 寫入的,push 後 PR 已經變 3 個 commit,count 馬上過期
 - 根本問題:追「當前 PR 有 N 個 commit」本質上會永遠落後 —— 每次追 count 的 commit 本身又讓 count 變舊,chicken-and-egg
-- 解法:**progress.md 永遠不追 count,改列明確 SHA 清單**(新的 commit 不影響已知 SHA,且 `git log` 是真實來源)
-- 順手也補上 `cd0e200` 漏寫進會話日誌、session log 裡 `1c05655` 的描述不準確(寫錯「status review」的後續修正脈絡)
-- commit 由本 session 加入(SHA 會是本 commit 的 hash,見 `git log -1`)
+- 嘗試解法:progress.md 不追 count,改列明確 SHA 清單,最後一筆用 placeholder「本 session 新增的 commit」
+- 順手也補上 `cd0e200` 漏寫進會話日誌
+- commit `11b7486 docs(#36): replace commit count tracking with SHA list to avoid self-staling`
+
+### 2026-04-12 後段 — Claude Opus 4.6 (self-correction 4)
+
+- Codex stop-time review 再次指出:SHA 清單同樣不是穩定狀態 —— 清單最後一筆 placeholder「本 session 新增的 commit」在該 commit 落地後就變成過期描述(實際 SHA 是 `11b7486`,但檔內仍是 placeholder)。這是**同一個 chicken-and-egg**,只是換了糖衣
+- 真正的根本解法:**progress.md 完全不追「當前 PR 的 commit 歷史」**。那是 `git log` 與 `gh pr view` 的工作,不是靜態檔的工作。檔內只記「stable facts」(issue 編號、branch 名、PR 編號、設計決定、session 已發生的事),動態 state 全部 deferred to git/GitHub
+- 移除交棒筆記的「當前 PR commit 歷史」區塊,改為 1 行指向 `git log`
+- 把「progress.md 穩定性原則」寫進 `issues/README.md`,避免未來的 issue 重蹈覆轍
+- 這條規則從 issue #36 的 4 輪 self-correction 學到,值得成為永久規則
+- commit SHA 見 `git log origin/docs/36_agents-md`(本筆 session 結束時由下一筆 commit 或 `git log` 補)
 
 ## 交棒筆記
 
@@ -68,15 +77,9 @@ updated: 2026-04-12
 
 **目前狀態**:Draft PR #37 開立,處於 verification 階段。**尚未達到 AGENTS.md Definition of Done**,因此 status 還是 `in-progress` 而不是 `review`。
 
-階段 1–3(建立新架構 / build 驗證 / draft PR)完成;階段 4–6 未做。已歷經 3 輪 Codex self-correction(見上方會話日誌),交棒文件本身就是架構能否運作的證據。
+階段 1–3(建立新架構 / build 驗證 / draft PR)完成;階段 4–6 未做。交棒文件本身就是架構能否運作的證據 —— 歷經多輪 Codex self-correction(見會話日誌),每輪都把一類 staleness pattern 逼出來修掉。
 
-**當前 PR commit 歷史**(`git log --oneline docs/36_agents-md`,舊到新,最後一筆隨本 session 更新):
-- `99dda4e` — initial architecture(AGENTS.md + issues/)
-- `1c05655` — demo issue self-update(含一處 status 誤判,下一筆修正)
-- `cd0e200` — handoff guidance 改為 sequential prerequisites
-- **本 session 新增的 commit** — 去除 commit count 追蹤,改用 SHA 清單
-
-新接手時請 `git log --oneline origin/docs/36_agents-md` 看最新狀態,不要相信檔內的 count 數字(本檔刻意不追 count 以免 self-staling)。
+**Commit 歷史 / PR 當前狀態**:`git log --oneline origin/docs/36_agents-md` 與 `gh pr view 37` —— **git / GitHub 是真實來源,本檔刻意不重複追蹤**(見 `issues/README.md` 的「progress.md 穩定性原則」)。
 
 **距離可 merge 還差什麼**(按 AGENTS.md Definition of Done 對照):
 - [x] `bun run build` 綠

@@ -107,3 +107,23 @@ issues/
 | `implementation` | 寫 code 中 |
 | `verification` | build / E2E / 手動測試中 |
 | `done` | 全部完成 |
+
+## progress.md 穩定性原則
+
+**禁止在 progress.md 追蹤動態 count 或當前 commit 狀態**。
+
+為什麼:
+
+- 檔案是某個 commit 的一部分,寫入時該 commit 還不存在,無法寫入自己的 SHA
+- 寫「當前 PR 有 N 個 commit」之類的 count,追 count 的 commit 本身會讓 count 立刻變舊 —— chicken-and-egg
+- 任何試圖描述「當前狀態」的清單(commit 歷史、分支 HEAD、尚未 push 的 commit 數)都會永遠落後一步
+- 寫 placeholder「本 session 新增的 commit」一樣會過期,只是換個糖衣
+
+正確做法:
+
+- **會話日誌** 可以記錄 session 內「做了什麼」,commit SHA 由**後續** session 的日誌補上(如需)—— 歷史事實不會過期
+- **當前 PR commit 歷史、分支 HEAD、commit count** 等動態資訊**不寫進檔內**,直接請讀者跑 `git log --oneline origin/{branch}` 或 `gh pr view {N}`
+- 檔內只記 **stable facts**:issue 編號、branch 名、PR 編號、設計決定、session 已發生的事、下一步要做什麼
+- 寫 guidance 時避免 ordinal(「第 N 個 commit」),改用「新增 commit」
+
+這條規則從 issue #36 的 4 輪 Codex self-correction 學到 —— 正因為本 issue 是架構的第一次 dogfood,每一種 staleness pattern 都被逼出來修掉。感謝 Codex stop-time review。
