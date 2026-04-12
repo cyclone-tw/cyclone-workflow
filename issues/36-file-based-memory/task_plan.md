@@ -1,15 +1,15 @@
 ---
 issue: 36
 title: 多 AI 協作的檔案式記憶與規劃架構 (planning-with-files)
-status: in-progress
-phase: implementation
+status: review
+phase: verification
 priority: P1
 owner: dar
 created: 2026-04-12
 updated: 2026-04-12
 github_issue: 36
 branch: docs/36_agents-md
-pr: null
+pr: 37
 related_files:
   - AGENTS.md
   - CLAUDE.md
@@ -42,13 +42,13 @@ cyclone-26 同時使用 20+ 個 AI 工具協作(`.claude/` `.cursor/` `.continue
 
 - [x] GitHub issue #36 建立
 - [x] Branch `docs/36_agents-md` 建立(從 main)
-- [ ] `AGENTS.md` 建立完成(< 200 行,正體中文)
-- [ ] `CLAUDE.md` 重構完成(119 → ~60 行,修正 changelog.ts 指向錯誤)
-- [ ] `issues/README.md` 建立
-- [ ] `issues/_template/{task_plan,findings,progress}.md` 建立
-- [ ] `issues/36-file-based-memory/{task_plan,findings,progress}.md` 建立
-- [ ] `bun run build` 綠燈
-- [ ] PR #{N} draft 開立並附連結給 Dar
+- [x] `AGENTS.md` 建立完成(117 行,正體中文)
+- [x] `CLAUDE.md` 重構完成(119 → 44 行,修正 changelog.ts 指向錯誤)
+- [x] `issues/README.md` 建立
+- [x] `issues/_template/{task_plan,findings,progress}.md` 建立
+- [x] `issues/36-file-based-memory/{task_plan,findings,progress}.md` 建立
+- [x] `bun run build` 綠燈(18 頁 1.73s)
+- [x] PR #37 draft 開立並附連結給 Dar(https://github.com/cyclone-tw/cyclone-workflow/pull/37)
 
 <!-- TODO (Dar): 定義「這個架構跑通了」的成功標準。建議自己加 2–3 條:
      例如「換另一個人 / 另一台電腦 cold start 能無縫接手當前 issue」
@@ -56,7 +56,7 @@ cyclone-26 同時使用 20+ 個 AI 工具協作(`.claude/` `.cursor/` `.continue
 
 ## 階段 checklist
 
-### 階段 1:建立新架構(本 commit)
+### 階段 1:建立新架構(commit 99dda4e)
 - [x] 建立 GitHub issue #36
 - [x] 建立 branch `docs/36_agents-md`
 - [x] 寫 `AGENTS.md`
@@ -65,22 +65,23 @@ cyclone-26 同時使用 20+ 個 AI 工具協作(`.claude/` `.cursor/` `.continue
 - [x] 寫 `issues/_template/findings.md`
 - [x] 寫 `issues/_template/progress.md`
 - [x] 寫 `issues/36-file-based-memory/task_plan.md`(本檔)
-- [ ] 寫 `issues/36-file-based-memory/findings.md`
-- [ ] 寫 `issues/36-file-based-memory/progress.md`
-- [ ] 重構 `CLAUDE.md`(瘦身 + 修正 changelog.ts 路徑)
+- [x] 寫 `issues/36-file-based-memory/findings.md`
+- [x] 寫 `issues/36-file-based-memory/progress.md`
+- [x] 重構 `CLAUDE.md`(瘦身 + 修正 changelog.ts 路徑)
 
 ### 階段 2:驗證
-- [ ] `bun run build` 綠
-- [ ] `grep AGENTS.md CLAUDE.md` 有 match
-- [ ] `grep changelog.ts CLAUDE.md` 有 match
-- [ ] `grep -c 'version.ts' CLAUDE.md` 只出現在「不要手動改」的警告
+- [x] `bun run build` 綠(18 頁 1.73s)
+- [x] `grep AGENTS.md CLAUDE.md` 有 3 處 match(L3 / L22 / L44)
+- [x] `grep changelog.ts CLAUDE.md` 有 2 處 match(L33 / L38)
+- [x] `wc -l CLAUDE.md` = 44(< 60 目標)
+- [x] `wc -l AGENTS.md` = 117(< 200 目標)
 
-### 階段 3:PR(本 commit 收尾)
-- [ ] `git add` 全部新檔 + `CLAUDE.md`
-- [ ] `git commit -m "docs(#36): add AGENTS.md + issues/ file-based memory structure"`
-- [ ] `git push -u origin docs/36_agents-md`
-- [ ] `gh pr create --draft`
-- [ ] 回報 PR 連結給 Dar
+### 階段 3:PR(commit 99dda4e + push)
+- [x] `git add` 全部新檔 + `CLAUDE.md`
+- [x] `git commit` 完成
+- [x] `git push -u origin docs/36_agents-md`
+- [x] `gh pr create --draft` → PR #37
+- [x] 回報 PR 連結給 Dar
 
 ### 階段 4:搬家(可另一個 commit,可延後)
 - [ ] `git mv issue-17.md issues/17-cyclone-requirements/task_plan.md` + 補 frontmatter

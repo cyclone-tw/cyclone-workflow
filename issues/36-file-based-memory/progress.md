@@ -26,54 +26,67 @@ updated: 2026-04-12
 - 建立 GitHub issue **#36**(https://github.com/cyclone-tw/cyclone-workflow/issues/36)
 - 從 `fix/29_navbar-desktop-squeeze` 切回 `main`(pull 最新),建立 branch **`docs/36_agents-md`**
 - 寫入新檔:
-  - `AGENTS.md`(~150 行,正體中文,跨 AI 共讀主檔)
-  - `CLAUDE.md`(重構,瘦身到 ~50 行,修正 changelog.ts 指向錯誤)
+  - `AGENTS.md`(117 行,正體中文,跨 AI 共讀主檔)
+  - `CLAUDE.md`(重構,119 → 44 行,修正 changelog.ts 指向錯誤)
   - `issues/README.md`(資料夾使用規則)
-  - `issues/_template/task_plan.md`(靜態計畫樣板)
-  - `issues/_template/findings.md`(研究發現樣板)
-  - `issues/_template/progress.md`(動態日誌樣板)
-  - `issues/36-file-based-memory/task_plan.md`(本示範 issue 計畫)
-  - `issues/36-file-based-memory/findings.md`(本示範 issue 研究結果)
-  - `issues/36-file-based-memory/progress.md`(本檔)
+  - `issues/_template/{task_plan,findings,progress}.md`(3 檔樣板)
+  - `issues/36-file-based-memory/{task_plan,findings,progress}.md`(本示範 issue)
+- `bun run build` 綠(18 頁 1.73s)
+- `grep` sanity check 全過(AGENTS.md 互引、changelog.ts 修正、CLAUDE.md 瘦身)
+- commit `99dda4e` `docs(#36): add AGENTS.md + issues/ file-based memory structure`
+- `git push -u origin docs/36_agents-md`
+- **Draft PR #37 建立**:https://github.com/cyclone-tw/cyclone-workflow/pull/37
+
+### 2026-04-12 後段 — Claude Opus 4.6 (self-correction)
+
+- Codex stop-time review 指出:示範 issue 的交棒狀態是過期資訊(task_plan.md 的 pr 還是 null、checkbox 還沒打勾、progress.md 還寫「尚未取得 PR 編號」)
+- Codex 說得對 —— 本 issue 是檔案式記憶架構的第一次 dogfooding,示範 issue 的 progress 本身就是架構是否成立的證據,狀態不即時就失去意義
+- 更新 `task_plan.md`(status: in-progress → review、phase: implementation → verification、pr: null → 37、所有階段 1–3 的 checkbox 打勾)
+- 更新本檔補「PR #37 建立成功」與交棒筆記
+- 第二個 commit:`docs(#36): update demo issue state to reflect PR #37 creation`
 
 ## 交棒筆記
 
 > 最重要的一區。新接手的 AI 請先讀這裡。
 
-**目前狀態**:階段 1 檔案建立完成。等待跑 `bun run build` 驗證 → commit → push → draft PR。
+**目前狀態**:Draft PR #37 已開立,等 Dar review 與 merge。階段 1–3 全部完成。
 
-**下一步應該**:
-1. `bun run build` 確認綠燈(純 docs 變更,理論上不會 fail,但走完流程)
-2. `git add` 全部新檔
-3. `git commit -m "docs(#36): add AGENTS.md + issues/ file-based memory structure"`
-4. `git push -u origin docs/36_agents-md`
-5. `gh pr create --draft --title "..." --body "..."`
-6. 回報 PR 連結給 Dar
+**下一步應該**(選一個方向,看 Dar 決定):
+1. **補 TODO**:Dar 親自填 `AGENTS.md` 的 war story、`task_plan.md` 的成功標準、`issues/README.md` 的新 issue 判斷準則
+2. **階段 4 搬家**(另一個 commit 在同一個 PR,或另一個 issue):
+   - `git mv issue-17.md issues/17-cyclone-requirements/task_plan.md`
+   - `git mv pr-11.md issues/11-markdown-rendering/findings.md`
+   - `git mv worklog-20260411-1437.md issues/23-gemini-ai-insights/progress.md`
+   - 每檔補 frontmatter
+3. **階段 5 跨 AI 冷啟動驗證**:Codex / Cursor 打開專案問「branch 命名規則」
+4. **階段 6 merge**:PR ready for review → `src/lib/changelog.ts` 新增 entry → merge
 
 **卡住的事**:無
 
 **重要上下文**:
-- **GitHub issue**:#36(已建立,url:https://github.com/cyclone-tw/cyclone-workflow/issues/36)
-- **branch**:`docs/36_agents-md`(從 main 切出)
-- **PR 編號**:尚未取得(push 後執行 `gh pr create --draft`)
-- **搬家工作**(`issue-17.md` / `pr-11.md` / `worklog-20260411-1437.md`)**不在本 commit**,放階段 4 的另一個 commit 做;或可延後到另一個 issue
+- **GitHub issue**:#36(https://github.com/cyclone-tw/cyclone-workflow/issues/36)
+- **branch**:`docs/36_agents-md`(在 origin 上)
+- **PR**:#37(https://github.com/cyclone-tw/cyclone-workflow/pull/37,draft)
+- **commit**:`99dda4e docs(#36): add AGENTS.md + issues/ file-based memory structure`(9 files, +678 -118)
+- **搬家工作**(`issue-17.md` / `pr-11.md` / `worklog-20260411-1437.md`)**不在 commit 99dda4e**,可加到本 PR 的新 commit 或另開 issue
 - **TODO 留給 Dar 親自填**:
-  - `AGENTS.md` 黃金規則第 4-6 條的 war story 細節(Turso 哪次事件、LEFT JOIN 是哪個 PR、offload 哪次出事)
-  - `task_plan.md` 驗收條件的「成功標準」定義(跨 AI 冷啟動能答對什麼問題算通過)
+  - `AGENTS.md` 黃金規則第 4-6 條的 war story(Turso / LEFT JOIN / offload 各是哪次事件)—— 檔內已用 `<!-- TODO (Dar) -->` 標記
+  - `task_plan.md` 驗收條件的「成功標準」定義(跨 AI 冷啟動算通過的門檻)
   - `issues/README.md`「什麼時候該開新 issue」的使用者偏好
-- **設計決定全紀錄**:見 `findings.md` 的「決策記錄」區
+- **設計決定全紀錄**:見 `findings.md` 的「決策記錄」區(7 個決定)
 - **原始計畫檔**:`~/.claude/plans/lucky-imagining-pixel.md`
 
 ## 驗證結果
 
 ### bun run build
-- [ ] 待驗證
+- [x] **Pass**(18 頁全部 build 成功,1.73s,11:07:48 完成)
 
 ### bun run test:e2e
-- [ ] 選做,本變更純 docs 不應影響
+- [ ] 未跑(純 docs 變更,理論上不影響 Playwright specs。PR ready for review 前補跑一次即可)
 
 ### 手動檢查
-- [ ] `grep AGENTS.md CLAUDE.md` 應 match(CLAUDE.md reference AGENTS.md)
-- [ ] `grep changelog.ts CLAUDE.md` 應 match(changelog.ts 指向修正)
-- [ ] `head -1 CLAUDE.md` 應是「# CLAUDE.md — Claude Code 專屬補充」
-- [ ] `wc -l CLAUDE.md` 應 < 70(瘦身驗證)
+- [x] `grep AGENTS.md CLAUDE.md` — 3 處 match(L3 頂部指示、L22 subagent 規則、L44 末尾「其他規則」)
+- [x] `grep changelog.ts CLAUDE.md` — 2 處 match(L33 主文、L38 線上頁面生成器)
+- [x] `head -1 CLAUDE.md` = `# CLAUDE.md — Claude Code 專屬補充`
+- [x] `wc -l CLAUDE.md` = 44 行(< 60 目標)
+- [x] `wc -l AGENTS.md` = 117 行(< 200 目標)
