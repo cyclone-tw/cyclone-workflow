@@ -1,5 +1,5 @@
 import { createClient } from '@libsql/client/web';
-import { requireAuth } from '../../../src/lib/auth.ts';
+import { requireAuth, getSessionUser } from '../../../src/lib/auth.ts';
 
 interface Env {
   TURSO_DATABASE_URL: string;
@@ -14,6 +14,7 @@ function getDb(env: Env) {
 
 export const onRequestGet: PagesFunction<Env> = async (context) => {
   try {
+    const user = await getSessionUser(context.request, context.env);
     const db = getDb(context.env);
     const url = new URL(context.request.url);
     const category = url.searchParams.get('category');
@@ -86,6 +87,20 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         if (entry) {
           entry.tags.push({ id: tr.tag_id as string, name: tr.name as string, color: tr.color as string });
         }
+      }
+    }
+
+    // Attach is_favorited for logged-in users
+    if (user && entries.length > 0) {
+      const entryIds = entries.map((e) => e.id);
+      const placeholders = entryIds.map(() => '?').join(',');
+      const favResult = await db.execute({
+        sql: `SELECT resource_id FROM resource_favorites WHERE user_id = ? AND resource_type = 'knowledge' AND resource_id IN (${placeholders})`,
+        args: [user.id, ...entryIds],
+      });
+      const favSet = new Set(favResult.rows.map((r) => String(r.resource_id)));
+      for (const entry of entries) {
+        (entry as Record<string, unknown>).is_favorited = favSet.has(String(entry.id));
       }
     }
 

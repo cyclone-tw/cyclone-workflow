@@ -26,6 +26,7 @@ interface KnowledgeEntry {
   created_at: string;
   updated_at: string;
   tags: Tag[];
+  is_favorited?: boolean;
 }
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
@@ -365,15 +366,25 @@ function DeleteConfirm({
 function EntryCard({
   entry,
   canEdit,
+  loggedIn,
   onEdit,
   onDelete,
+  onToggleFavorite,
 }: {
   entry: KnowledgeEntry;
   canEdit: boolean;
+  loggedIn: boolean;
   onEdit: () => void;
   onDelete: () => void;
+  onToggleFavorite: () => void;
 }) {
   const cfg = CATEGORY_CONFIG[entry.category] || CATEGORY_CONFIG.other;
+  const [favBusy, setFavBusy] = useState(false);
+
+  async function handleFavorite() {
+    setFavBusy(true);
+    try { await onToggleFavorite(); } finally { setFavBusy(false); }
+  }
 
   return (
     <article
@@ -407,36 +418,51 @@ function EntryCard({
             {cfg.label}
           </span>
         </div>
-        {canEdit && (
-          <div style={{ display: 'flex', gap: '0.375rem' }}>
-            <button
-              onClick={onEdit}
-              title="編輯"
+        <div style={{ display: 'flex', gap: '0.375rem', alignItems: 'center' }}>
+          {loggedIn && (
+            <button onClick={handleFavorite} disabled={favBusy} title={entry.is_favorited ? '取消收藏' : '收藏'}
               style={{
-                background: 'rgba(108,99,255,0.1)', border: '1px solid rgba(108,99,255,0.2)',
-                borderRadius: '0.375rem', color: '#8B83FF', fontSize: '0.75rem',
-                padding: '0.25rem 0.5rem', cursor: 'pointer', transition: 'background 0.2s',
+                background: entry.is_favorited ? 'rgba(255,107,129,0.15)' : 'transparent',
+                border: `1px solid ${entry.is_favorited ? 'rgba(255,107,129,0.3)' : '#2A2A4A'}`,
+                borderRadius: '0.375rem', fontSize: '0.8rem',
+                padding: '0.2rem 0.45rem', cursor: favBusy ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s', opacity: favBusy ? 0.5 : 1,
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(108,99,255,0.2)')}
-              onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(108,99,255,0.1)')}
             >
-              &#9998;&#65039;
+              {entry.is_favorited ? '❤️' : '🤍'}
             </button>
-            <button
-              onClick={onDelete}
-              title="刪除"
-              style={{
-                background: 'rgba(233,69,96,0.1)', border: '1px solid rgba(233,69,96,0.2)',
-                borderRadius: '0.375rem', color: '#E94560', fontSize: '0.75rem',
-                padding: '0.25rem 0.5rem', cursor: 'pointer', transition: 'background 0.2s',
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(233,69,96,0.2)')}
-              onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(233,69,96,0.1)')}
-            >
-              &#10005;
-            </button>
-          </div>
-        )}
+          )}
+          {canEdit && (
+            <>
+              <button
+                onClick={onEdit}
+                title="編輯"
+                style={{
+                  background: 'rgba(108,99,255,0.1)', border: '1px solid rgba(108,99,255,0.2)',
+                  borderRadius: '0.375rem', color: '#8B83FF', fontSize: '0.75rem',
+                  padding: '0.25rem 0.5rem', cursor: 'pointer', transition: 'background 0.2s',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(108,99,255,0.2)')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(108,99,255,0.1)')}
+              >
+                &#9998;&#65039;
+              </button>
+              <button
+                onClick={onDelete}
+                title="刪除"
+                style={{
+                  background: 'rgba(233,69,96,0.1)', border: '1px solid rgba(233,69,96,0.2)',
+                  borderRadius: '0.375rem', color: '#E94560', fontSize: '0.75rem',
+                  padding: '0.25rem 0.5rem', cursor: 'pointer', transition: 'background 0.2s',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(233,69,96,0.2)')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(233,69,96,0.1)')}
+              >
+                &#10005;
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Title */}
@@ -499,14 +525,18 @@ function CategorySection({
   categoryKey,
   entries,
   canEditMap,
+  loggedIn,
   onEdit,
   onDelete,
+  onToggleFavorite,
 }: {
   categoryKey: KnowledgeCategory;
   entries: KnowledgeEntry[];
   canEditMap: Record<string, boolean>;
+  loggedIn: boolean;
   onEdit: (entry: KnowledgeEntry) => void;
   onDelete: (entry: KnowledgeEntry) => void;
+  onToggleFavorite: (entry: KnowledgeEntry) => void;
 }) {
   const cfg = CATEGORY_CONFIG[categoryKey];
   if (entries.length === 0) return null;
@@ -545,8 +575,10 @@ function CategorySection({
             key={entry.id}
             entry={entry}
             canEdit={canEditMap[entry.id] || false}
+            loggedIn={loggedIn}
             onEdit={() => onEdit(entry)}
             onDelete={() => onDelete(entry)}
+            onToggleFavorite={() => onToggleFavorite(entry)}
           />
         ))}
       </div>
@@ -589,6 +621,21 @@ export default function KnowledgeBoard() {
   useEffect(() => {
     fetchEntries();
   }, [categoryFilter, contributorFilter]);
+
+  async function toggleFavorite(entry: KnowledgeEntry) {
+    try {
+      const res = await fetch('/api/favorites', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ resource_type: 'knowledge', resource_id: entry.id }),
+      });
+      if (!res.ok) throw new Error('操作失敗');
+      const data = await res.json();
+      setEntries(prev => prev.map(e =>
+        e.id === entry.id ? { ...e, is_favorited: data.favorited } : e
+      ));
+    } catch { /* silent */ }
+  }
 
   // Permission check: owner or admin+
   function canEdit(entry: KnowledgeEntry): boolean {
@@ -757,8 +804,10 @@ export default function KnowledgeBoard() {
               categoryKey={category}
               entries={items}
               canEditMap={canEditMap}
+              loggedIn={!!user}
               onEdit={(entry) => setEditingEntry(entry)}
               onDelete={(entry) => setDeletingEntry(entry)}
+              onToggleFavorite={(entry) => toggleFavorite(entry)}
             />
           ) : null,
         )

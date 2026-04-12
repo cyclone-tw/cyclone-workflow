@@ -17,6 +17,8 @@ export const CHANGELOG: ChangelogEntry[] = [
       'feat(#30): AI 工具箱標籤共用 — 支援 resource_tags 顯示標籤（MEDIUM）',
       'feat(#30): AI 工具箱投稿者顯示 + 成員篩選 — 顯示投稿者頭像與名稱（MEDIUM）',
       'feat(#30): 許願樹狀態歷程追蹤 — 新增 wish_history 表，卡片顯示狀態變化時間軸（MEDIUM）',
+      'feat(#30): 知識庫 + AI 工具箱收藏功能 — 新增 resource_favorites 表，卡片愛心按鈕切換收藏（LOW）',
+      'feat(#30): API 回傳 is_favorited — knowledge 和 ai-tools GET 端點自動附加登入者收藏狀態（LOW）',
     ],
   },
   {

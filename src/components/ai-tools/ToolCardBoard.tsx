@@ -29,6 +29,7 @@ interface Tool {
   created_at: string;
   updated_at: string;
   tags: Tag[];
+  is_favorited?: boolean;
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -313,8 +314,14 @@ function DeleteConfirm({ tool, onConfirm, onCancel }: { tool: Tool; onConfirm: (
 
 // ─── Tool Card ────────────────────────────────────────────────────────────────
 
-function ToolCard({ tool, canEdit, onEdit, onDelete }: { tool: Tool; canEdit: boolean; onEdit: () => void; onDelete: () => void }) {
+function ToolCard({ tool, canEdit, loggedIn, onEdit, onDelete, onToggleFavorite }: { tool: Tool; canEdit: boolean; loggedIn: boolean; onEdit: () => void; onDelete: () => void; onToggleFavorite: () => void }) {
   const cfg = CATEGORY_CONFIG[tool.category] || CATEGORY_CONFIG.other;
+  const [favBusy, setFavBusy] = useState(false);
+
+  async function handleFavorite() {
+    setFavBusy(true);
+    try { await onToggleFavorite(); } finally { setFavBusy(false); }
+  }
 
   return (
     <article
@@ -344,32 +351,47 @@ function ToolCard({ tool, canEdit, onEdit, onDelete }: { tool: Tool; canEdit: bo
         >
           {cfg.icon} {cfg.label}
         </span>
-        {canEdit && (
-          <div style={{ display: 'flex', gap: '0.375rem' }}>
-            <button onClick={onEdit} title="編輯"
+        <div style={{ display: 'flex', gap: '0.375rem', alignItems: 'center' }}>
+          {loggedIn && (
+            <button onClick={handleFavorite} disabled={favBusy} title={tool.is_favorited ? '取消收藏' : '收藏'}
               style={{
-                background: 'rgba(108,99,255,0.1)', border: '1px solid rgba(108,99,255,0.2)',
-                borderRadius: '0.375rem', color: '#8B83FF', fontSize: '0.75rem',
-                padding: '0.25rem 0.5rem', cursor: 'pointer', transition: 'background 0.2s',
+                background: tool.is_favorited ? 'rgba(255,107,129,0.15)' : 'transparent',
+                border: `1px solid ${tool.is_favorited ? 'rgba(255,107,129,0.3)' : '#2A2A4A'}`,
+                borderRadius: '0.375rem', fontSize: '0.8rem',
+                padding: '0.2rem 0.45rem', cursor: favBusy ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s', opacity: favBusy ? 0.5 : 1,
               }}
-              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(108,99,255,0.2)')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'rgba(108,99,255,0.1)')}
             >
-              ✏️
+              {tool.is_favorited ? '❤️' : '🤍'}
             </button>
-            <button onClick={onDelete} title="刪除"
-              style={{
-                background: 'rgba(233,69,96,0.1)', border: '1px solid rgba(233,69,96,0.2)',
-                borderRadius: '0.375rem', color: '#E94560', fontSize: '0.75rem',
-                padding: '0.25rem 0.5rem', cursor: 'pointer', transition: 'background 0.2s',
-              }}
-              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(233,69,96,0.2)')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'rgba(233,69,96,0.1)')}
-            >
-              ✕
-            </button>
-          </div>
-        )}
+          )}
+          {canEdit && (
+            <>
+              <button onClick={onEdit} title="編輯"
+                style={{
+                  background: 'rgba(108,99,255,0.1)', border: '1px solid rgba(108,99,255,0.2)',
+                  borderRadius: '0.375rem', color: '#8B83FF', fontSize: '0.75rem',
+                  padding: '0.25rem 0.5rem', cursor: 'pointer', transition: 'background 0.2s',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(108,99,255,0.2)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'rgba(108,99,255,0.1)')}
+              >
+                ✏️
+              </button>
+              <button onClick={onDelete} title="刪除"
+                style={{
+                  background: 'rgba(233,69,96,0.1)', border: '1px solid rgba(233,69,96,0.2)',
+                  borderRadius: '0.375rem', color: '#E94560', fontSize: '0.75rem',
+                  padding: '0.25rem 0.5rem', cursor: 'pointer', transition: 'background 0.2s',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(233,69,96,0.2)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'rgba(233,69,96,0.1)')}
+              >
+                ✕
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Name */}
@@ -483,6 +505,21 @@ export default function ToolCardBoard() {
   }
 
   useEffect(() => { fetchTools(); }, [categoryFilter, contributorFilter]);
+
+  async function toggleFavorite(tool: Tool) {
+    try {
+      const res = await fetch('/api/favorites', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ resource_type: 'ai-tool', resource_id: String(tool.id) }),
+      });
+      if (!res.ok) throw new Error('操作失敗');
+      const data = await res.json();
+      setTools(prev => prev.map(t =>
+        t.id === tool.id ? { ...t, is_favorited: data.favorited } : t
+      ));
+    } catch { /* silent */ }
+  }
 
   // Permission map
   const canEditMap: Record<number, boolean> = {};
@@ -625,8 +662,10 @@ export default function ToolCardBoard() {
               key={tool.id}
               tool={tool}
               canEdit={canEditMap[tool.id as number] || false}
+              loggedIn={!!user}
               onEdit={() => setEditingTool(tool)}
               onDelete={() => setDeletingTool(tool)}
+              onToggleFavorite={() => toggleFavorite(tool)}
             />
           ))}
         </div>

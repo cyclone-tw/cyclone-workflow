@@ -1,5 +1,5 @@
 import { createClient } from '@libsql/client/web';
-import { requireAuth } from '../../../src/lib/auth.ts';
+import { requireAuth, getSessionUser } from '../../../src/lib/auth.ts';
 
 interface Env {
   TURSO_DATABASE_URL: string;
@@ -32,6 +32,7 @@ async function ensureMigration(db: ReturnType<typeof createClient>) {
 
 export const onRequestGet: PagesFunction<Env> = async (context) => {
   try {
+    const user = await getSessionUser(context.request, context.env);
     const db = getDb(context.env);
     await db.execute({ sql: INIT_SQL, args: [] });
     await ensureMigration(db);
@@ -86,6 +87,20 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         if (tool) {
           tool.tags.push({ id: tr.tag_id as string, name: tr.name as string, color: tr.color as string });
         }
+      }
+    }
+
+    // Attach is_favorited for logged-in users
+    if (user && tools.length > 0) {
+      const toolIds = tools.map((t) => String(t.id));
+      const placeholders = toolIds.map(() => '?').join(',');
+      const favResult = await db.execute({
+        sql: `SELECT resource_id FROM resource_favorites WHERE user_id = ? AND resource_type = 'ai-tool' AND resource_id IN (${placeholders})`,
+        args: [user.id, ...toolIds],
+      });
+      const favSet = new Set(favResult.rows.map((r) => String(r.resource_id)));
+      for (const tool of tools) {
+        (tool as Record<string, unknown>).is_favorited = favSet.has(String(tool.id));
       }
     }
 
