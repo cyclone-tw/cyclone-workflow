@@ -90,17 +90,34 @@ export default function DashboardPanel() {
       if (data.ok) {
         setCheckedInToday(true);
         setToast('打卡成功！繼續保持！');
-        // Use API-returned stats if available, otherwise optimistic update
-        if (data.stats) {
-          setStats(data.stats);
-        } else {
+        // Re-fetch stats from server to get accurate streak after checkin
+        try {
+          const statsRes = await fetch('/api/checkin/stats');
+          const statsData = await statsRes.json();
+          if (statsData.ok && statsData.stats) {
+            setStats(statsData.stats);
+          } else {
+            // Fallback: use streak from checkin response for optimistic update
+            const newStreak = data.streak ?? 1;
+            setStats((prev) => prev ? {
+              ...prev,
+              totalPoints: prev.totalPoints + (data.points ?? 10),
+              totalCheckins: prev.totalCheckins + 1,
+              currentStreak: newStreak,
+              longestStreak: Math.max(prev.longestStreak, newStreak),
+              lastCheckinDate: data.checkinDate ?? new Date().toISOString(),
+            } : prev);
+          }
+        } catch {
+          // Stats re-fetch failed — use data from checkin response
+          const newStreak = data.streak ?? 1;
           setStats((prev) => prev ? {
             ...prev,
-            totalPoints: prev.totalPoints + (data.checkin?.points ?? 1),
+            totalPoints: prev.totalPoints + (data.points ?? 10),
             totalCheckins: prev.totalCheckins + 1,
-            currentStreak: (data.checkin?.streak ?? prev.currentStreak + 1),
-            longestStreak: Math.max(prev.longestStreak, data.checkin?.streak ?? prev.currentStreak + 1),
-            lastCheckinDate: new Date().toISOString(),
+            currentStreak: newStreak,
+            longestStreak: Math.max(prev.longestStreak, newStreak),
+            lastCheckinDate: data.checkinDate ?? new Date().toISOString(),
           } : prev);
         }
       } else {
