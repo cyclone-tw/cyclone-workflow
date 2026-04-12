@@ -6,6 +6,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: 'v20260412.2',
+    date: '2026-04-12 18:00',
+    changes: [
+      'fix(#30): API O(n*m) 查找改為 Map — ai-tools tags 和 wishes history 效能優化',
+      'fix(#30): 收藏切換競態修正 — 改用 INSERT ON CONFLICT 原子操作避免並發衝突',
+      'fix(#30): 打卡 streak 樂觀更新修正 — 優先使用 API 回傳的 stats 資料',
+      'fix(#30): 收藏按鈕無障礙 — 補上 aria-label 供螢幕閱讀器使用',
+      'fix(#30): 週檢核點 disabled checkbox 改為視覺圓點 — 避免誤導為可互動',
+    ],
+  },
+  {
     version: 'v20260412.1',
     date: '2026-04-12 16:00',
     changes: [

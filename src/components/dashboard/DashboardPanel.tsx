@@ -90,15 +90,19 @@ export default function DashboardPanel() {
       if (data.ok) {
         setCheckedInToday(true);
         setToast('打卡成功！繼續保持！');
-        // Optimistic update: increment stats
-        setStats((prev) => prev ? {
-          ...prev,
-          totalPoints: prev.totalPoints + (data.checkin?.points ?? 1),
-          totalCheckins: prev.totalCheckins + 1,
-          currentStreak: prev.currentStreak + 1,
-          longestStreak: Math.max(prev.longestStreak, prev.currentStreak + 1),
-          lastCheckinDate: new Date().toISOString(),
-        } : prev);
+        // Use API-returned stats if available, otherwise optimistic update
+        if (data.stats) {
+          setStats(data.stats);
+        } else {
+          setStats((prev) => prev ? {
+            ...prev,
+            totalPoints: prev.totalPoints + (data.checkin?.points ?? 1),
+            totalCheckins: prev.totalCheckins + 1,
+            currentStreak: (data.checkin?.streak ?? prev.currentStreak + 1),
+            longestStreak: Math.max(prev.longestStreak, data.checkin?.streak ?? prev.currentStreak + 1),
+            lastCheckinDate: new Date().toISOString(),
+          } : prev);
+        }
       } else {
         setToast(data.error || '打卡失敗，請稍後再試');
       }
@@ -360,10 +364,9 @@ export default function DashboardPanel() {
                   <ul className="space-y-1">
                     {week.goals.map((goal, i) => (
                       <li key={i} className="flex items-start gap-1.5 text-xs">
-                        <input
-                          type="checkbox"
-                          disabled
-                          className="mt-0.5 rounded border-[var(--color-border)]"
+                        <span
+                          aria-hidden="true"
+                          className="mt-1 inline-block h-2 w-2 rounded-full bg-[var(--color-border)]"
                         />
                         <span className="text-[var(--color-text-muted)]">{goal}</span>
                       </li>

@@ -102,8 +102,9 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
               FROM wish_history WHERE wish_id IN (${placeholders}) ORDER BY created_at ASC`,
         args: wishIds,
       });
+      const wishMap = new Map(wishes.map((w) => [w.id as string, w]));
       for (const h of histResult.rows) {
-        const wish = wishes.find((w) => w.id === h.wish_id);
+        const wish = wishMap.get(h.wish_id as string);
         if (wish) {
           wish.history.push({
             from_status: h.from_status as string,

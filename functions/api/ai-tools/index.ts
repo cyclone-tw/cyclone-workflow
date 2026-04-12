@@ -88,8 +88,9 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         `,
         args: ids,
       });
+      const toolMap = new Map(tools.map((t) => [String(t.id), t]));
       for (const tr of tagResult.rows) {
-        const tool = tools.find((t) => String(t.id) === String(tr.resource_id));
+        const tool = toolMap.get(String(tr.resource_id));
         if (tool) {
           tool.tags.push({ id: tr.tag_id as string, name: tr.name as string, color: tr.color as string });
         }

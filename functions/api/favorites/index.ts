@@ -92,32 +92,29 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     const db = getDb(context.env);
     await db.execute({ sql: INIT_SQL, args: [] });
 
-    // Check if already favorited
-    const existing = await db.execute({
-      sql: 'SELECT id FROM resource_favorites WHERE user_id = ? AND resource_type = ? AND resource_id = ?',
-      args: [user.id, resource_type, String(resource_id)],
+    // Atomic toggle: try INSERT first; if unique key exists, DELETE instead.
+    // Avoids race condition from concurrent "select-then-insert/delete" flows.
+    const id = crypto.randomUUID();
+    const insertResult = await db.execute({
+      sql: `INSERT INTO resource_favorites (id, user_id, resource_type, resource_id)
+            VALUES (?, ?, ?, ?)
+            ON CONFLICT(user_id, resource_type, resource_id) DO NOTHING`,
+      args: [id, user.id, resource_type, String(resource_id)],
     });
 
-    if (existing.rows.length > 0) {
-      // Unfavorite
-      await db.execute({
-        sql: 'DELETE FROM resource_favorites WHERE id = ?',
-        args: [existing.rows[0].id],
-      });
-      return new Response(JSON.stringify({ ok: true, favorited: false }), {
-        headers: { 'Content-Type': 'application/json' },
-      });
-    } else {
-      // Favorite
-      const id = crypto.randomUUID();
-      await db.execute({
-        sql: 'INSERT INTO resource_favorites (id, user_id, resource_type, resource_id) VALUES (?, ?, ?, ?)',
-        args: [id, user.id, resource_type, String(resource_id)],
-      });
+    if ((insertResult.rowsAffected ?? 0) > 0) {
       return new Response(JSON.stringify({ ok: true, favorited: true }), {
         headers: { 'Content-Type': 'application/json' },
       });
     }
+
+    await db.execute({
+      sql: 'DELETE FROM resource_favorites WHERE user_id = ? AND resource_type = ? AND resource_id = ?',
+      args: [user.id, resource_type, String(resource_id)],
+    });
+    return new Response(JSON.stringify({ ok: true, favorited: false }), {
+      headers: { 'Content-Type': 'application/json' },
+    });
   } catch (err: unknown) {
     if (err instanceof Response) return err;
     const msg = err instanceof Error ? err.message : 'Unknown error';

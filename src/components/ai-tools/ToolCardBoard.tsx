@@ -353,7 +353,9 @@ function ToolCard({ tool, canEdit, loggedIn, onEdit, onDelete, onToggleFavorite 
         </span>
         <div style={{ display: 'flex', gap: '0.375rem', alignItems: 'center' }}>
           {loggedIn && (
-            <button onClick={handleFavorite} disabled={favBusy} title={tool.is_favorited ? '取消收藏' : '收藏'}
+            <button onClick={handleFavorite} disabled={favBusy}
+              aria-label={tool.is_favorited ? '取消收藏' : '收藏'}
+              title={tool.is_favorited ? '取消收藏' : '收藏'}
               style={{
                 background: tool.is_favorited ? 'rgba(255,107,129,0.15)' : 'transparent',
                 border: `1px solid ${tool.is_favorited ? 'rgba(255,107,129,0.3)' : '#2A2A4A'}`,

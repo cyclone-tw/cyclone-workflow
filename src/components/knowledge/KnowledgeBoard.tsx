@@ -420,7 +420,9 @@ function EntryCard({
         </div>
         <div style={{ display: 'flex', gap: '0.375rem', alignItems: 'center' }}>
           {loggedIn && (
-            <button onClick={handleFavorite} disabled={favBusy} title={entry.is_favorited ? '取消收藏' : '收藏'}
+            <button onClick={handleFavorite} disabled={favBusy}
+              aria-label={entry.is_favorited ? '取消收藏' : '收藏'}
+              title={entry.is_favorited ? '取消收藏' : '收藏'}
               style={{
                 background: entry.is_favorited ? 'rgba(255,107,129,0.15)' : 'transparent',
                 border: `1px solid ${entry.is_favorited ? 'rgba(255,107,129,0.3)' : '#2A2A4A'}`,
