@@ -68,7 +68,7 @@ updated: 2026-04-12
 - 真正的根本解法:**progress.md 完全不追「當前 PR 的 commit 歷史」**。那是 `git log` 與 `gh pr view` 的工作,不是靜態檔的工作。檔內只記「stable facts」(issue 編號、branch 名、PR 編號、設計決定、session 已發生的事),動態 state 全部 deferred to git/GitHub
 - 移除交棒筆記的「當前 PR commit 歷史」區塊,改為 1 行指向 `git log`
 - 把「progress.md 穩定性原則」寫進 `issues/README.md`,避免未來的 issue 重蹈覆轍
-- 這條規則從 issue #36 的 4 輪 self-correction 學到,值得成為永久規則
+- 這條規則從 issue #36 的 Codex self-correction 系列學到,值得成為永久規則(詳細歷程見 `git log origin/docs/36_agents-md`)
 - commit SHA 見 `git log origin/docs/36_agents-md`(本筆 session 結束時由下一筆 commit 或 `git log` 補)
 
 ## 交棒筆記

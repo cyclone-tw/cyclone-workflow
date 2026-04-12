@@ -126,4 +126,4 @@ issues/
 - 檔內只記 **stable facts**:issue 編號、branch 名、PR 編號、設計決定、session 已發生的事、下一步要做什麼
 - 寫 guidance 時避免 ordinal(「第 N 個 commit」),改用「新增 commit」
 
-這條規則從 issue #36 的 4 輪 Codex self-correction 學到 —— 正因為本 issue 是架構的第一次 dogfood,每一種 staleness pattern 都被逼出來修掉。感謝 Codex stop-time review。
+這條規則從 issue #36 的 Codex self-correction 系列學到 —— 正因為本 issue 是架構的第一次 dogfood,每一種 staleness pattern 都被逼出來修掉。詳細歷程見該 PR 的 commit 記錄。感謝 Codex stop-time review。
