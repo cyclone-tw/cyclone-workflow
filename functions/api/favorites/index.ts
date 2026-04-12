@@ -92,34 +92,29 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     const db = getDb(context.env);
     await db.execute({ sql: INIT_SQL, args: [] });
 
-    // Atomic toggle: DELETE first, then INSERT if nothing was deleted.
-    // Order matters — DELETE-then-INSERT avoids the race where a concurrent
-    // request deletes the row that THIS request just inserted (INSERT-first
-    // pattern can leave the DB in the wrong state on double-click).
-    const deleteResult = await db.execute({
-      sql: 'DELETE FROM resource_favorites WHERE user_id = ? AND resource_type = ? AND resource_id = ?',
-      args: [user.id, resource_type, String(resource_id)],
-    });
-
-    if ((deleteResult.rowsAffected ?? 0) > 0) {
-      return new Response(JSON.stringify({ ok: true, favorited: false }), {
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Nothing deleted → wasn't favorited → insert
+    // Truly atomic toggle using a batch transaction:
+    // 1. DELETE existing row
+    // 2. INSERT only if DELETE affected 0 rows (row didn't exist → was unfavorited)
+    //    SQLite's changes() returns rows affected by the preceding DELETE.
+    // Both statements run in a single transaction via db.batch(), so no
+    // intermediate state is visible to concurrent requests.
     const id = crypto.randomUUID();
-    const insertResult = await db.execute({
-      sql: `INSERT INTO resource_favorites (id, user_id, resource_type, resource_id)
-            VALUES (?, ?, ?, ?)
-            ON CONFLICT(user_id, resource_type, resource_id) DO NOTHING`,
-      args: [id, user.id, resource_type, String(resource_id)],
-    });
+    const results = await db.batch([
+      {
+        sql: 'DELETE FROM resource_favorites WHERE user_id = ? AND resource_type = ? AND resource_id = ?',
+        args: [user.id, resource_type, String(resource_id)],
+      },
+      {
+        sql: `INSERT INTO resource_favorites (id, user_id, resource_type, resource_id)
+              SELECT ?, ?, ?, ?
+              WHERE changes() = 0`,
+        args: [id, user.id, resource_type, String(resource_id)],
+      },
+    ]);
 
-    return new Response(JSON.stringify({
-      ok: true,
-      favorited: (insertResult.rowsAffected ?? 0) > 0,
-    }), {
+    // INSERT's rowsAffected: >0 = inserted (now favorited), 0 = deleted (now unfavorited)
+    const favorited = (results[1].rowsAffected ?? 0) > 0;
+    return new Response(JSON.stringify({ ok: true, favorited }), {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (err: unknown) {
