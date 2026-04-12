@@ -1,6 +1,22 @@
 import { createClient } from '@libsql/client/web';
 import { requireAuth, getSessionUser, ROLE_LEVEL } from '../../../src/lib/auth.ts';
 
+async function ensureWishHistoryMigration(db: ReturnType<typeof createClient>) {
+  try {
+    await db.execute({
+      sql: `CREATE TABLE IF NOT EXISTS wish_history (
+        id TEXT PRIMARY KEY,
+        wish_id TEXT NOT NULL REFERENCES wishes(id),
+        from_status TEXT NOT NULL,
+        to_status TEXT NOT NULL,
+        changed_by TEXT NOT NULL,
+        created_at TEXT DEFAULT (datetime('now'))
+      )`,
+      args: [],
+    });
+  } catch { /* table already exists */ }
+}
+
 interface Env {
   TURSO_DATABASE_URL: string;
   TURSO_AUTH_TOKEN: string;
@@ -73,7 +89,32 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       claimer: r.claimer_id
         ? { id: r.claimer_id, name: r.claimer_name, avatarUrl: r.claimer_avatar }
         : null,
+      history: [] as { from_status: string; to_status: string; changed_by: string; created_at: string }[],
     }));
+
+    // Fetch history for all wishes
+    await ensureWishHistoryMigration(db);
+    if (wishes.length > 0) {
+      const wishIds = wishes.map((w) => w.id as string);
+      const placeholders = wishIds.map(() => '?').join(',');
+      const histResult = await db.execute({
+        sql: `SELECT wish_id, from_status, to_status, changed_by, created_at
+              FROM wish_history WHERE wish_id IN (${placeholders}) ORDER BY created_at ASC`,
+        args: wishIds,
+      });
+      const wishMap = new Map(wishes.map((w) => [w.id as string, w]));
+      for (const h of histResult.rows) {
+        const wish = wishMap.get(h.wish_id as string);
+        if (wish) {
+          wish.history.push({
+            from_status: h.from_status as string,
+            to_status: h.to_status as string,
+            changed_by: h.changed_by as string,
+            created_at: h.created_at as string,
+          });
+        }
+      }
+    }
 
     return new Response(JSON.stringify({ ok: true, wishes }), {
       headers: { 'Content-Type': 'application/json' },

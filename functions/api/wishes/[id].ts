@@ -10,7 +10,37 @@ function getDb(env: Env) {
   return createClient({ url: env.TURSO_DATABASE_URL, authToken: env.TURSO_AUTH_TOKEN });
 }
 
-function isAdmin(user: { effectiveRole: string }): boolean {
+async function ensureWishHistoryMigration(db: ReturnType<typeof createClient>) {
+  try {
+    await db.execute({
+      sql: `CREATE TABLE IF NOT EXISTS wish_history (
+        id TEXT PRIMARY KEY,
+        wish_id TEXT NOT NULL REFERENCES wishes(id),
+        from_status TEXT NOT NULL,
+        to_status TEXT NOT NULL,
+        changed_by TEXT NOT NULL,
+        created_at TEXT DEFAULT (datetime('now'))
+      )`,
+      args: [],
+    });
+  } catch { /* table already exists */ }
+}
+
+async function recordStatusChange(
+  db: ReturnType<typeof createClient>,
+  wishId: string,
+  fromStatus: string,
+  toStatus: string,
+  changedBy: string,
+) {
+  const id = crypto.randomUUID();
+  await db.execute({
+    sql: `INSERT INTO wish_history (id, wish_id, from_status, to_status, changed_by) VALUES (?, ?, ?, ?, ?)`,
+    args: [id, wishId, fromStatus, toStatus, changedBy],
+  });
+}
+
+function isAdminOrAbove(user: { effectiveRole: string }): boolean {
   return (ROLE_LEVEL[user.effectiveRole] ?? 0) >= (ROLE_LEVEL['admin'] ?? 0);
 }
 
@@ -135,6 +165,8 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
         sql: `UPDATE wishes SET claimer_id = ?, status = 'claimed', updated_at = datetime('now') WHERE id = ?`,
         args: [user.id, id],
       });
+      await ensureWishHistoryMigration(db);
+      await recordStatusChange(db, id, 'pending', 'claimed', user.id);
 
       return new Response(JSON.stringify({ ok: true }), {
         headers: { 'Content-Type': 'application/json' },
@@ -152,7 +184,7 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
       }
 
       const canChangeStatus =
-        wish.claimer_id === user.id || isAdmin(user);
+        wish.claimer_id === user.id || isAdminOrAbove(user);
       if (!canChangeStatus) {
         return new Response(JSON.stringify({ ok: false, error: '權限不足' }), {
           status: 403,
@@ -164,6 +196,8 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
         sql: `UPDATE wishes SET status = ?, updated_at = datetime('now') WHERE id = ?`,
         args: [body.status, id],
       });
+      await ensureWishHistoryMigration(db);
+      await recordStatusChange(db, id, wish.status as string, body.status, user.id);
 
       return new Response(JSON.stringify({ ok: true }), {
         headers: { 'Content-Type': 'application/json' },
@@ -171,7 +205,7 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
     }
 
     // ── Edit fields ───────────────────────────────────────────────────────
-    const canEdit = wish.wisher_id === user.id || isAdmin(user);
+    const canEdit = wish.wisher_id === user.id || isAdminOrAbove(user);
     if (!canEdit) {
       return new Response(JSON.stringify({ ok: false, error: '權限不足' }), {
         status: 403,
@@ -239,7 +273,7 @@ export const onRequestDelete: PagesFunction<Env> = async (context) => {
       });
     }
 
-    const canDelete = existing.rows[0].wisher_id === user.id || isAdmin(user);
+    const canDelete = existing.rows[0].wisher_id === user.id || isAdminOrAbove(user);
     if (!canDelete) {
       return new Response(JSON.stringify({ ok: false, error: '權限不足' }), {
         status: 403,

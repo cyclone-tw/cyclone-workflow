@@ -13,6 +13,13 @@ interface WishUser {
   avatarUrl: string | null;
 }
 
+interface WishHistoryEntry {
+  from_status: string;
+  to_status: string;
+  changed_by: string;
+  created_at: string;
+}
+
 interface Wish {
   id: string;
   title: string;
@@ -25,6 +32,7 @@ interface Wish {
   updatedAt: string;
   wisher: WishUser;
   claimer: WishUser | null;
+  history: WishHistoryEntry[];
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -515,6 +523,31 @@ function WishCard({ wish, user, onRefresh, onDelete }: { wish: Wish; user: Retur
       <div style={{ fontSize: '0.7rem', color: '#606080', marginTop: -4 }}>
         {timeAgo(wish.createdAt)}
       </div>
+
+      {/* Status History Timeline */}
+      {wish.history && wish.history.length > 0 && (
+        <div style={{
+          marginTop: '0.25rem', padding: '0.5rem 0.625rem',
+          background: 'rgba(10,10,26,0.4)', borderRadius: '0.5rem',
+          border: '1px solid rgba(108,99,255,0.1)',
+        }}>
+          <div style={{ fontSize: '0.65rem', color: '#606080', marginBottom: '0.35rem', fontWeight: 600 }}>
+            狀態歷程
+          </div>
+          {wish.history.map((h, i) => {
+            const fromCfg = STATUS_CONFIG[h.from_status as WishStatus];
+            const toCfg = STATUS_CONFIG[h.to_status as WishStatus];
+            return (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.65rem', marginBottom: i < wish.history.length - 1 ? '0.25rem' : 0 }}>
+                <span style={{ color: fromCfg?.badgeText || '#9090B0' }}>{fromCfg?.label || h.from_status}</span>
+                <span style={{ color: '#606080' }}>→</span>
+                <span style={{ color: toCfg?.badgeText || '#9090B0', fontWeight: 600 }}>{toCfg?.label || h.to_status}</span>
+                <span style={{ color: '#505070', marginLeft: 'auto' }}>{timeAgo(h.created_at)}</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

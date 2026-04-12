@@ -1,9 +1,18 @@
 import { useState, useEffect } from 'react';
+import { useAuth } from '@/components/auth/useAuth';
 import { timeAgo } from '@/lib/time';
+import { MEMBERS } from '@/lib/constants';
+import { ROLE_LEVEL } from '@/lib/auth';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 type ToolCategory = 'agent' | 'llm' | 'productivity' | 'dev' | 'other';
+
+interface Tag {
+  id: string;
+  name: string;
+  color: string;
+}
 
 interface Tool {
   id: number;
@@ -13,9 +22,14 @@ interface Tool {
   category: ToolCategory;
   author: string;
   author_tag: string;
+  contributor_id: string;
+  contributor_name: string;
+  contributor_avatar: string | null;
   upvotes: number;
   created_at: string;
   updated_at: string;
+  tags: Tag[];
+  is_favorited?: boolean;
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -62,6 +76,14 @@ function handleFocusOut(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaEleme
   e.target.style.boxShadow = 'none';
 }
 
+// ─── Permission helpers ────────────────────────────────────────────────────────
+
+function canModifyTool(user: { id: string; effectiveRole: string } | null | undefined, tool: Tool): boolean {
+  if (!user) return false;
+  if (tool.contributor_id === user.id) return true;
+  return (ROLE_LEVEL[user.effectiveRole] ?? 0) >= (ROLE_LEVEL['admin'] ?? 0);
+}
+
 // ─── Modal ────────────────────────────────────────────────────────────────────
 
 interface ModalProps {
@@ -71,13 +93,12 @@ interface ModalProps {
 }
 
 function ToolModal({ tool, onClose, onSaved }: ModalProps) {
+  const { user } = useAuth();
   const isEdit = !!tool;
   const [name, setName] = useState(tool?.name ?? '');
   const [description, setDescription] = useState(tool?.description ?? '');
   const [url, setUrl] = useState(tool?.url ?? '');
   const [category, setCategory] = useState<ToolCategory>(tool?.category ?? 'other');
-  const [author, setAuthor] = useState(tool?.author ?? '');
-  const [authorTag, setAuthorTag] = useState(tool?.author_tag ?? '');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
@@ -87,7 +108,6 @@ function ToolModal({ tool, onClose, onSaved }: ModalProps) {
     if (!name.trim()) errs.name = '請填寫工具名稱';
     if (!description.trim()) errs.description = '請填寫簡介';
     if (!url.trim()) errs.url = '請填寫連結';
-    if (!isEdit && !author.trim()) errs.author = '請填寫名稱';
     setErrors(errs);
     if (Object.keys(errs).length > 0) return;
 
@@ -99,18 +119,24 @@ function ToolModal({ tool, onClose, onSaved }: ModalProps) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name: name.trim(), description: description.trim(), url: url.trim(), category }),
         });
-        if (!res.ok) throw new Error('更新失敗');
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || '更新失敗');
+        }
       } else {
         const res = await fetch('/api/ai-tools', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: name.trim(), description: description.trim(), url: url.trim(), category, author: author.trim(), author_tag: authorTag.trim() }),
+          body: JSON.stringify({ name: name.trim(), description: description.trim(), url: url.trim(), category }),
         });
-        if (!res.ok) throw new Error('新增失敗');
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || '新增失敗');
+        }
       }
       onSaved();
-    } catch {
-      setErrors({ submit: isEdit ? '更新失敗，請稍後再試' : '新增失敗，請稍後再試' });
+    } catch (err) {
+      setErrors({ submit: err instanceof Error ? err.message : (isEdit ? '更新失敗，請稍後再試' : '新增失敗，請稍後再試') });
     } finally {
       setSubmitting(false);
     }
@@ -179,23 +205,10 @@ function ToolModal({ tool, onClose, onSaved }: ModalProps) {
             {errors.description && <p style={{ color: '#E94560', fontSize: '0.75rem', marginTop: '0.2rem' }}>{errors.description}</p>}
           </div>
 
-          {/* Author (only for create) */}
-          {!isEdit && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
-              <div>
-                <label style={labelStyle}>你的名稱 <span style={{ color: '#E94560' }}>*</span></label>
-                <input type="text" placeholder="名稱" value={author}
-                  onChange={e => setAuthor(e.target.value)} onFocus={handleFocusIn} onBlur={handleFocusOut}
-                  style={{ ...inputStyle, borderColor: errors.author ? '#E94560' : '#2A2A4A' }} />
-                {errors.author && <p style={{ color: '#E94560', fontSize: '0.75rem', marginTop: '0.2rem' }}>{errors.author}</p>}
-              </div>
-              <div>
-                <label style={labelStyle}>Discord Tag（選填）</label>
-                <input type="text" placeholder="@username" value={authorTag}
-                  onChange={e => setAuthorTag(e.target.value)} onFocus={handleFocusIn} onBlur={handleFocusOut}
-                  style={inputStyle} />
-              </div>
-            </div>
+          {!isEdit && user && (
+            <p style={{ fontSize: '0.8rem', color: '#606080', marginBottom: '0.75rem' }}>
+              投稿者：{user.name}
+            </p>
           )}
 
           {errors.submit && (
@@ -241,10 +254,13 @@ function DeleteConfirm({ tool, onConfirm, onCancel }: { tool: Tool; onConfirm: (
     setDeleting(true);
     try {
       const res = await fetch(`/api/ai-tools/${tool.id}`, { method: 'DELETE' });
-      if (!res.ok) throw new Error();
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || '刪除失敗');
+      }
       onConfirm();
-    } catch {
-      alert('刪除失敗，請稍後再試');
+    } catch (err) {
+      alert(err instanceof Error ? err.message : '刪除失敗，請稍後再試');
       setDeleting(false);
     }
   }
@@ -298,8 +314,14 @@ function DeleteConfirm({ tool, onConfirm, onCancel }: { tool: Tool; onConfirm: (
 
 // ─── Tool Card ────────────────────────────────────────────────────────────────
 
-function ToolCard({ tool, onEdit, onDelete }: { tool: Tool; onEdit: () => void; onDelete: () => void }) {
+function ToolCard({ tool, canEdit, loggedIn, onEdit, onDelete, onToggleFavorite }: { tool: Tool; canEdit: boolean; loggedIn: boolean; onEdit: () => void; onDelete: () => void; onToggleFavorite: () => void }) {
   const cfg = CATEGORY_CONFIG[tool.category] || CATEGORY_CONFIG.other;
+  const [favBusy, setFavBusy] = useState(false);
+
+  async function handleFavorite() {
+    setFavBusy(true);
+    try { await onToggleFavorite(); } finally { setFavBusy(false); }
+  }
 
   return (
     <article
@@ -329,29 +351,48 @@ function ToolCard({ tool, onEdit, onDelete }: { tool: Tool; onEdit: () => void; 
         >
           {cfg.icon} {cfg.label}
         </span>
-        <div style={{ display: 'flex', gap: '0.375rem' }}>
-          <button onClick={onEdit} title="編輯"
-            style={{
-              background: 'rgba(108,99,255,0.1)', border: '1px solid rgba(108,99,255,0.2)',
-              borderRadius: '0.375rem', color: '#8B83FF', fontSize: '0.75rem',
-              padding: '0.25rem 0.5rem', cursor: 'pointer', transition: 'background 0.2s',
-            }}
-            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(108,99,255,0.2)')}
-            onMouseLeave={e => (e.currentTarget.style.background = 'rgba(108,99,255,0.1)')}
-          >
-            ✏️
-          </button>
-          <button onClick={onDelete} title="刪除"
-            style={{
-              background: 'rgba(233,69,96,0.1)', border: '1px solid rgba(233,69,96,0.2)',
-              borderRadius: '0.375rem', color: '#E94560', fontSize: '0.75rem',
-              padding: '0.25rem 0.5rem', cursor: 'pointer', transition: 'background 0.2s',
-            }}
-            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(233,69,96,0.2)')}
-            onMouseLeave={e => (e.currentTarget.style.background = 'rgba(233,69,96,0.1)')}
-          >
-            ✕
-          </button>
+        <div style={{ display: 'flex', gap: '0.375rem', alignItems: 'center' }}>
+          {loggedIn && (
+            <button onClick={handleFavorite} disabled={favBusy}
+              aria-label={tool.is_favorited ? '取消收藏' : '收藏'}
+              title={tool.is_favorited ? '取消收藏' : '收藏'}
+              style={{
+                background: tool.is_favorited ? 'rgba(255,107,129,0.15)' : 'transparent',
+                border: `1px solid ${tool.is_favorited ? 'rgba(255,107,129,0.3)' : '#2A2A4A'}`,
+                borderRadius: '0.375rem', fontSize: '0.8rem',
+                padding: '0.2rem 0.45rem', cursor: favBusy ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s', opacity: favBusy ? 0.5 : 1,
+              }}
+            >
+              {tool.is_favorited ? '❤️' : '🤍'}
+            </button>
+          )}
+          {canEdit && (
+            <>
+              <button onClick={onEdit} title="編輯"
+                style={{
+                  background: 'rgba(108,99,255,0.1)', border: '1px solid rgba(108,99,255,0.2)',
+                  borderRadius: '0.375rem', color: '#8B83FF', fontSize: '0.75rem',
+                  padding: '0.25rem 0.5rem', cursor: 'pointer', transition: 'background 0.2s',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(108,99,255,0.2)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'rgba(108,99,255,0.1)')}
+              >
+                ✏️
+              </button>
+              <button onClick={onDelete} title="刪除"
+                style={{
+                  background: 'rgba(233,69,96,0.1)', border: '1px solid rgba(233,69,96,0.2)',
+                  borderRadius: '0.375rem', color: '#E94560', fontSize: '0.75rem',
+                  padding: '0.25rem 0.5rem', cursor: 'pointer', transition: 'background 0.2s',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(233,69,96,0.2)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'rgba(233,69,96,0.1)')}
+              >
+                ✕
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -394,10 +435,37 @@ function ToolCard({ tool, onEdit, onDelete }: { tool: Tool; onEdit: () => void; 
         return <span style={linkStyle}>🔗 {display}</span>;
       })()}
 
+      {/* Tags */}
+      {tool.tags && tool.tags.length > 0 && (
+        <div style={{ display: 'flex', gap: '0.375rem', flexWrap: 'wrap' }}>
+          {tool.tags.map((tag) => (
+            <span
+              key={tag.id}
+              style={{
+                fontSize: '0.7rem', padding: '0.15rem 0.5rem', borderRadius: '999px',
+                background: `${tag.color}15`, color: tag.color,
+                border: `1px solid ${tag.color}25`,
+              }}
+            >
+              {tag.name}
+            </span>
+          ))}
+        </div>
+      )}
+
       {/* Footer */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid #2A2A4A' }}>
-        <span style={{ fontSize: '0.75rem', color: '#606080' }}>
-          {tool.author}{tool.author_tag && <span style={{ color: '#505070' }}> {tool.author_tag}</span>}
+        {tool.contributor_avatar ? (
+          <img
+            src={tool.contributor_avatar}
+            alt=""
+            style={{ width: '1.25rem', height: '1.25rem', borderRadius: '50%', objectFit: 'cover' }}
+          />
+        ) : (
+          <span style={{ fontSize: '1rem' }}>🤖</span>
+        )}
+        <span style={{ fontSize: '0.75rem', color: '#9090B0' }}>
+          {tool.contributor_name || tool.author}
         </span>
         <span style={{ color: '#2A2A4A' }}>·</span>
         <span style={{ fontSize: '0.75rem', color: '#606080' }}>{timeAgo(tool.created_at)}</span>
@@ -409,10 +477,12 @@ function ToolCard({ tool, onEdit, onDelete }: { tool: Tool; onEdit: () => void; 
 // ─── Main Component ──────────────────────────────────────────────────────────
 
 export default function ToolCardBoard() {
+  const { user } = useAuth();
   const [tools, setTools] = useState<Tool[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState<ToolCategory | 'all'>('all');
+  const [contributorFilter, setContributorFilter] = useState<string>('');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingTool, setEditingTool] = useState<Tool | null>(null);
   const [deletingTool, setDeletingTool] = useState<Tool | null>(null);
@@ -423,6 +493,7 @@ export default function ToolCardBoard() {
     try {
       const params = new URLSearchParams();
       if (categoryFilter !== 'all') params.set('category', categoryFilter);
+      if (contributorFilter) params.set('contributor_id', contributorFilter);
       const res = await fetch(`/api/ai-tools?${params}`);
       if (!res.ok) throw new Error('載入失敗');
       const data = await res.json();
@@ -435,7 +506,28 @@ export default function ToolCardBoard() {
     }
   }
 
-  useEffect(() => { fetchTools(); }, [categoryFilter]);
+  useEffect(() => { fetchTools(); }, [categoryFilter, contributorFilter]);
+
+  async function toggleFavorite(tool: Tool) {
+    try {
+      const res = await fetch('/api/favorites', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ resource_type: 'ai-tool', resource_id: String(tool.id) }),
+      });
+      if (!res.ok) throw new Error('操作失敗');
+      const data = await res.json();
+      setTools(prev => prev.map(t =>
+        t.id === tool.id ? { ...t, is_favorited: data.favorited } : t
+      ));
+    } catch { /* silent */ }
+  }
+
+  // Permission map
+  const canEditMap: Record<number, boolean> = {};
+  for (const t of tools) {
+    canEditMap[t.id as number] = canModifyTool(user, t);
+  }
 
   const categoryTabs: { key: ToolCategory | 'all'; label: string; icon: string }[] = [
     { key: 'all', label: '全部', icon: '🔍' },
@@ -449,21 +541,23 @@ export default function ToolCardBoard() {
         <div style={{ fontSize: '0.875rem', color: '#9090B0' }}>
           <span style={{ color: '#00F5A0', fontWeight: 600 }}>{tools.length} 個工具</span>
         </div>
-        <button
-          onClick={() => setShowCreateModal(true)}
-          style={{
-            display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
-            padding: '0.6rem 1.25rem',
-            background: 'linear-gradient(135deg, #6C63FF, #00D9FF)',
-            border: 'none', borderRadius: '0.5rem', color: '#F0F0FF',
-            fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer',
-            transition: 'opacity 0.2s, transform 0.2s',
-          }}
-          onMouseEnter={e => (e.currentTarget.style.opacity = '0.9')}
-          onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
-        >
-          + 新增工具
-        </button>
+        {user && (
+          <button
+            onClick={() => setShowCreateModal(true)}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
+              padding: '0.6rem 1.25rem',
+              background: 'linear-gradient(135deg, #6C63FF, #00D9FF)',
+              border: 'none', borderRadius: '0.5rem', color: '#F0F0FF',
+              fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer',
+              transition: 'opacity 0.2s, transform 0.2s',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.opacity = '0.9')}
+            onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+          >
+            + 新增工具
+          </button>
+        )}
       </div>
 
       {/* Category filter tabs */}
@@ -471,7 +565,7 @@ export default function ToolCardBoard() {
         style={{
           background: 'rgba(18,18,42,0.7)', backdropFilter: 'blur(12px)',
           border: '1px solid #2A2A4A', borderRadius: '0.75rem',
-          padding: '0.5rem', marginBottom: '1.25rem',
+          padding: '0.5rem', marginBottom: '0.75rem',
           display: 'flex', gap: '0.25rem', flexWrap: 'wrap',
         }}
       >
@@ -496,6 +590,30 @@ export default function ToolCardBoard() {
             </button>
           );
         })}
+      </div>
+
+      {/* Contributor filter */}
+      <div style={{ marginBottom: '1.25rem' }}>
+        <select
+          value={contributorFilter}
+          onChange={(e) => setContributorFilter(e.target.value)}
+          style={{
+            ...inputStyle,
+            width: 'auto',
+            minWidth: 160,
+            maxWidth: 240,
+            fontSize: '0.8rem',
+            padding: '0.4rem 0.75rem',
+            cursor: 'pointer',
+          }}
+        >
+          <option value="">全部成員</option>
+          {MEMBERS.map((m) => (
+            <option key={m.id} value={m.id} style={{ background: '#12122A' }}>
+              {m.avatar} {m.name}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* Card grid */}
@@ -531,7 +649,9 @@ export default function ToolCardBoard() {
         >
           <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🤖</div>
           <p style={{ fontSize: '0.95rem', marginBottom: '0.25rem' }}>還沒有工具卡片</p>
-          <p style={{ fontSize: '0.85rem' }}>點擊「+ 新增工具」來分享你發現的好用 AI 工具！</p>
+          <p style={{ fontSize: '0.85rem' }}>
+            {user ? '點擊「+ 新增工具」來分享你發現的好用 AI 工具！' : '登入後即可分享 AI 工具'}
+          </p>
         </div>
       ) : (
         <div style={{
@@ -543,8 +663,11 @@ export default function ToolCardBoard() {
             <ToolCard
               key={tool.id}
               tool={tool}
+              canEdit={canEditMap[tool.id as number] || false}
+              loggedIn={!!user}
               onEdit={() => setEditingTool(tool)}
               onDelete={() => setDeletingTool(tool)}
+              onToggleFavorite={() => toggleFavorite(tool)}
             />
           ))}
         </div>

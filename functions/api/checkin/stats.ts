@@ -89,7 +89,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       authToken: context.env.TURSO_AUTH_TOKEN,
     });
 
-    const [pointsResult, countResult, lastResult] = await Promise.all([
+    const [pointsResult, countResult, lastResult, knowledgeCountResult] = await Promise.all([
       db.execute({
         sql: `SELECT COALESCE(SUM(points), 0) AS totalPoints FROM checkins WHERE user_id = ?`,
         args: [user.id],
@@ -102,6 +102,10 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         sql: `SELECT checkin_date FROM checkins WHERE user_id = ? ORDER BY checkin_date DESC LIMIT 1`,
         args: [user.id],
       }),
+      db.execute({
+        sql: `SELECT COUNT(*) AS knowledgeCount FROM knowledge_entries WHERE contributor_id = ?`,
+        args: [user.id],
+      }),
     ]);
 
     const [currentStreak, longestStreak] = await Promise.all([
@@ -112,6 +116,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     const totalPoints = Number(pointsResult.rows[0]?.totalPoints ?? 0);
     const totalCheckins = Number(countResult.rows[0]?.totalCheckins ?? 0);
     const lastCheckinDate = (lastResult.rows[0]?.checkin_date as string) ?? null;
+    const knowledgeCount = Number(knowledgeCountResult.rows[0]?.knowledgeCount ?? 0);
 
     return new Response(
       JSON.stringify({
@@ -122,6 +127,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
           currentStreak,
           longestStreak,
           lastCheckinDate,
+          knowledgeCount,
         },
       }),
       { headers: { 'Content-Type': 'application/json' } },

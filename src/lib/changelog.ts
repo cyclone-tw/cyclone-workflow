@@ -6,6 +6,33 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: 'v20260412.2',
+    date: '2026-04-12 18:00',
+    changes: [
+      'fix(#30): API O(n*m) 查找改為 Map — ai-tools tags 和 wishes history 效能優化',
+      'fix(#30): 收藏切換競態修正 — 改用 INSERT ON CONFLICT 原子操作避免並發衝突',
+      'fix(#30): 打卡 streak 樂觀更新修正 — 優先使用 API 回傳的 stats 資料',
+      'fix(#30): 收藏按鈕無障礙 — 補上 aria-label 供螢幕閱讀器使用',
+      'fix(#30): 週檢核點 disabled checkbox 改為視覺圓點 — 避免誤導為可互動',
+    ],
+  },
+  {
+    version: 'v20260412.1',
+    date: '2026-04-12 16:00',
+    changes: [
+      'fix(#30): AI 工具箱權限修正 — 編輯/刪除需投稿者本人或隊長以上（HIGH）',
+      'feat(#30): 儀表板知識貢獻統計卡片 — 顯示知識庫投稿數量（MEDIUM）',
+      'feat(#30): 儀表板週檢核點 — 顯示當週進度、目標與時間範圍（MEDIUM）',
+      'feat(#30): 積分榜顯示全部成員 — 移除 20 人限制（MEDIUM）',
+      'feat(#30): 知識庫成員篩選 — 支援按貢獻者過濾（MEDIUM）',
+      'feat(#30): AI 工具箱標籤共用 — 支援 resource_tags 顯示標籤（MEDIUM）',
+      'feat(#30): AI 工具箱投稿者顯示 + 成員篩選 — 顯示投稿者頭像與名稱（MEDIUM）',
+      'feat(#30): 許願樹狀態歷程追蹤 — 新增 wish_history 表，卡片顯示狀態變化時間軸（MEDIUM）',
+      'feat(#30): 知識庫 + AI 工具箱收藏功能 — 新增 resource_favorites 表，卡片愛心按鈕切換收藏（LOW）',
+      'feat(#30): API 回傳 is_favorited — knowledge 和 ai-tools GET 端點自動附加登入者收藏狀態（LOW）',
+    ],
+  },
+  {
     version: 'v20260411.5',
     date: '2026-04-12 00:00',
     changes: [

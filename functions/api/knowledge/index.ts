@@ -1,5 +1,5 @@
 import { createClient } from '@libsql/client/web';
-import { requireAuth } from '../../../src/lib/auth.ts';
+import { requireAuth, getSessionUser } from '../../../src/lib/auth.ts';
 
 interface Env {
   TURSO_DATABASE_URL: string;
@@ -14,10 +14,18 @@ function getDb(env: Env) {
 
 export const onRequestGet: PagesFunction<Env> = async (context) => {
   try {
+    const user = await getSessionUser(context.request, context.env);
     const db = getDb(context.env);
+    await db.execute({ sql: `CREATE TABLE IF NOT EXISTS resource_favorites (
+      id TEXT PRIMARY KEY, user_id TEXT NOT NULL,
+      resource_type TEXT NOT NULL CHECK(resource_type IN ('knowledge', 'ai-tool')),
+      resource_id TEXT NOT NULL, created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(user_id, resource_type, resource_id)
+    )`, args: [] });
     const url = new URL(context.request.url);
     const category = url.searchParams.get('category');
     const tag = url.searchParams.get('tag');
+    const contributor_id = url.searchParams.get('contributor_id');
 
     let sql = `
       SELECT
@@ -35,6 +43,10 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     if (category && category !== 'all') {
       conditions.push('ke.category = ?');
       args.push(category);
+    }
+    if (contributor_id) {
+      conditions.push('ke.contributor_id = ?');
+      args.push(contributor_id);
     }
     if (tag) {
       sql += ` JOIN resource_tags rt ON rt.resource_id = ke.id AND rt.resource_type = 'knowledge'
@@ -81,6 +93,20 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         if (entry) {
           entry.tags.push({ id: tr.tag_id as string, name: tr.name as string, color: tr.color as string });
         }
+      }
+    }
+
+    // Attach is_favorited for logged-in users
+    if (user && entries.length > 0) {
+      const entryIds = entries.map((e) => e.id);
+      const placeholders = entryIds.map(() => '?').join(',');
+      const favResult = await db.execute({
+        sql: `SELECT resource_id FROM resource_favorites WHERE user_id = ? AND resource_type = 'knowledge' AND resource_id IN (${placeholders})`,
+        args: [user.id, ...entryIds],
+      });
+      const favSet = new Set(favResult.rows.map((r) => String(r.resource_id)));
+      for (const entry of entries) {
+        (entry as Record<string, unknown>).is_favorited = favSet.has(String(entry.id));
       }
     }
 
