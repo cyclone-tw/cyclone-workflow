@@ -1,7 +1,7 @@
 ---
 issue: 36
 title: 多 AI 協作的檔案式記憶與規劃架構 (planning-with-files)
-status: review
+status: in-progress
 phase: verification
 priority: P1
 owner: dar

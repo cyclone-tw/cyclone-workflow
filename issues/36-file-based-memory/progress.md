@@ -49,19 +49,30 @@ updated: 2026-04-12
 
 > 最重要的一區。新接手的 AI 請先讀這裡。
 
-**目前狀態**:Draft PR #37 已開立,等 Dar review 與 merge。階段 1–3 全部完成。
+**目前狀態**:Draft PR #37 開立(2 個 commit),處於 verification 階段。**尚未達到 AGENTS.md Definition of Done**,因此 status 還是 `in-progress` 而不是 `review`。
 
-**下一步應該**(選一個方向,看 Dar 決定):
-1. **補 TODO**:Dar 親自填 `AGENTS.md` 的 war story、`task_plan.md` 的成功標準、`issues/README.md` 的新 issue 判斷準則
-2. **階段 4 搬家**(另一個 commit 在同一個 PR,或另一個 issue):
-   - `git mv issue-17.md issues/17-cyclone-requirements/task_plan.md`
-   - `git mv pr-11.md issues/11-markdown-rendering/findings.md`
-   - `git mv worklog-20260411-1437.md issues/23-gemini-ai-insights/progress.md`
-   - 每檔補 frontmatter
-3. **階段 5 跨 AI 冷啟動驗證**:Codex / Cursor 打開專案問「branch 命名規則」
-4. **階段 6 merge**:PR ready for review → `src/lib/changelog.ts` 新增 entry → merge
+階段 1–3(建立新架構 / build 驗證 / draft PR)完成;階段 4–6 未做。
 
-**卡住的事**:無
+**距離可 merge 還差什麼**(按 AGENTS.md Definition of Done 對照):
+- [x] `bun run build` 綠
+- [ ] `bun run test:e2e` 綠 —— **未跑**
+- [ ] `task_plan.md` checklist 全打勾 —— 階段 4 / 5 / 6 還沒做
+- [ ] PR draft 附 E2E 錄影或截圖 —— **還沒附**
+- [ ] `src/lib/changelog.ts` 新增 entry —— **還沒新增**
+- [ ] PR 轉 ready for review + 自我 review —— 還是 draft
+
+**下一步(必須按順序,不是選單)**:
+
+1. **(可選)階段 4 搬家** —— 若 Dar 決定把 `issue-17.md` / `pr-11.md` / `worklog-20260411-1437.md` 搬進 `issues/`,在本 PR 加第 3 個 commit(或開另一個 issue 延後);與階段 5–8 獨立
+2. **Dar 親手補 TODO** —— `AGENTS.md` L34-38 的 3 條 war story、`task_plan.md` 驗收條件的成功標準、`issues/README.md` 的新 issue 判斷準則。這是 merge 前的 content gate,Dar 的 domain knowledge
+3. **階段 5 跨 AI 冷啟動驗證** —— 開 Codex CLI / Cursor 問「branch 命名規則」,至少 2 個工具答出 `{type}/{issue-number}_{slug}` 才算架構驗證通過。**是本 issue 的核心驗收**
+4. **跑 `bun run test:e2e`** 確認沒被任何 docs 變更意外 break(理論上不會)
+5. **錄 / 截圖給 PR**:E2E 錄影或關鍵畫面(因為是 docs PR,可用「Codex cold start 答對 branch 命名規則」的 terminal 截圖充數)
+6. **寫 `src/lib/changelog.ts` entry** —— `ChangelogEntry` 新增一筆(version 用當下 bump 版號、date UTC+8),內容「導入 AGENTS.md 與 issues/ 檔案式記憶架構,支援多 AI 協作交棒」。第 4 個 commit
+7. **PR 轉 ready for review** —— 只有到這一步 `task_plan.md` frontmatter status 才能從 `in-progress` 改成 `review`
+8. **Merge** —— 合併後 status → `done`、phase → `done`,填 `pr` 連結已經在,補 `merged_at` 日期註解
+
+**卡住的事**:無(目前沒有 blocker,只是工作沒全做完)
 
 **重要上下文**:
 - **GitHub issue**:#36(https://github.com/cyclone-tw/cyclone-workflow/issues/36)
