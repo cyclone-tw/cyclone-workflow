@@ -1,6 +1,7 @@
 ---
 import Layout from '@/layouts/Layout.astro';
 import { MEMBERS, WEEKS } from '@/lib/constants';
+import AnnouncementBanner from '@/components/announcements/AnnouncementBanner.tsx';
 
 const features = [
   {
@@ -116,19 +117,7 @@ const memberCount = MEMBERS.length;
 
       <div class="space-y-4">
         <!-- Latest announcement -->
-        <div class="glass rounded-2xl p-6 border-l-4 border-[var(--color-primary)]">
-          <div class="flex items-center gap-2 mb-2">
-            <span class="text-xs text-[var(--color-text-muted)]">2026-04-10</span>
-            <span class="px-2 py-0.5 rounded text-xs font-semibold bg-[var(--color-primary)]/20 text-[var(--color-primary-light)]">重要</span>
-          </div>
-          <h3 class="text-lg font-bold text-[var(--color-text-primary)] mb-2">
-            共學團網站上線！
-          </h3>
-          <p class="text-[var(--color-text-secondary)] text-sm leading-relaxed">
-            歡迎所有成員！網站已正式上線，請先熟悉各頁面功能。4/13（一）為 W1 啟動日，
-            屆時會在啟動會議中對齊學習方向與目標。有任何問題歡迎在討論區提出！
-          </p>
-        </div>
+        <AnnouncementBanner client:load />
       </div>
     </div>
   </section>

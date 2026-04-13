@@ -6,6 +6,13 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: 'v20260413.1',
+    date: '2026-04-13 22:20',
+    changes: [
+      'feat(#41): 最新公告系統 — 資料表 + CRUD API + 管理後台 + 首頁橫幅元件',
+    ],
+  },
+  {
     version: 'v20260412.2',
     date: '2026-04-12 18:00',
     changes: [

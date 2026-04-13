@@ -42,6 +42,17 @@ interface RelatedCounts {
   sessions: number;
 }
 
+interface Announcement {
+  id: string;
+  title: string;
+  content: string;
+  pinned: boolean;
+  author_id: string;
+  author_name: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
@@ -146,6 +157,13 @@ export default function AdminPanel() {
   const [deleting, setDeleting] = useState<{ user: AdminUser; relatedCounts: RelatedCounts | null; loading: boolean } | null>(null);
   const [roleConfirm, setRoleConfirm] = useState<{ user: AdminUser; role: string; action: 'add' | 'remove' } | null>(null);
 
+  // Announcements
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [announcementLoading, setAnnouncementLoading] = useState(false);
+  const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
+  const [deletingAnnouncement, setDeletingAnnouncement] = useState<{ id: string; title: string; loading: boolean } | null>(null);
+  const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
+
   const isAdmin = isRole('admin');
 
   const fetchData = useCallback(async () => {
@@ -153,14 +171,16 @@ export default function AdminPanel() {
     setError(null);
     try {
       const qs = includeArchived ? '?status=all&includeArchived=1' : '?status=all';
-      const [statsRes, usersRes, analyticsRes] = await Promise.all([
+      const [statsRes, usersRes, analyticsRes, announcementsRes] = await Promise.all([
         fetch('/api/admin/stats'),
         fetch(`/api/admin/users${qs}`),
         fetch('/api/admin/analytics'),
+        fetch('/api/admin/announcements'),
       ]);
       const statsData = await statsRes.json();
       const usersData = await usersRes.json();
       const analyticsData = await analyticsRes.json();
+      const announcementsData = await announcementsRes.json();
 
       if (!statsData.ok) throw new Error(statsData.error || '載入統計失敗');
       if (!usersData.ok) throw new Error(usersData.error || '載入成員失敗');
@@ -168,6 +188,7 @@ export default function AdminPanel() {
       setStats(statsData.stats);
       setUsers(usersData.users);
       if (analyticsData.ok) setAnalytics(analyticsData.analytics);
+      if (announcementsData.ok) setAnnouncements(announcementsData.announcements || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : '載入失敗');
     } finally {
@@ -468,6 +489,83 @@ export default function AdminPanel() {
           <span className="text-xs opacity-70">請確認 Google Cloud Console 已啟用 Analytics Data API，且 API Key 有該 API 的使用權限。</span>
         </div>
       )}
+
+      {/* Announcements Management */}
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+            最新公告
+          </h2>
+          <button
+            onClick={() => { setEditingAnnouncement(null); setShowAnnouncementModal(true); }}
+            className="text-sm px-3 py-1.5 rounded-lg font-medium text-white transition-opacity hover:opacity-90"
+            style={{ background: 'var(--color-primary)' }}
+          >
+            + 新增公告
+          </button>
+        </div>
+        <div
+          className="rounded-xl overflow-hidden"
+          style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}
+        >
+          {announcementLoading ? (
+            <div className="px-4 py-8 text-center text-sm" style={{ color: 'var(--color-text-muted)' }}>
+              載入中...
+            </div>
+          ) : announcements.length === 0 ? (
+            <div className="px-4 py-8 text-center text-sm" style={{ color: 'var(--color-text-muted)' }}>
+              還沒有公告
+            </div>
+          ) : (
+            <div className="divide-y" style={{ borderColor: 'var(--color-border)' }}>
+              {announcements.map((a) => (
+                <div
+                  key={a.id}
+                  className="flex items-start gap-3 px-4 py-3"
+                  style={{ borderBottom: '1px solid var(--color-border)' }}
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      {a.pinned && (
+                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full text-white" style={{ background: '#6C63FF' }}>
+                          📌 置頂
+                        </span>
+                      )}
+                      <span className="font-medium text-sm truncate" style={{ color: 'var(--color-text-primary)' }}>
+                        {a.title}
+                      </span>
+                    </div>
+                    <div className="text-xs mb-1" style={{ color: 'var(--color-text-muted)' }}>
+                      {a.author_name} · {new Date(a.created_at).toLocaleString('zh-TW')}
+                    </div>
+                    <div className="text-xs line-clamp-1" style={{ color: 'var(--color-text-secondary)' }}>
+                      {a.content}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button
+                      onClick={() => { setEditingAnnouncement(a); setShowAnnouncementModal(true); }}
+                      className="p-2 rounded-lg text-xs transition-opacity hover:opacity-80"
+                      style={{ background: 'var(--color-bg-dark)', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border)' }}
+                      title="編輯"
+                    >
+                      ✏️
+                    </button>
+                    <button
+                      onClick={() => setDeletingAnnouncement({ id: a.id, title: a.title, loading: false })}
+                      className="p-2 rounded-lg text-xs transition-opacity hover:opacity-80"
+                      style={{ background: '#E9456020', color: '#E94560', border: '1px solid #E9456040' }}
+                      title="刪除"
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
 
       {/* Pending Approvals */}
       <section>
@@ -922,6 +1020,83 @@ export default function AdminPanel() {
           </div>
         </Modal>
       )}
+
+      {/* Announcement Form Modal */}
+      {showAnnouncementModal && (
+        <Modal
+          title={editingAnnouncement ? '編輯公告' : '新增公告'}
+          onClose={() => { setShowAnnouncementModal(false); setEditingAnnouncement(null); }}
+        >
+          <AnnouncementForm
+            announcement={editingAnnouncement}
+            onSubmit={async (body) => {
+              const url = editingAnnouncement
+                ? `/api/admin/announcements/${editingAnnouncement.id}`
+                : '/api/admin/announcements';
+              const method = editingAnnouncement ? 'PUT' : 'POST';
+              const res = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body),
+              });
+              const data = await res.json();
+              if (!data.ok) throw new Error(data.error || '儲存失敗');
+              setShowAnnouncementModal(false);
+              setEditingAnnouncement(null);
+              fetchData();
+            }}
+            onCancel={() => { setShowAnnouncementModal(false); setEditingAnnouncement(null); }}
+          />
+        </Modal>
+      )}
+
+      {/* Announcement Delete Confirm Modal */}
+      {deletingAnnouncement && (
+        <Modal
+          title="確認刪除公告"
+          onClose={() => setDeletingAnnouncement(null)}
+        >
+          <p className="text-sm mb-4" style={{ color: 'var(--color-text-secondary)' }}>
+            確定要刪除公告「
+            <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+              {deletingAnnouncement.title}
+            </span>
+            」嗎？此操作無法撤銷。
+          </p>
+          <div className="flex items-center justify-end gap-2">
+            <button
+              onClick={() => setDeletingAnnouncement(null)}
+              className="px-4 py-2 rounded-lg text-sm font-medium transition-opacity hover:opacity-90"
+              style={{
+                background: 'var(--color-bg-dark)',
+                border: '1px solid var(--color-border)',
+                color: 'var(--color-text-secondary)',
+              }}
+            >
+              取消
+            </button>
+            <button
+              onClick={async () => {
+                setDeletingAnnouncement(prev => prev ? { ...prev, loading: true } : null);
+                try {
+                  const res = await fetch(`/api/admin/announcements/${deletingAnnouncement.id}`, { method: 'DELETE' });
+                  const data = await res.json();
+                  if (!data.ok) throw new Error(data.error || '刪除失敗');
+                  setDeletingAnnouncement(null);
+                  fetchData();
+                } catch (err) {
+                  alert(err instanceof Error ? err.message : '刪除失敗');
+                  setDeletingAnnouncement(null);
+                }
+              }}
+              className="px-4 py-2 rounded-lg text-sm font-medium text-white transition-opacity hover:opacity-90"
+              style={{ background: '#E94560' }}
+            >
+              確認刪除
+            </button>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }
@@ -1093,6 +1268,91 @@ function EditMemberForm({
         <button
           type="submit"
           disabled={submitting || !name.trim()}
+          className="px-4 py-2 rounded-lg text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+          style={{ background: 'var(--color-primary)' }}
+        >
+          {submitting ? '儲存中...' : '儲存'}
+        </button>
+      </div>
+      <FormStyles />
+    </form>
+  );
+}
+
+function AnnouncementForm({
+  announcement,
+  onSubmit,
+  onCancel,
+}: {
+  announcement: Announcement | null;
+  onSubmit: (body: { title: string; content: string; pinned: boolean }) => Promise<void>;
+  onCancel: () => void;
+}) {
+  const [title, setTitle] = useState(announcement?.title ?? '');
+  const [content, setContent] = useState(announcement?.content ?? '');
+  const [pinned, setPinned] = useState(announcement?.pinned ?? false);
+  const [submitting, setSubmitting] = useState(false);
+
+  return (
+    <form
+      onSubmit={async (e) => {
+        e.preventDefault();
+        if (!title.trim() || !content.trim()) return;
+        setSubmitting(true);
+        try {
+          await onSubmit({ title: title.trim(), content: content.trim(), pinned });
+        } finally {
+          setSubmitting(false);
+        }
+      }}
+      className="space-y-3"
+    >
+      <FormField label="標題 *">
+        <input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          required
+          className="form-input"
+          placeholder="公告標題"
+        />
+      </FormField>
+      <FormField label="內容 *">
+        <textarea
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          required
+          rows={4}
+          className="form-input resize-none"
+          placeholder="公告內容"
+        />
+      </FormField>
+      <label className="flex items-center gap-2 cursor-pointer">
+        <input
+          type="checkbox"
+          checked={pinned}
+          onChange={(e) => setPinned(e.target.checked)}
+          className="w-4 h-4 accent-[#6C63FF]"
+        />
+        <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+          📌 置頂公告
+        </span>
+      </label>
+      <div className="flex items-center justify-end gap-2 pt-2">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="px-4 py-2 rounded-lg text-sm font-medium transition-opacity hover:opacity-90"
+          style={{
+            background: 'var(--color-bg-dark)',
+            border: '1px solid var(--color-border)',
+            color: 'var(--color-text-secondary)',
+          }}
+        >
+          取消
+        </button>
+        <button
+          type="submit"
+          disabled={submitting || !title.trim() || !content.trim()}
           className="px-4 py-2 rounded-lg text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
           style={{ background: 'var(--color-primary)' }}
         >
