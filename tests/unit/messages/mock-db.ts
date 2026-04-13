@@ -1,0 +1,109 @@
+import { vi } from 'vitest';
+
+interface DbRow {
+  id: string | number;
+  [key: string]: unknown;
+}
+
+export const tables: Record<string, DbRow[]> = {
+  sessions: [],
+  users: [],
+  user_roles: [],
+  messages: [],
+};
+
+export function resetDb() {
+  tables.sessions = [];
+  tables.users = [];
+  tables.user_roles = [];
+  tables.messages = [];
+}
+
+export function seedUsers() {
+  tables.users = [
+    {
+      id: 'member-1',
+      name: 'Test Member',
+      status: 'active',
+      archived_at: null,
+      discord_id: null,
+    },
+  ];
+  tables.user_roles = [
+    { id: 'role-1', user_id: 'member-1', role: 'member' },
+  ];
+  tables.sessions = [
+    {
+      id: 'sess-1',
+      user_id: 'member-1',
+      token: 'valid-member-token',
+      expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+  ];
+}
+
+let _nextId = 1;
+
+vi.mock('@libsql/client/web', () => ({
+  createClient: () => ({
+    execute: vi.fn(async ({ sql, args }: { sql: string; args: unknown[] }) => {
+      // Session + user lookup (requireAuth / getSessionUser)
+      if (sql.includes('FROM sessions s') && sql.includes('JOIN users')) {
+        const token = args[0];
+        const session = tables.sessions.find((s) => s.token === token);
+        if (!session) return { rows: [], columns: [] };
+        const user = tables.users.find((u) => u.id === session.user_id);
+        if (!user) return { rows: [], columns: [] };
+        return {
+          rows: [{
+            user_id: user.id,
+            user_name: user.name,
+            user_discord_id: user.discord_id,
+            user_status: user.status,
+            user_archived_at: user.archived_at,
+            expires_at: session.expires_at,
+          }],
+          columns: [],
+        };
+      }
+
+      // Role lookup
+      if (sql.includes('SELECT role FROM user_roles')) {
+        const userId = args[0];
+        const roles = tables.user_roles
+          .filter((r) => r.user_id === userId)
+          .map((r) => ({ role: r.role }));
+        return { rows: roles, columns: [] };
+      }
+
+      // CREATE TABLE — no-op
+      if (sql.includes('CREATE TABLE IF NOT EXISTS')) {
+        return { rows: [], columns: [] };
+      }
+
+      // SELECT messages
+      if (sql.includes('FROM messages')) {
+        const rows = [...tables.messages].reverse(); // newest first
+        return { rows, columns: [] };
+      }
+
+      // INSERT messages
+      if (sql.includes('INSERT INTO messages')) {
+        const msg: DbRow = {
+          id: _nextId++,
+          author: args[0] as string,
+          content: args[1] as string,
+          tag: args[2] as string,
+          category: args[3] as string,
+          created_at: new Date().toISOString(),
+          like_count: 0,
+        };
+        tables.messages.push(msg);
+        return { rows: [], columns: [] };
+      }
+
+      return { rows: [], columns: [] };
+    }),
+    batch: vi.fn(async () => []),
+  }),
+}));

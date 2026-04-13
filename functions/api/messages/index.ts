@@ -1,5 +1,5 @@
 import { createClient } from '@libsql/client/web';
-import { getSessionUser } from '../../../src/lib/auth.ts';
+import { requireAuth } from '../../../src/lib/auth.ts';
 
 interface Env {
   TURSO_DATABASE_URL: string;
@@ -70,22 +70,21 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   }
 };
 
-// POST: Create a new message
+// POST: Create a new message (requires login)
 export const onRequestPost: PagesFunction<Env> = async (context) => {
   try {
-    const { author: bodyAuthor, content, tag, category } = await context.request.json() as {
-      author?: string;
+    const user = await requireAuth(context.request, context.env);
+
+    const { content, tag, category } = await context.request.json() as {
       content?: string;
       tag?: string;
       category?: string;
     };
 
-    // If logged in, use the user's name; otherwise use provided author field
-    const user = await getSessionUser(context.request, context.env);
-    const author = user ? user.name : (bodyAuthor || '');
+    const author = user.name;
 
-    if (!author.trim() || !content?.trim()) {
-      return new Response(JSON.stringify({ error: '請填寫暱稱和留言內容' }), {
+    if (!content?.trim()) {
+      return new Response(JSON.stringify({ error: '請填寫留言內容' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
       });
@@ -121,6 +120,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (err: unknown) {
+    if (err instanceof Response) return err;
     const msg = err instanceof Error ? err.message : 'Unknown error';
     return new Response(JSON.stringify({ ok: false, error: msg }), {
       status: 500,

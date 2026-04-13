@@ -112,7 +112,6 @@ export default function MessageBoard() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [posting, setPosting] = useState(false);
-  const [author, setAuthor] = useState('');
   const [tag, setTag] = useState('');
   const [content, setContent] = useState('');
   const [category, setCategory] = useState('一般討論');
@@ -122,7 +121,7 @@ export default function MessageBoard() {
   const [likedIds, setLikedIds] = useState<Set<number>>(new Set());
   const [likeLoadingIds, setLikeLoadingIds] = useState<Set<number>>(new Set());
   const formRef = useRef<HTMLFormElement>(null);
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, login } = useAuth();
 
   const fetchMessages = useCallback(async () => {
     try {
@@ -262,8 +261,8 @@ export default function MessageBoard() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!author.trim() || !content.trim()) {
-      setError('請填寫暱稱和留言內容');
+    if (!content.trim()) {
+      setError('請填寫留言內容');
       return;
     }
     setPosting(true);
@@ -272,7 +271,7 @@ export default function MessageBoard() {
       const res = await fetch('/api/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ author: author.trim(), content: content.trim(), tag: tag.trim(), category }),
+        body: JSON.stringify({ content: content.trim(), tag: tag.trim(), category }),
       });
       const data = await res.json();
       if (data.ok) {
@@ -294,110 +293,125 @@ export default function MessageBoard() {
 
   return (
     <div className="space-y-6">
-      {/* Post form */}
-      <form
-        ref={formRef}
-        onSubmit={handleSubmit}
-        className="rounded-xl p-5 space-y-4"
-        style={{
-          background: 'var(--color-bg-card)',
-          border: '1px solid var(--color-border)',
-        }}
-      >
-        <h3
-          className="text-base font-semibold"
-          style={{ color: 'var(--color-text-primary)' }}
-        >
-          ✍️ 發表留言
-        </h3>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <input
-            type="text"
-            value={author}
-            onChange={(e) => setAuthor(e.target.value)}
-            placeholder={user ? user.name : '你的暱稱 *'}
-            required
-            className="px-3 py-2 rounded-lg text-sm outline-none"
-            style={{
-              background: 'var(--color-bg-surface)',
-              border: '1px solid var(--color-border)',
-              color: 'var(--color-text-primary)',
-            }}
-          />
-          <input
-            type="text"
-            value={tag}
-            onChange={(e) => setTag(e.target.value)}
-            placeholder="Discord Tag (選填)"
-            className="px-3 py-2 rounded-lg text-sm outline-none"
-            style={{
-              background: 'var(--color-bg-surface)',
-              border: '1px solid var(--color-border)',
-              color: 'var(--color-text-primary)',
-            }}
-          />
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="px-3 py-2 rounded-lg text-sm outline-none"
-            style={{
-              background: 'var(--color-bg-surface)',
-              border: '1px solid var(--color-border)',
-              color: 'var(--color-text-primary)',
-            }}
-          >
-            {CATEGORIES.map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
-        </div>
-
-        <textarea
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          placeholder="說點什麼... 可以討論功能建議、許願樹改版、成果分享等 *"
-          required
-          rows={3}
-          maxLength={2000}
-          className="w-full px-3 py-2 rounded-lg text-sm outline-none resize-y"
+      {/* Post form — login required */}
+      {!authLoading && !user ? (
+        <div
+          className="rounded-xl p-5 flex flex-col items-center gap-3 text-center"
           style={{
-            background: 'var(--color-bg-surface)',
+            background: 'var(--color-bg-card)',
             border: '1px solid var(--color-border)',
-            color: 'var(--color-text-primary)',
           }}
-        />
+        >
+          <p className="text-2xl">💬</p>
+          <p className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+            請先登入再留言
+          </p>
+          <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+            已有帳號的隊員才能發表討論留言
+          </p>
+          <button
+            onClick={login}
+            className="px-5 py-2 rounded-lg text-sm font-medium transition-opacity hover:opacity-80"
+            style={{ background: 'var(--color-primary)', color: '#fff' }}
+          >
+            🔐 登入 Discord
+          </button>
+        </div>
+      ) : !authLoading && user ? (
+        <form
+          ref={formRef}
+          onSubmit={handleSubmit}
+          className="rounded-xl p-5 space-y-4"
+          style={{
+            background: 'var(--color-bg-card)',
+            border: '1px solid var(--color-border)',
+          }}
+        >
+          <h3
+            className="text-base font-semibold"
+            style={{ color: 'var(--color-text-primary)' }}
+          >
+            ✍️ 發表留言
+            <span className="ml-2 text-xs font-normal" style={{ color: 'var(--color-text-muted)' }}>
+              以 {user.name} 發表
+            </span>
+          </h3>
 
-        <div className="flex items-center justify-between">
-          <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-            {content.length}/2000
-          </span>
-          <div className="flex items-center gap-3">
-            {success && (
-              <span className="text-xs" style={{ color: 'var(--color-neon-green)' }}>
-                ✅ 留言成功！
-              </span>
-            )}
-            {error && (
-              <span className="text-xs" style={{ color: 'var(--color-accent)' }}>
-                {error}
-              </span>
-            )}
-            <button
-              type="submit"
-              disabled={posting}
-              className="px-5 py-2 rounded-lg text-sm font-medium transition-opacity"
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <input
+              type="text"
+              value={tag}
+              onChange={(e) => setTag(e.target.value)}
+              placeholder="Discord Tag (選填)"
+              className="px-3 py-2 rounded-lg text-sm outline-none"
               style={{
-                background: 'var(--color-primary)',
-                color: '#fff',
-                opacity: posting ? 0.6 : 1,
+                background: 'var(--color-bg-surface)',
+                border: '1px solid var(--color-border)',
+                color: 'var(--color-text-primary)',
+              }}
+            />
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="px-3 py-2 rounded-lg text-sm outline-none"
+              style={{
+                background: 'var(--color-bg-surface)',
+                border: '1px solid var(--color-border)',
+                color: 'var(--color-text-primary)',
               }}
             >
-              {posting ? '送出中...' : '📤 送出留言'}
-            </button>
+              {CATEGORIES.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
           </div>
-        </div>
-      </form>
+
+          <textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder="說點什麼... 可以討論功能建議、許願樹改版、成果分享等 *"
+            required
+            rows={3}
+            maxLength={2000}
+            className="w-full px-3 py-2 rounded-lg text-sm outline-none resize-y"
+            style={{
+              background: 'var(--color-bg-surface)',
+              border: '1px solid var(--color-border)',
+              color: 'var(--color-text-primary)',
+            }}
+          />
+
+          <div className="flex items-center justify-between">
+            <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+              {content.length}/2000
+            </span>
+            <div className="flex items-center gap-3">
+              {success && (
+                <span className="text-xs" style={{ color: 'var(--color-neon-green)' }}>
+                  ✅ 留言成功！
+                </span>
+              )}
+              {error && (
+                <span className="text-xs" style={{ color: 'var(--color-accent)' }}>
+                  {error}
+                </span>
+              )}
+              <button
+                type="submit"
+                disabled={posting}
+                className="px-5 py-2 rounded-lg text-sm font-medium transition-opacity"
+                style={{
+                  background: 'var(--color-primary)',
+                  color: '#fff',
+                  opacity: posting ? 0.6 : 1,
+                }}
+              >
+                {posting ? '送出中...' : '📤 送出留言'}
+              </button>
+            </div>
+          </div>
+        </form>
+      ) : null}
 
       {/* Filter tabs */}
       <div className="flex flex-wrap gap-2">
