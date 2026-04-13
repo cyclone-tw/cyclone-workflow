@@ -12,6 +12,7 @@ graph TD
     Intro --> Gantt["甘特圖時程"]
     Intro --> Architecture["架構概覽"]
     Intro --> Roles["角色與權限"]
+    Intro --> Claude101["Claude Code 入門"]
 
     Dev --> API["API 文件"]
     Dev --> Database["資料庫 Schema"]
@@ -34,6 +35,7 @@ graph TD
 ## 專案文件
 
 ### 入門
+- [Claude Code 入門](Claude-Code-101) — 剛安裝好 Claude Code 必讀
 - [甘特圖時程](Gantt) — Issue 追蹤與時程規劃
 - [架構概覽](Architecture) — 技術棧、目錄結構、資料流
 - [角色與權限](Roles) — RBAC 階級與功能對應
