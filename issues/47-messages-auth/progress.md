@@ -17,8 +17,8 @@ issue: 47
 - Commit + push 到 `feat/47-messages-auth`
 
 **待做：**
-- `bun run build` 驗證
-- 開 draft PR + E2E 錄影/截圖
+- [x] `bun run build` 綠燈（18 pages，無錯誤）
+- [x] Draft PR 開立（PR #48）
 
 ## 交棒筆記
 

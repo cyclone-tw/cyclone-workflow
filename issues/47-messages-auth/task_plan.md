@@ -42,8 +42,8 @@ related_files:
 - [x] Unit tests 7/7 通過
 - [x] E2E tests 通過（未部署功能 skip）
 - [x] `src/lib/changelog.ts` 新增 entry
-- [ ] `bun run build` 綠燈
-- [ ] PR draft 開立
+- [x] `bun run build` 綠燈
+- [x] PR draft 開立
 
 ## 階段 checklist
 
