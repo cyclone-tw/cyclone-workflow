@@ -16,6 +16,7 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260413.1",
+    "@libsql/client": "^0.17.2",
     "@playwright/test": "^1.59.1",
     "@types/bun": "latest",
     "playwright": "^1.59.1",
@@ -28,7 +29,6 @@
     "@astrojs/cloudflare": "^13.1.7",
     "@astrojs/react": "^5.0.3",
     "@astrojs/tailwind": "^6.0.2",
-    "@libsql/client": "^0.17.2",
     "@tailwindcss/vite": "^4.2.2",
     "astro": "^6.1.4",
     "nanoid": "^5.1.7",
