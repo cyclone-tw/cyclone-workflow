@@ -174,6 +174,18 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         )`,
         args: [],
       },
+      {
+        sql: `CREATE TABLE IF NOT EXISTS announcements (
+          id TEXT PRIMARY KEY,
+          title TEXT NOT NULL,
+          content TEXT NOT NULL,
+          pinned INTEGER DEFAULT 0,
+          author_id TEXT NOT NULL REFERENCES users(id),
+          created_at TEXT DEFAULT (datetime('now')),
+          updated_at TEXT DEFAULT (datetime('now'))
+        )`,
+        args: [],
+      },
     ]);
 
     // --- Migrations: add missing columns to existing tables ---
@@ -199,6 +211,11 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     // Index for active/archived filtering (added for admin members management)
     try {
       await db.execute({ sql: `CREATE INDEX IF NOT EXISTS idx_users_status_archived ON users(status, archived_at)`, args: [] });
+    } catch { /* index already exists */ }
+
+    // announcements index for pinned + created_at ordering
+    try {
+      await db.execute({ sql: `CREATE INDEX IF NOT EXISTS idx_announcements_pinned ON announcements(pinned DESC, created_at DESC)`, args: [] });
     } catch { /* index already exists */ }
 
     // --- Seed members (from constants) ---
