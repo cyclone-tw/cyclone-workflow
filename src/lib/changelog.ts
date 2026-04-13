@@ -6,6 +6,13 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '',
+    date: '2026-04-13 23:10',
+    changes: [
+      'feat(#47): 討論區留言改為僅登入用戶可發表 — 未登入顯示登入提示，隱藏輸入框',
+    ],
+  },
+  {
     version: 'v20260413.1',
     date: '2026-04-13 22:20',
     changes: [
