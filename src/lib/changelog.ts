@@ -10,6 +10,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     date: '2026-04-13 22:20',
     changes: [
       'feat(#41): 最新公告系統 — 資料表 + CRUD API + 管理後台 + 首頁橫幅元件',
+      'test(#41): Vitest unit/integration 15 tests + Playwright E2E 9 tests（含功能未部署自動 skip）',
     ],
   },
   {
