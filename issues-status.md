@@ -1,7 +1,7 @@
 # Cyclone Workflow Issues 狀態總覽
 
 > 更新時間：2026-04-13
-> 統計：Open 9 / Closed 16 / Total 25
+> 統計：Open 10 / Closed 16 / Total 26
 
 ---
 
@@ -9,12 +9,12 @@
 
 | 狀態 | 數量 | 說明 |
 |------|------|------|
-| 🔴 Open | 9 | 進行中或未處理 |
+| 🔴 Open | 10 | 進行中或未處理 |
 | 🟢 Closed | 16 | 已完成或已解決 |
 
 | 類型 | 數量 |
 |------|------|
-| enhancement | 12 |
+| enhancement | 13 |
 | bug | 6 |
 | discussion | 7 |
 | privacy | 1 |
@@ -24,7 +24,19 @@
 
 ---
 
-## 🔴 Open Issues (9)
+## 🔴 Open Issues (10)
+
+### #47 - feat: 留言區權限控制 — 僅登入用戶可留言（高優先權）
+- **標籤**: enhancement
+- **指派**: 未指派
+- **創建**: 2026-04-13
+- **狀態**: 🔴 Open
+
+**需求摘要**：`POST /api/messages` 需加上 `requireAuth`，未登入用戶仍可瀏覽留言，但無法發表新留言。前端表單在未登入狀態應顯示登入提示。
+
+**影響範圍**：`functions/api/messages/index.ts`、討論區前端元件
+
+---
 
 ### #46 - 🎉 塞老師慶功宴：要請 benben（或/和...）吃什麼？ :8crythumbsup:
 - **標籤**: discussion
@@ -211,8 +223,9 @@
 ## 📋 優先處理建議
 
 ### 高優先級（影響安全或核心功能）
-1. **PR #35** - 修復 AI 工具 API 權限驗證問題
-2. **PR #26** - 修復 API Key 傳遞方式安全問題
+1. **Issue #47** - 留言區改為僅登入可留言
+2. **PR #35** - 修復 AI 工具 API 權限驗證問題
+3. **PR #26** - 修復 API Key 傳遞方式安全問題
 
 ### 中優先級（使用者體驗）
 3. **PR #34** - Navbar RWD 修復
