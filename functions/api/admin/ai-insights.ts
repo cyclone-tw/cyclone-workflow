@@ -121,7 +121,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     if (!geminiRes.ok) {
       return new Response(JSON.stringify({
         ok: false,
-        error: `Gemini API 錯誤 (${geminiRes.status}): ${rawText}`,
+        error: `Gemini API 錯誤 (${geminiRes.status})，請稍後再試。`,
       }), { status: 502, headers: { 'Content-Type': 'application/json' } });
     }
 
@@ -136,7 +136,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     if (geminiData.error) {
       return new Response(JSON.stringify({
         ok: false,
-        error: `Gemini API 回傳錯誤：${geminiData.error.message}`,
+        error: 'Gemini API 回傳錯誤，請稍後再試。',
       }), { status: 502, headers: { 'Content-Type': 'application/json' } });
     }
 
