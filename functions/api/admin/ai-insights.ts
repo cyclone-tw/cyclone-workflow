@@ -82,26 +82,33 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
     const prompt = buildPrompt(body.analytics);
 
-    // Use AbortController for 10s timeout to prevent Worker timeout
+    // Use AbortController for 10s timeout covering both fetch and body read
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 10_000);
 
-    const geminiRes = await fetch(GEMINI_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-goog-api-key': context.env.GEMINI_API_KEY!,
-      },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 1024,
+    let geminiRes: Response;
+    try {
+      geminiRes = await fetch(GEMINI_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': context.env.GEMINI_API_KEY!,
         },
-      }),
-      signal: controller.signal,
-    });
-    clearTimeout(timeout);
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 1024,
+          },
+        }),
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
+
+    // Read body with same AbortController so timeout kills json() too
+    const rawText = await geminiRes.text();
 
     if (geminiRes.status === 429) {
       return new Response(JSON.stringify({
@@ -112,14 +119,13 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     }
 
     if (!geminiRes.ok) {
-      const text = await geminiRes.text();
       return new Response(JSON.stringify({
         ok: false,
-        error: `Gemini API 錯誤 (${geminiRes.status}): ${text}`,
+        error: `Gemini API 錯誤 (${geminiRes.status}): ${rawText}`,
       }), { status: 502, headers: { 'Content-Type': 'application/json' } });
     }
 
-    const geminiData = await geminiRes.json() as {
+    const geminiData = JSON.parse(rawText) as {
       candidates?: Array<{
         content?: { parts?: Array<{ text?: string }> };
         finishReason?: string;
