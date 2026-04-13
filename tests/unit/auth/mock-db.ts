@@ -55,8 +55,8 @@ export function createMockDb(initialUsers?: MockUser[], initialRoles?: { user_id
           if (!u.name || u.name.length < 4) return false;
           if (!nameArg.startsWith(u.name)) return false;
         }
-        // Skip admin/tech only — captain seed users CAN be claimed (NOT EXISTS uses admin, tech only)
-        const excludedRoles = ['admin', 'tech'];
+        // Skip admin/tech/captain from name matching (security)
+        const excludedRoles = ['admin', 'tech', 'captain'];
         const userRoles = state.user_roles.filter(r => r.user_id === u.id).map(r => r.role);
         if (excludedRoles.some(r => userRoles.includes(r))) return false;
         return true;

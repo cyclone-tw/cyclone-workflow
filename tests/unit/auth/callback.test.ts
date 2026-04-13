@@ -102,19 +102,19 @@ describe('OAuth Callback — User Matching Logic', () => {
     expect(result.isPending).toBe(true);
   });
 
-  it('captain seed user → should be matched (captain is NOT excluded)', async () => {
+  it('captain seed user → should NOT be matched via name fallback (security)', async () => {
     const db = createMockDb([
       { id: 'cyclone', email: '', name: 'Cyclone', avatar_url: '', status: 'active', archived_at: null },
     ]);
     // Simulate cyclone having captain role
     db._state.user_roles.push({ user_id: 'cyclone', role: 'captain' });
 
+    // Email doesn't match, name fallback should exclude captain
     const result = await findOrCreateUser(db as any, 'cyclone@gmail.com', 'Cyclone Kang', 'pic.jpg');
 
-    // FIXED: captain is no longer excluded → should match existing seed
-    expect(result.userId).toBe('cyclone');
-    expect(result.isNew).toBe(false);
-    expect(result.isPending).toBe(false);
+    // Captain excluded from name matching → creates new pending
+    expect(result.isNew).toBe(true);
+    expect(result.isPending).toBe(true);
   });
 
   it('archived user → should not be matched', async () => {
