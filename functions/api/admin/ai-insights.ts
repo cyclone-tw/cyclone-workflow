@@ -82,9 +82,16 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
     const prompt = buildPrompt(body.analytics);
 
-    const geminiRes = await fetch(`${GEMINI_URL}?key=${context.env.GEMINI_API_KEY}`, {
+    // Use AbortController for 10s timeout to prevent Worker timeout
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10_000);
+
+    const geminiRes = await fetch(GEMINI_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': context.env.GEMINI_API_KEY!,
+      },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: {
@@ -92,7 +99,9 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
           maxOutputTokens: 1024,
         },
       }),
+      signal: controller.signal,
     });
+    clearTimeout(timeout);
 
     if (geminiRes.status === 429) {
       return new Response(JSON.stringify({
@@ -138,6 +147,10 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     });
   } catch (err: unknown) {
     if (err instanceof Response) return err;
+    if (err instanceof Error && err.name === 'AbortError') {
+      return new Response(JSON.stringify({ ok: false, error: 'AI 分析逾時，請稍後再試。' }), {
+        status: 504, headers: { 'Content-Type': 'application/json' } });
+    }
     const message = err instanceof Error ? err.message : '未知錯誤';
     return new Response(JSON.stringify({ ok: false, error: message }), {
       status: 500, headers: { 'Content-Type': 'application/json' } });
