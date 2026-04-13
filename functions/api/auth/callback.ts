@@ -127,7 +127,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         sql: `SELECT id FROM users
               WHERE name = ? AND (email = '' OR email IS NULL)
               AND archived_at IS NULL AND status = 'active'
-              AND NOT EXISTS (SELECT 1 FROM user_roles WHERE user_id = users.id AND role IN ('admin', 'tech', 'captain'))
+              AND NOT EXISTS (SELECT 1 FROM user_roles WHERE user_id = users.id AND role IN ('admin', 'tech'))
               LIMIT 1`,
         args: [googleUser.name],
       });
@@ -138,9 +138,9 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       if (seedMatch.rows.length === 0) {
         seedMatch = await db.execute({
           sql: `SELECT id FROM users
-                WHERE (email = '' OR email IS NULL) AND LENGTH(name) >= 4 AND INSTR(?, name) = 1
+                WHERE (email = '' OR email IS NULL) AND LENGTH(name) >= 4 AND ? LIKE name || '%'
                 AND archived_at IS NULL AND status = 'active'
-                AND NOT EXISTS (SELECT 1 FROM user_roles WHERE user_id = users.id AND role IN ('admin', 'tech', 'captain'))
+                AND NOT EXISTS (SELECT 1 FROM user_roles WHERE user_id = users.id AND role IN ('admin', 'tech'))
                 ORDER BY LENGTH(name) DESC LIMIT 1`,
           args: [googleUser.name],
         });

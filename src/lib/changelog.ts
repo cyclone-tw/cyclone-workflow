@@ -7,9 +7,9 @@ export interface ChangelogEntry {
 export const CHANGELOG: ChangelogEntry[] = [
   {
     version: '',
-    date: '2026-04-13 23:30',
+    date: '2026-04-14 01:05',
     changes: [
-      'docs(#55): 新增 wiki/meeting-20260413.md — 2026-04-13 共學團啟動會議記錄',
+      'fix(#22): OAuth callback 移除 captain 的 role 排除 — 隊長帳號 теперь可正確配對不再建立重複帳號',
     ],
   },
   {
