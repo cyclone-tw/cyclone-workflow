@@ -73,7 +73,7 @@ const currentPath = Astro.url.pathname;
             <span class="text-2xl">🌀</span>
             <span class="gradient-text hidden sm:inline">AI 工作流共學團</span>
           </a>
-          <div data-testid="desktop-nav" class="hidden xl:flex items-center gap-1">
+          <div data-testid="desktop-nav" class="hidden xl:flex items-center gap-0.5 min-w-0 2xl:gap-1">
             {/* Top-level nav items */}
             {[
               { label: '首頁', href: '/', icon: '🏠' },
@@ -83,13 +83,13 @@ const currentPath = Astro.url.pathname;
               <a
                 href={item.href}
                 class:list={[
-                  'px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap',
+                  'px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap',
                   currentPath === item.href || (item.href !== '/' && currentPath.startsWith(item.href))
                     ? 'bg-[var(--color-primary)]/20 text-[var(--color-primary-light)]'
                     : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-overlay-neutral-weak)]',
                 ]}
               >
-                <span class="mr-1.5">{item.icon}</span>{item.label}
+                <span class="mr-1">{item.icon}</span>{item.label}
               </a>
             ))}
 
@@ -98,7 +98,7 @@ const currentPath = Astro.url.pathname;
               <button
                 id="more-menu-btn"
                 class:list={[
-                  'flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap',
+                  'flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap',
                   ['/leaderboard','/team','/knowledge','/ai-tools','/agent','/wishlist','/discuss','/issue','/bug'].some(p => currentPath === p || currentPath.startsWith(p + '/'))
                     ? 'bg-[var(--color-primary)]/20 text-[var(--color-primary-light)]'
                     : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-overlay-neutral-weak)]',
@@ -162,7 +162,7 @@ const currentPath = Astro.url.pathname;
               </div>
             </div>
           </div>
-          <div class="flex items-center gap-1">
+          <div class="flex items-center gap-1 shrink-0">
             {/* Login button */}
             <LoginButton client:load />
             <!-- Theme toggle -->
