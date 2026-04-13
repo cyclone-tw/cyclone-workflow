@@ -14,6 +14,13 @@ export const CHANGELOG: ChangelogEntry[] = [
   },
   {
     version: '',
+    date: '2026-04-13 23:30',
+    changes: [
+      'docs(#55): 新增 wiki/meeting-20260413.md — 2026-04-13 共學團啟動會議記錄',
+    ],
+  },
+  {
+    version: '',
     date: '2026-04-13 23:10',
     changes: [
       'feat(#47): 討論區留言改為僅登入用戶可發表 — 未登入顯示登入提示，隱藏輸入框',
