@@ -7,6 +7,13 @@ export interface ChangelogEntry {
 export const CHANGELOG: ChangelogEntry[] = [
   {
     version: '',
+    date: '2026-04-14 01:05',
+    changes: [
+      'fix(#22): OAuth callback 隊長帳號仍排除於 name matching（安全），但 email exact match 可正確配對',
+    ],
+  },
+  {
+    version: '',
     date: '2026-04-13 23:30',
     changes: [
       'docs(#55): 新增 wiki/meeting-20260413.md — 2026-04-13 共學團啟動會議記錄',
