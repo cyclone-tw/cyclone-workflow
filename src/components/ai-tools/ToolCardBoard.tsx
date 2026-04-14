@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@/components/auth/useAuth';
 import { timeAgo } from '@/lib/time';
 import { MEMBERS } from '@/lib/constants';
@@ -317,6 +317,17 @@ function DeleteConfirm({ tool, onConfirm, onCancel }: { tool: Tool; onConfirm: (
 function ToolCard({ tool, canEdit, loggedIn, onEdit, onDelete, onToggleFavorite }: { tool: Tool; canEdit: boolean; loggedIn: boolean; onEdit: () => void; onDelete: () => void; onToggleFavorite: () => void }) {
   const cfg = CATEGORY_CONFIG[tool.category] || CATEGORY_CONFIG.other;
   const [favBusy, setFavBusy] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const contentRef = useRef<HTMLParagraphElement>(null);
+  const [isOverflowing, setIsOverflowing] = useState(false);
+
+  const checkOverflow = useCallback(() => {
+    if (contentRef.current) {
+      setIsOverflowing(contentRef.current.scrollHeight > contentRef.current.clientHeight);
+    }
+  }, []);
+
+  useEffect(() => { checkOverflow(); }, [tool.description, checkOverflow]);
 
   async function handleFavorite() {
     setFavBusy(true);
@@ -330,7 +341,7 @@ function ToolCard({ tool, canEdit, loggedIn, onEdit, onDelete, onToggleFavorite 
         border: '1px solid #2A2A4A', borderRadius: '0.875rem',
         padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem',
         transition: 'transform 0.2s, box-shadow 0.2s',
-        cursor: 'default',
+        cursor: 'default', overflow: 'hidden',
       }}
       onMouseEnter={e => {
         e.currentTarget.style.transform = 'translateY(-2px)';
@@ -402,9 +413,39 @@ function ToolCard({ tool, canEdit, loggedIn, onEdit, onDelete, onToggleFavorite 
       </h3>
 
       {/* Description */}
-      <p style={{ color: '#9090B0', fontSize: '0.85rem', lineHeight: 1.6, margin: 0, flex: 1 }}>
-        {tool.description}
-      </p>
+      <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>
+        <p
+          ref={contentRef}
+          style={{
+            color: '#9090B0', fontSize: '0.85rem', lineHeight: 1.6, margin: 0,
+            overflowWrap: 'anywhere', wordBreak: 'break-word',
+            ...(expanded ? {} : { maxHeight: '4.8em', overflow: 'hidden' }),
+          }}
+        >
+          {tool.description}
+        </p>
+        {(!expanded && isOverflowing) && (
+          <div
+            style={{
+              position: 'absolute', bottom: 0, left: 0, right: 0, height: '1.6em',
+              background: 'linear-gradient(transparent, rgba(18,18,42,0.9))',
+              pointerEvents: 'none',
+            }}
+          />
+        )}
+      </div>
+      {(isOverflowing || expanded) && (
+        <button
+          onClick={() => setExpanded(!expanded)}
+          style={{
+            fontSize: '0.75rem', color: cfg.color, background: 'transparent',
+            border: 'none', cursor: 'pointer', padding: '0.2rem 0',
+            alignSelf: 'flex-start',
+          }}
+        >
+          {expanded ? '收納 ↑' : '展開更多 ↓'}
+        </button>
+      )}
 
       {/* URL link */}
       {(() => {
