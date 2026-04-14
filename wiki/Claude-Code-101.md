@@ -112,7 +112,196 @@ graph LR
 
 ---
 
-## 第六步：遇到問題怎麼辦？
+## 第六步：Git 版控基礎（新手必學）
+
+### 為什麼要用 Git？
+
+Git 就像時光機，記錄你每一次的修改。當你出錯時，隨時可以回到之前的版本。更重要的是，團隊成員可以同時在不同 branch 上工作，不會互相干擾。
+
+### 基本指令
+
+| 指令 | 用途 | 簡單比喻 |
+|------|------|----------|
+| `git clone <URL>` | 把雲端的程式碼下載到本地 | 複製一份到硬碟 |
+| `git pull` | 把遠端的最新變更抓下來 | 更新資料夾裡的檔案 |
+| `git status` | 查看目前有哪些修改 | 看現在改了多少東西 |
+| `git add <檔案>` | 把檔案加入「待提交」區 | 放進購物車 |
+| `git commit -m "訊息"` | 正式儲存這次修改 | 結帳，寫下購買記錄 |
+| `git push` | 把本地的 commit 推到雲端 | 把結帳記錄上傳到雲端 |
+
+### 分支（Branch）是什麼？
+
+分支就像平行宇宙——你在新分支上的修改不會影響別人，確認沒問題後再合併回主線。
+
+```
+main ────────────────────────────────────► (正式版本)
+         │
+         └── fix/29_navbar-desktop-squeeze ──► (修復中的版本)
+```
+
+| 指令 | 用途 |
+|------|------|
+| `git branch` | 列出所有分支 |
+| `git checkout -b fix/29_navbar-desktop-squeeze` | 新建並切換到一個新分支 |
+| `git checkout main` | 切換回 main 分支 |
+| `git merge fix/29_navbar-desktop-squeeze` | 把其他分支的修改合併進來 |
+
+### Cyclone 專案的分支命名慣例
+
+```
+{type}/{issue-number}_{description}
+```
+
+| type | 用途 | 範例 |
+|------|------|------|
+| `fix/` | 修復 bug | `fix/29_navbar-desktop-squeeze` |
+| `feat/` | 新功能 | `feat/30_dashboard-enhancements` |
+| `docs/` | 文件更新 | `docs/54_claude-code-101` |
+| `chore/` | 杂项（工具、整理） | `chore/update-deps` |
+
+### PR（Pull Request）流程
+
+```mermaid
+%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#6C63FF', 'primaryTextColor': '#fff', 'primaryBorderColor': '#6C63FF', 'lineColor': '#00D9FF', 'secondaryColor': '#16213e', 'tertiaryColor': '#1a1a2e' }}}%%
+flowchart LR
+    subgraph Local["💻 本地端"]
+        B["🌿 開新 branch"] --> C["💾 git commit"]
+        C --> P["git push origin 你的分支"]
+    end
+    subgraph Remote["🌐 GitHub"]
+        P --> PR["🔃 發 Pull Request"]
+        PR --> Review["👀 Code Review"]
+        Review --> Merge["✅ Merge to main"]
+    end
+    style Local fill:#1a1a2e,stroke:#6C63FF,color:#fff
+    style Remote fill:#1a1a2e,stroke:#00D9FF,color:#fff
+```
+
+**詳細步驟：**
+1. `git checkout -b fix/29_navbar-desktop-squeeze` — 開新分支
+2. 正常修改檔案
+3. `git add .` — 加入待提交（`.` 代表所有修改）
+4. `git commit -m "fix: 修復 Navbar 桌面版擠壓問題"` — 提交
+5. `git push origin fix/29_navbar-desktop-squeeze` — 推到 GitHub
+6. 在 GitHub 上發 Pull Request（PR）
+7. 等待 Code Review，通過後 Merge
+
+### 🚨 重要紀律
+
+> **本專案禁用 npm / pnpm / yarn，統一使用 `bun` / `bunx`！**
+>
+> - ✅ `bun install`、`bun run build`、`bun run dev`
+> - ❌ `npm install`、`npm run build`、`yarn dev`
+
+---
+
+## 第七步：SDD（Spec-Driven Development）流程
+
+### SDD 是什麼？
+
+SDD = **Spec-Driven Development**（規格驅動開發）。核心理念是：**先寫規格（Spec），再寫程式碼**。
+
+就像蓋房子之前要先畫藍圖，寫程式之前要先明確「這個功能要達成什麼目標、輸入是什麼、輸出是什麼」。
+
+### SDD 的核心精神
+
+| 傳統方式 | SDD 方式 |
+|----------|----------|
+| 拿到需求就開始寫 code | 先把需求寫成文件 / 規格 |
+| 做到一半才發現理解錯誤 | 規格確認後才動手 |
+| 最後才發現不符合需求 | 一開始就對焦目標 |
+| code 改來改去、浪費時間 | 減少返工、提高品質 |
+
+### 在 Cyclone 專案中實踐 SDD
+
+Cyclone 結合 SDD 和 Claude Code 的 superpowers，讓 AI 幫你貫徹流程：
+
+```mermaid
+%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#6C63FF', 'primaryTextColor': '#fff', 'primaryBorderColor': '#6C63FF', 'lineColor': '#00D9FF', 'secondaryColor': '#16213e', 'tertiaryColor': '#1a1a2e' }}}%%
+flowchart LR
+    I["🎫 開 Issue\n描述需求"] --> P["📋 /plan\n規劃實作方案"]
+    P --> T["🧪 /tdd\n先寫測試規格"]
+    T --> C["💻 寫實作\n通過測試"]
+    C --> V["✅ /verify\n驗證完成度"]
+    V --> R["👀 /review-pr\nCode Review"]
+    R --> M["🚀 Merge + Deploy"]
+
+    style I fill:#1a1a2e,stroke:#E94560,color:#fff
+    style P fill:#1a1a2e,stroke:#4285F4,color:#fff
+    style T fill:#1a1a2e,stroke:#00F5A0,color:#fff
+    style C fill:#1a1a2e,stroke:#6C63FF,color:#fff
+    style V fill:#1a1a2e,stroke:#F5A000,color:#fff
+    style R fill:#1a1a2e,stroke:#00D9FF,color:#fff
+    style M fill:#00F5A0,color:#1a1a2e
+```
+
+#### 步驟一：開 GitHub Issue 描述需求
+
+在動手之前，先在 GitHub Issues 建立一個 issue，清楚描述：
+- **要解決什麼問題？**
+- **期望的行為是什麼？**
+- **驗收標準（怎麼算完成？）**
+
+#### 步驟二：用 `/plan` 規劃實作方案
+
+```bash
+/plan
+```
+
+在 Claude Code 裡執行 `/plan`，告訴它你要實作的功能。`/plan` 會：
+- 分析現有程式碼結構
+- 規劃實作步驟
+- 列出需要修改的檔案
+
+> **這樣做的好處**：在動手之前，先讓 AI 幫你確認方向是否正確，避免做到一半才發現架構不合。
+
+#### 步驟三：用 `/tdd` 先寫測試再寫實作
+
+```bash
+/tdd
+```
+
+`/tdd` 會引導你先寫**測試規格**（describe + it），確認測試失敗，然後才寫實作讓測試通過。
+
+#### 步驟四：用 `/verify` 驗證完成度
+
+```bash
+/verify
+```
+
+在宣告功能完成之前，執行 `/verify` 讓 AI 檢查：
+- 測試是否都通過了？
+- 功能是否達到了規格要求？
+- 是否有遺漏的 edge case？
+
+#### 步驟五：發 PR 並跑 `/review-pr`
+
+```bash
+/review-pr
+```
+
+在 GitHub 發 PR 後，用 `/review-pr` 請 AI 幫你做 Code Review，檢查：
+- 邏輯是否正確
+- 是否有安全漏洞
+- 是否符合專案風格
+
+### 為什麼要用 SDD？
+
+| 好處 | 說明 |
+|------|------|
+| **減少返工** | 先確認規格，避免做到一半發現方向錯了 |
+| **提高品質** | TDD 讓你一開始就考慮 edge case |
+| **協作更順暢** | AI 和人類都能看懂規格，減少溝通誤解 |
+| **驗收有依據** | 有明確的標準，什麼叫「完成」不會各說各話 |
+| **記錄傳承** | Issue + PR 就是完整的開發歷程，新人也能看懂 |
+
+### 一句話總結 SDD
+
+> **先想清楚再做，做完要能驗證。**
+
+---
+
+## 第八步：遇到問題怎麼辦？
 
 | 狀況 | 解決方式 |
 |------|----------|
