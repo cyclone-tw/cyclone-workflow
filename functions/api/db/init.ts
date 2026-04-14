@@ -153,7 +153,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
           id TEXT PRIMARY KEY,
           title TEXT NOT NULL,
           description TEXT NOT NULL,
-          category TEXT DEFAULT 'personal' CHECK(category IN ('personal', 'site')),
+          category TEXT DEFAULT 'personal' CHECK(category IN ('personal', 'feature', 'teaching')),
           status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'claimed', 'in-progress', 'completed')),
           wisher_id TEXT NOT NULL REFERENCES users(id),
           claimer_id TEXT REFERENCES users(id),
@@ -212,6 +212,12 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       { sql: `ALTER TABLE users ADD COLUMN archived_at TEXT`, note: 'users.archived_at' },
       { sql: `ALTER TABLE messages ADD COLUMN author_id TEXT REFERENCES users(id)`, note: 'messages.author_id' },
     ];
+
+    // --- Migrate wish categories: site → feature ---
+    try {
+      await db.execute({ sql: `UPDATE wishes SET category = 'feature' WHERE category = 'site'`, args: [] });
+    } catch { /* no rows or already migrated */ }
+
     for (const m of migrations) {
       try { await db.execute({ sql: m.sql, args: [] }); } catch { /* column already exists */ }
     }

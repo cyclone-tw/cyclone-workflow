@@ -218,7 +218,7 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
 
     if (body.title !== undefined) { updates.push('title = ?'); args.push(body.title.trim()); }
     if (body.description !== undefined) { updates.push('description = ?'); args.push(body.description.trim()); }
-    if (body.category !== undefined && ['personal', 'site'].includes(body.category)) {
+    if (body.category !== undefined && ['personal', 'feature', 'teaching'].includes(body.category)) {
       updates.push('category = ?'); args.push(body.category);
     }
     if (body.icon !== undefined) { updates.push('icon = ?'); args.push(body.icon.trim()); }

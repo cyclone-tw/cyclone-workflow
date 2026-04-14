@@ -7,6 +7,13 @@ export interface ChangelogEntry {
 export const CHANGELOG: ChangelogEntry[] = [
   {
     version: '',
+    date: '2026-04-14 22:15',
+    changes: [
+      'feat(#53): 許願樹分類重設計 — 個人需求/功能建議/教學許願 + 前端 filter + site→feature 遷移',
+    ],
+  },
+  {
+    version: '',
     date: '2026-04-14 20:40',
     changes: [
       'feat(#51): 討論區管理增強 — 留言刪除功能（作者/管理員）、Markdown 渲染、author_id schema 遷移',
