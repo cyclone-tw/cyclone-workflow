@@ -6,6 +6,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: 'v20260414.1451',
+    date: '2026-04-14 23:55',
+    changes: [
+      'feat(#60): WishBoard 前端重設計 — 多人認領頭像列表、認領者 claimed/completed badge、完成確認按鈕',
+      'feat(#60): 許願卡片新增留言區塊（展開/收納 + 輸入框 + 即時提交）',
+      'feat(#60): 認領者區塊新增「投稿到工具箱」連結按鈕',
+    ],
+  },
+  {
     version: 'v20260414.1145',
     date: '2026-04-14 23:45',
     changes: [
@@ -32,6 +41,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     ],
   },
   {
+    version: '',
     date: '2026-04-14 22:20',
     changes: [
       'fix(#52): Bug 回報表單串接後端 — 提交到 /api/issues + 成功後顯示追蹤連結',

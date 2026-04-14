@@ -13,6 +13,22 @@ interface WishUser {
   avatarUrl: string | null;
 }
 
+interface WishClaimer {
+  id: string;
+  name: string;
+  avatarUrl: string | null;
+  status: 'claimed' | 'completed';
+}
+
+interface WishComment {
+  id: string;
+  author_id: string;
+  author_name: string;
+  author_avatar: string | null;
+  content: string;
+  created_at: string;
+}
+
 interface WishHistoryEntry {
   from_status: string;
   to_status: string;
@@ -31,8 +47,10 @@ interface Wish {
   createdAt: string;
   updatedAt: string;
   wisher: WishUser;
-  claimer: WishUser | null;
+  claimers: WishClaimer[];
   history: WishHistoryEntry[];
+  comments?: WishComment[];
+  comments_count?: number;
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -349,22 +367,64 @@ function DeleteConfirmModal({ wish, onClose, onDeleted }: { wish: Wish; onClose:
   );
 }
 
+// ─── ClaimerBadge ──────────────────────────────────────────────────────────────
+
+function ClaimerBadge({ status }: { status: 'claimed' | 'completed' }) {
+  if (status === 'completed') {
+    return (
+      <span style={{
+        fontSize: '0.6rem',
+        fontWeight: 700,
+        padding: '0.05rem 0.35rem',
+        borderRadius: '9999px',
+        background: 'rgba(255,193,7,0.2)',
+        color: '#FFC107',
+        border: '1px solid rgba(255,193,7,0.4)',
+        whiteSpace: 'nowrap',
+      }}>
+        已完成
+      </span>
+    );
+  }
+  return (
+    <span style={{
+      fontSize: '0.6rem',
+      fontWeight: 700,
+      padding: '0.05rem 0.35rem',
+      borderRadius: '9999px',
+      background: 'rgba(0,245,160,0.15)',
+      color: '#00F5A0',
+      border: '1px solid rgba(0,245,160,0.3)',
+      whiteSpace: 'nowrap',
+    }}>
+      認領中
+    </span>
+  );
+}
+
 // ─── WishCard ──────────────────────────────────────────────────────────────────
 
 function WishCard({ wish, user, onRefresh, onDelete }: { wish: Wish; user: ReturnType<typeof useAuth>['user']; onRefresh: () => void; onDelete: (wish: Wish) => void }) {
   const [actionLoading, setActionLoading] = useState(false);
+  const [commentsOpen, setCommentsOpen] = useState(false);
+  const [comments, setComments] = useState<WishComment[]>(wish.comments || []);
+  const [commentsLoading, setCommentsLoading] = useState(false);
+  const [commentContent, setCommentContent] = useState('');
+  const [commentSubmitting, setCommentSubmitting] = useState(false);
+
   const cfg = STATUS_CONFIG[wish.status];
   const isCompleted = wish.status === 'completed';
   const isWisher = user?.id === wish.wisher.id;
-  const isClaimer = user?.id === wish.claimer?.id;
   const isAdminUser = user && ['captain', 'tech', 'admin'].includes(user.effectiveRole);
+  const isClaimer = wish.claimers.some(c => c.id === user?.id);
+  const hasClaimers = wish.claimers.length > 0;
+  const activeClaimers = wish.claimers.filter(c => c.status === 'claimed');
 
-  const handleAction = async (action: string) => {
+  const handleAction = async (action: string, claimerId?: string) => {
     setActionLoading(true);
     try {
-      const body: Record<string, string> = {};
-      if (action === 'claim') body.action = 'claim';
-      else if (action === 'in-progress' || action === 'completed') body.status = action;
+      const body: Record<string, string> = { action };
+      if (claimerId) body.claimer_id = claimerId;
 
       const res = await fetch(`/api/wishes/${wish.id}`, {
         method: 'PATCH',
@@ -376,6 +436,49 @@ function WishCard({ wish, user, onRefresh, onDelete }: { wish: Wish; user: Retur
     } catch { /* ignore */ }
     setActionLoading(false);
   };
+
+  const loadComments = async () => {
+    if (comments.length > 0) return;
+    setCommentsLoading(true);
+    try {
+      const res = await fetch(`/api/wishes/${wish.id}/comments`);
+      const data = await res.json();
+      if (data.ok) setComments(data.comments || []);
+    } catch { /* ignore */ }
+    setCommentsLoading(false);
+  };
+
+  const toggleComments = () => {
+    if (!commentsOpen) loadComments();
+    setCommentsOpen(!commentsOpen);
+  };
+
+  const submitComment = async () => {
+    if (!commentContent.trim() || !user) return;
+    setCommentSubmitting(true);
+    try {
+      const res = await fetch(`/api/wishes/${wish.id}/comments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: commentContent.trim() }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setCommentContent('');
+        if (data.comment) {
+          setComments(prev => [data.comment, ...prev]);
+        } else {
+          const reloadRes = await fetch(`/api/wishes/${wish.id}/comments`);
+          const reloadData = await reloadRes.json();
+          if (reloadData.ok) setComments(reloadData.comments || []);
+        }
+      }
+    } catch { /* ignore */ }
+    setCommentSubmitting(false);
+  };
+
+  const visibleClaimers = wish.claimers.slice(0, 3);
+  const hiddenClaimerCount = wish.claimers.length - 3;
 
   return (
     <div
@@ -451,27 +554,64 @@ function WishCard({ wish, user, onRefresh, onDelete }: { wish: Wish; user: Retur
         {wish.description}
       </p>
 
-      {/* Footer */}
+      {/* Footer: Wisher */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '0.5rem', borderTop: '1px solid rgba(108,99,255,0.1)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.8rem', color: '#9090B0' }}>
           <Avatar name={wish.wisher.name} avatarUrl={wish.wisher.avatarUrl} size={22} />
           <span>{wish.wisher.name}</span>
         </div>
-        {wish.claimer && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.8rem' }}>
-            <span style={{ color: cfg.color, fontWeight: 500 }}>
-              {isCompleted ? '由' : '認領者'}
-            </span>
-            <Avatar name={wish.claimer.name} avatarUrl={wish.claimer.avatarUrl} size={22} />
-            <span style={{ color: cfg.color, fontWeight: 500 }}>{wish.claimer.name}</span>
-          </div>
-        )}
       </div>
+
+      {/* Claimers Section */}
+      {hasClaimers && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '0.5rem', background: 'rgba(10,10,26,0.4)', borderRadius: '0.5rem', border: '1px solid rgba(108,99,255,0.1)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ fontSize: '0.7rem', color: '#606080', fontWeight: 600 }}>認領者</div>
+            <a
+              href="/ai-tools"
+              style={{
+                fontSize: '0.7rem',
+                color: '#00D9FF',
+                textDecoration: 'none',
+                fontWeight: 600,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 2,
+              }}
+            >
+              🛠️ 投稿到工具箱
+            </a>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {wish.claimers.map((claimer) => (
+              <div key={claimer.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Avatar name={claimer.name} avatarUrl={claimer.avatarUrl} size={24} />
+                <span style={{ fontSize: '0.8rem', color: '#F0F0FF', fontWeight: 500 }}>{claimer.name}</span>
+                <ClaimerBadge status={claimer.status} />
+              </div>
+            ))}
+          </div>
+          {visibleClaimers.length < wish.claimers.length && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                {visibleClaimers.map((c, i) => (
+                  <div key={c.id} style={{ marginLeft: i > 0 ? -8 : 0, border: '2px solid rgba(10,10,26,0.6)', borderRadius: '50%' }}>
+                    <Avatar name={c.name} avatarUrl={c.avatarUrl} size={22} />
+                  </div>
+                ))}
+              </div>
+              {hiddenClaimerCount > 0 && (
+                <span style={{ fontSize: '0.7rem', color: '#9090B0', fontWeight: 500 }}>+{hiddenClaimerCount}</span>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Action buttons */}
       {user && !isCompleted && (
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          {wish.status === 'pending' && !isWisher && (
+          {wish.status === 'pending' && !isWisher && !isClaimer && (
             <button
               onClick={() => handleAction('claim')}
               disabled={actionLoading}
@@ -504,9 +644,9 @@ function WishCard({ wish, user, onRefresh, onDelete }: { wish: Wish; user: Retur
               {actionLoading ? '處理中...' : '🔨 開始實作'}
             </button>
           )}
-          {(wish.status === 'in-progress') && (isClaimer || isAdminUser) && (
+          {(wish.status === 'in-progress' || wish.status === 'claimed') && activeClaimers.length > 0 && (isWisher || isAdminUser) && (
             <button
-              onClick={() => handleAction('completed')}
+              onClick={() => handleAction('complete')}
               disabled={actionLoading}
               style={{
                 ...neonBtnStyle,
@@ -515,7 +655,7 @@ function WishCard({ wish, user, onRefresh, onDelete }: { wish: Wish; user: Retur
                 opacity: actionLoading ? 0.6 : 1,
               }}
             >
-              {actionLoading ? '處理中...' : '✅ 完成'}
+              {actionLoading ? '處理中...' : '✅ 完成確認'}
             </button>
           )}
         </div>
@@ -550,6 +690,103 @@ function WishCard({ wish, user, onRefresh, onDelete }: { wish: Wish; user: Retur
           })}
         </div>
       )}
+
+      {/* Comments Section */}
+      <div style={{ marginTop: '0.25rem' }}>
+        <button
+          onClick={toggleComments}
+          style={{
+            width: '100%',
+            textAlign: 'left',
+            padding: '0.5rem 0.625rem',
+            background: 'rgba(10,10,26,0.3)',
+            border: '1px solid rgba(108,99,255,0.1)',
+            borderRadius: '0.5rem',
+            color: '#9090B0',
+            fontSize: '0.75rem',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <span>💬 留言 {typeof wish.comments_count === 'number' ? `(${wish.comments_count})` : `(${comments.length})`}</span>
+          <span style={{ transform: commentsOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>▼</span>
+        </button>
+
+        {commentsOpen && (
+          <div style={{
+            marginTop: '0.5rem',
+            padding: '0.75rem',
+            background: 'rgba(10,10,26,0.3)',
+            borderRadius: '0.5rem',
+            border: '1px solid rgba(108,99,255,0.1)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.75rem',
+          }}>
+            {commentsLoading ? (
+              <div style={{ fontSize: '0.8rem', color: '#606080' }}>載入留言中...</div>
+            ) : comments.length === 0 ? (
+              <div style={{ fontSize: '0.8rem', color: '#606080' }}>尚無留言，來發表第一則吧！</div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
+                {comments.map((c) => (
+                  <div key={c.id} style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                    <Avatar name={c.author_name} avatarUrl={c.author_avatar} size={24} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                        <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#F0F0FF' }}>{c.author_name}</span>
+                        <span style={{ fontSize: '0.65rem', color: '#505070' }}>{timeAgo(c.created_at)}</span>
+                      </div>
+                      <div style={{ fontSize: '0.85rem', color: '#B8B0FF', lineHeight: 1.5, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                        {c.content}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {user && (
+              <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                <Avatar name={user.name} avatarUrl={user.avatar_url} size={28} />
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <textarea
+                    value={commentContent}
+                    onChange={(e) => setCommentContent(e.target.value)}
+                    placeholder="發表留言..."
+                    rows={2}
+                    style={{ ...inputStyle, resize: 'vertical', fontSize: '0.85rem', padding: '0.5rem 0.75rem' }}
+                    onFocus={handleFocusIn}
+                    onBlur={handleFocusOut}
+                    maxLength={500}
+                  />
+                  <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <button
+                      onClick={submitComment}
+                      disabled={commentSubmitting || !commentContent.trim()}
+                      style={{
+                        fontSize: '0.8rem',
+                        padding: '0.4rem 1rem',
+                        borderRadius: '0.5rem',
+                        border: 'none',
+                        background: commentContent.trim() ? '#6C63FF' : '#2A2A4A',
+                        color: '#fff',
+                        cursor: commentContent.trim() ? 'pointer' : 'not-allowed',
+                        fontWeight: 600,
+                        opacity: commentSubmitting ? 0.6 : 1,
+                      }}
+                    >
+                      {commentSubmitting ? '發送中...' : '發送'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -677,7 +914,7 @@ export default function WishBoard() {
           <p style={{ color: '#9090B0' }}>目前還沒有願望，成為第一個許願的人吧！</p>
         </div>
       ) : (
-        <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
+        <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))' }}>
           {wishes.map((wish) => (
             <WishCard key={wish.id} wish={wish} user={user} onRefresh={fetchWishes} onDelete={(w) => setDeleteTarget(w)} />
           ))}
