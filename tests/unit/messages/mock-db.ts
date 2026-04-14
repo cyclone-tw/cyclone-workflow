@@ -12,11 +12,14 @@ export const tables: Record<string, DbRow[]> = {
   messages: [],
 };
 
+let _nextId = 1;
+
 export function resetDb() {
   tables.sessions = [];
   tables.users = [];
   tables.user_roles = [];
   tables.messages = [];
+  _nextId = 1;
 }
 
 export function seedUsers() {
@@ -28,9 +31,17 @@ export function seedUsers() {
       archived_at: null,
       discord_id: null,
     },
+    {
+      id: 'admin-1',
+      name: 'Test Admin',
+      status: 'active',
+      archived_at: null,
+      discord_id: null,
+    },
   ];
   tables.user_roles = [
     { id: 'role-1', user_id: 'member-1', role: 'member' },
+    { id: 'role-2', user_id: 'admin-1', role: 'admin' },
   ];
   tables.sessions = [
     {
@@ -39,10 +50,14 @@ export function seedUsers() {
       token: 'valid-member-token',
       expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
     },
+    {
+      id: 'sess-2',
+      user_id: 'admin-1',
+      token: 'valid-admin-token',
+      expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+    },
   ];
 }
-
-let _nextId = 1;
 
 vi.mock('@libsql/client/web', () => ({
   createClient: () => ({
@@ -81,7 +96,27 @@ vi.mock('@libsql/client/web', () => ({
         return { rows: [], columns: [] };
       }
 
-      // SELECT messages
+      // DELETE messages — check BEFORE SELECT (DELETE SQL also contains "FROM messages WHERE id")
+      if (sql.includes('DELETE FROM messages WHERE id')) {
+        const id = args[0];
+        const idx = tables.messages.findIndex((m) => String(m.id) === String(id));
+        if (idx !== -1) tables.messages.splice(idx, 1);
+        return { rows: [], columns: [] };
+      }
+
+      // DELETE discussion_likes — by message_id
+      if (sql.includes('DELETE FROM discussion_likes')) {
+        return { rows: [], columns: [] };
+      }
+
+      // SELECT single message by id (for DELETE verification)
+      if (sql.includes('SELECT') && sql.includes('FROM messages WHERE id')) {
+        const id = args[0];
+        const row = tables.messages.find((m) => String(m.id) === String(id));
+        return { rows: row ? [row] : [], columns: [] };
+      }
+
+      // SELECT messages (list)
       if (sql.includes('FROM messages')) {
         const rows = [...tables.messages].reverse(); // newest first
         return { rows, columns: [] };
@@ -100,26 +135,6 @@ vi.mock('@libsql/client/web', () => ({
           like_count: 0,
         };
         tables.messages.push(msg);
-        return { rows: [], columns: [] };
-      }
-
-      // DELETE messages — by id
-      if (sql.includes('DELETE FROM messages WHERE id')) {
-        const id = args[0];
-        const idx = tables.messages.findIndex((m) => String(m.id) === String(id));
-        if (idx !== -1) tables.messages.splice(idx, 1);
-        return { rows: [], columns: [] };
-      }
-
-      // DELETE discussion_likes — by message_id
-      if (sql.includes('DELETE FROM discussion_likes')) {
-        const msgId = args[0];
-        tables.messages = tables.messages.map((m) => {
-          if (String(m.id) === String(msgId)) {
-            return { ...m, like_count: 0 };
-          }
-          return m;
-        });
         return { rows: [], columns: [] };
       }
 

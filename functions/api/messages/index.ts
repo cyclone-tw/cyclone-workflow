@@ -18,31 +18,6 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   try {
     const db = getDb(context.env);
 
-    // Ensure table exists
-    await db.execute({
-      sql: `CREATE TABLE IF NOT EXISTS messages (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        author TEXT NOT NULL,
-        content TEXT NOT NULL,
-        tag TEXT DEFAULT '',
-        category TEXT DEFAULT '一般討論',
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-      )`,
-      args: [],
-    });
-
-    // Ensure discussion_likes table exists for the JOIN
-    await db.execute({
-      sql: `CREATE TABLE IF NOT EXISTS discussion_likes (
-        id TEXT PRIMARY KEY,
-        message_id INTEGER NOT NULL,
-        user_id TEXT NOT NULL REFERENCES users(id),
-        created_at TEXT DEFAULT (datetime('now')),
-        UNIQUE(message_id, user_id)
-      )`,
-      args: [],
-    });
-
     const result = await db.execute({
       sql: `SELECT m.*, COALESCE(lc.like_count, 0) as like_count
             FROM messages m
@@ -100,20 +75,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     const db = getDb(context.env);
 
     await db.execute({
-      sql: `CREATE TABLE IF NOT EXISTS messages (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        author TEXT NOT NULL,
-        content TEXT NOT NULL,
-        tag TEXT DEFAULT '',
-        category TEXT DEFAULT '一般討論',
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-      )`,
-      args: [],
-    });
-
-    await db.execute({
-      sql: `INSERT INTO messages (author, content, tag, category) VALUES (?, ?, ?, ?)`,
-      args: [author.trim(), content.trim(), tag?.trim() || '', category || '一般討論'],
+      sql: `INSERT INTO messages (author, author_id, content, tag, category) VALUES (?, ?, ?, ?, ?)`,
+      args: [author.trim(), user.id, content.trim(), tag?.trim() || '', category || '一般討論'],
     });
 
     return new Response(JSON.stringify({ ok: true }), {

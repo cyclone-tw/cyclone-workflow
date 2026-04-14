@@ -7,6 +7,13 @@ export interface ChangelogEntry {
 export const CHANGELOG: ChangelogEntry[] = [
   {
     version: '',
+    date: '2026-04-14 20:40',
+    changes: [
+      'feat(#51): 討論區管理增強 — 留言刪除功能（作者/管理員）、Markdown 渲染、author_id schema 遷移',
+    ],
+  },
+  {
+    version: '',
     date: '2026-04-14 01:05',
     changes: [
       'fix(#22): OAuth callback 隊長帳號仍排除於 name matching（安全），但 email exact match 可正確配對',

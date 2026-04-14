@@ -175,6 +175,18 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         args: [],
       },
       {
+        sql: `CREATE TABLE IF NOT EXISTS messages (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          author TEXT NOT NULL,
+          author_id TEXT REFERENCES users(id),
+          content TEXT NOT NULL,
+          tag TEXT DEFAULT '',
+          category TEXT DEFAULT '一般討論',
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )`,
+        args: [],
+      },
+      {
         sql: `CREATE TABLE IF NOT EXISTS announcements (
           id TEXT PRIMARY KEY,
           title TEXT NOT NULL,
@@ -198,6 +210,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       { sql: `ALTER TABLE users ADD COLUMN created_at TEXT NOT NULL DEFAULT ''`, note: 'users.created_at' },
       { sql: `ALTER TABLE users ADD COLUMN status TEXT NOT NULL DEFAULT 'active'`, note: 'users.status' },
       { sql: `ALTER TABLE users ADD COLUMN archived_at TEXT`, note: 'users.archived_at' },
+      { sql: `ALTER TABLE messages ADD COLUMN author_id TEXT REFERENCES users(id)`, note: 'messages.author_id' },
     ];
     for (const m of migrations) {
       try { await db.execute({ sql: m.sql, args: [] }); } catch { /* column already exists */ }
