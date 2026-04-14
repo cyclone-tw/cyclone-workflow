@@ -14,6 +14,13 @@ export const CHANGELOG: ChangelogEntry[] = [
   },
   {
     version: '',
+    date: '2026-04-14 21:30',
+    changes: [
+      'fix(#59): 知識庫 + AI 工具箱卡片內容溢出修正 — overflowWrap/break-word + 展開/收納功能',
+    ],
+  },
+  {
+    version: '',
     date: '2026-04-14 01:05',
     changes: [
       'fix(#22): OAuth callback 隊長帳號仍排除於 name matching（安全），但 email exact match 可正確配對',
