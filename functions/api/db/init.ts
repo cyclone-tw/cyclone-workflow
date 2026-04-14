@@ -211,6 +211,27 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         )`,
         args: [],
       },
+      {
+        sql: `CREATE TABLE IF NOT EXISTS wish_claimers (
+          id TEXT PRIMARY KEY,
+          wish_id TEXT NOT NULL REFERENCES wishes(id),
+          user_id TEXT NOT NULL REFERENCES users(id),
+          status TEXT DEFAULT 'claimed' CHECK(status IN ('claimed','completed')),
+          created_at TEXT DEFAULT (datetime('now')),
+          UNIQUE(wish_id, user_id)
+        )`,
+        args: [],
+      },
+      {
+        sql: `CREATE TABLE IF NOT EXISTS wish_comments (
+          id TEXT PRIMARY KEY,
+          wish_id TEXT NOT NULL REFERENCES wishes(id),
+          author_id TEXT NOT NULL REFERENCES users(id),
+          content TEXT NOT NULL,
+          created_at TEXT DEFAULT (datetime('now'))
+        )`,
+        args: [],
+      },
     ]);
 
     // --- Migrations: add missing columns to existing tables ---
@@ -226,6 +247,16 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       { sql: `ALTER TABLE messages ADD COLUMN author_id TEXT REFERENCES users(id)`, note: 'messages.author_id' },
       { sql: `ALTER TABLE tags ADD COLUMN sort_order INTEGER DEFAULT 0`, note: 'tags.sort_order' },
     ];
+
+    // --- Migrate legacy wish.claimer_id → wish_claimers ---
+    try {
+      await db.execute({
+        sql: `INSERT OR IGNORE INTO wish_claimers (id, wish_id, user_id, status)
+              SELECT lower(hex(randomblob(16))), id, claimer_id, 'claimed'
+              FROM wishes WHERE claimer_id IS NOT NULL AND claimer_id != ''`,
+        args: [],
+      });
+    } catch { /* no legacy claimers to migrate */ }
 
     // --- Migrate wish categories: site → feature ---
     try {
