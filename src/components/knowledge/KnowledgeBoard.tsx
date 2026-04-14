@@ -641,6 +641,8 @@ export default function KnowledgeBoard() {
   const [loadError, setLoadError] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState<KnowledgeCategory | 'all'>('all');
   const [contributorFilter, setContributorFilter] = useState<string>('');
+  const [tagFilter, setTagFilter] = useState<string>('');
+  const [availableTags, setAvailableTags] = useState<Tag[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingEntry, setEditingEntry] = useState<KnowledgeEntry | null>(null);
   const [deletingEntry, setDeletingEntry] = useState<KnowledgeEntry | null>(null);
@@ -652,6 +654,7 @@ export default function KnowledgeBoard() {
       const params = new URLSearchParams();
       if (categoryFilter !== 'all') params.set('category', categoryFilter);
       if (contributorFilter) params.set('contributor_id', contributorFilter);
+      if (tagFilter) params.set('tag', tagFilter);
       const res = await fetch(`/api/knowledge?${params}`);
       if (!res.ok) throw new Error('載入失敗');
       const data = await res.json();
@@ -666,7 +669,20 @@ export default function KnowledgeBoard() {
 
   useEffect(() => {
     fetchEntries();
-  }, [categoryFilter, contributorFilter]);
+  }, [categoryFilter, contributorFilter, tagFilter]);
+
+  async function fetchTags() {
+    try {
+      const res = await fetch('/api/tags?category=knowledge');
+      if (!res.ok) return;
+      const data = await res.json();
+      setAvailableTags(data.tags || []);
+    } catch { /* silent */ }
+  }
+
+  useEffect(() => {
+    fetchTags();
+  }, []);
 
   async function toggleFavorite(entry: KnowledgeEntry) {
     try {
@@ -797,6 +813,27 @@ export default function KnowledgeBoard() {
           {MEMBERS.map((m) => (
             <option key={m.id} value={m.id} style={{ background: '#12122A' }}>
               {m.avatar} {m.name}
+            </option>
+          ))}
+        </select>
+        <select
+          value={tagFilter}
+          onChange={(e) => setTagFilter(e.target.value)}
+          style={{
+            ...inputStyle,
+            width: 'auto',
+            minWidth: 140,
+            maxWidth: 200,
+            fontSize: '0.8rem',
+            padding: '0.4rem 0.75rem',
+            cursor: 'pointer',
+            marginLeft: '0.5rem',
+          }}
+        >
+          <option value="">全部標籤</option>
+          {availableTags.map((t) => (
+            <option key={t.id} value={t.name} style={{ background: '#12122A' }}>
+              {t.name}
             </option>
           ))}
         </select>

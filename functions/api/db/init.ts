@@ -120,6 +120,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
           name TEXT NOT NULL,
           category TEXT DEFAULT 'both' CHECK(category IN ('knowledge', 'ai-tools', 'both')),
           color TEXT DEFAULT '#6C63FF',
+          sort_order INTEGER DEFAULT 0,
           created_at TEXT DEFAULT (datetime('now'))
         )`,
         args: [],
@@ -211,6 +212,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       { sql: `ALTER TABLE users ADD COLUMN status TEXT NOT NULL DEFAULT 'active'`, note: 'users.status' },
       { sql: `ALTER TABLE users ADD COLUMN archived_at TEXT`, note: 'users.archived_at' },
       { sql: `ALTER TABLE messages ADD COLUMN author_id TEXT REFERENCES users(id)`, note: 'messages.author_id' },
+      { sql: `ALTER TABLE tags ADD COLUMN sort_order INTEGER DEFAULT 0`, note: 'tags.sort_order' },
     ];
 
     // --- Migrate wish categories: site → feature ---
