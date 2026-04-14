@@ -487,6 +487,7 @@ function EntryCard({
       <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>
         <p
           ref={contentRef}
+          id={`knowledge-content-${entry.id}`}
           style={{
             color: '#9090B0', fontSize: '0.85rem', lineHeight: 1.6, margin: 0,
             overflowWrap: 'anywhere', wordBreak: 'break-word',
@@ -508,6 +509,8 @@ function EntryCard({
       {(isOverflowing || expanded) && (
         <button
           onClick={() => setExpanded(!expanded)}
+          aria-expanded={expanded}
+          aria-controls={`knowledge-content-${entry.id}`}
           style={{
             fontSize: '0.75rem', color: cfg.color, background: 'transparent',
             border: 'none', cursor: 'pointer', padding: '0.2rem 0',

@@ -416,6 +416,7 @@ function ToolCard({ tool, canEdit, loggedIn, onEdit, onDelete, onToggleFavorite 
       <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>
         <p
           ref={contentRef}
+          id={`tool-content-${tool.id}`}
           style={{
             color: '#9090B0', fontSize: '0.85rem', lineHeight: 1.6, margin: 0,
             overflowWrap: 'anywhere', wordBreak: 'break-word',
@@ -437,6 +438,8 @@ function ToolCard({ tool, canEdit, loggedIn, onEdit, onDelete, onToggleFavorite 
       {(isOverflowing || expanded) && (
         <button
           onClick={() => setExpanded(!expanded)}
+          aria-expanded={expanded}
+          aria-controls={`tool-content-${tool.id}`}
           style={{
             fontSize: '0.75rem', color: cfg.color, background: 'transparent',
             border: 'none', cursor: 'pointer', padding: '0.2rem 0',
