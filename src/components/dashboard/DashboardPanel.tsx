@@ -12,6 +12,20 @@ interface CheckinStats {
   knowledgeCount: number;
 }
 
+interface PointRecord {
+  id: string;
+  action: string;
+  points: number;
+  refType: string | null;
+  refId: string | null;
+  createdAt: string;
+}
+
+interface PointsData {
+  totalPoints: number;
+  records: PointRecord[];
+}
+
 const ROLE_BADGE_COLORS: Record<GroupRole, string> = {
   captain: '#6C63FF',
   tech: '#00D9FF',
@@ -42,6 +56,8 @@ export default function DashboardPanel() {
   const { user, loading: authLoading, login } = useAuth();
   const [stats, setStats] = useState<CheckinStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
+  const [pointsData, setPointsData] = useState<PointsData | null>(null);
+  const [pointsLoading, setPointsLoading] = useState(true);
   const [checkingIn, setCheckingIn] = useState(false);
   const [checkedInToday, setCheckedInToday] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -50,10 +66,13 @@ export default function DashboardPanel() {
   useEffect(() => {
     if (!user) {
       setStatsLoading(false);
+      setPointsLoading(false);
       return;
     }
     let cancelled = false;
     setStatsLoading(true);
+    setPointsLoading(true);
+
     fetch('/api/checkin/stats')
       .then((r) => r.json())
       .then((data) => {
@@ -67,6 +86,20 @@ export default function DashboardPanel() {
       .finally(() => {
         if (!cancelled) setStatsLoading(false);
       });
+
+    fetch('/api/points/me?limit=5')
+      .then((r) => r.json())
+      .then((data) => {
+        if (cancelled) return;
+        if (data.ok) {
+          setPointsData({ totalPoints: data.totalPoints, records: data.records });
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setPointsLoading(false);
+      });
+
     return () => { cancelled = true; };
   }, [user]);
 
@@ -333,6 +366,48 @@ export default function DashboardPanel() {
           </div>
         </div>
       )}
+
+      {/* Recent Points */}
+      <div className="glass rounded-2xl border border-[var(--color-border)] p-5">
+        <h2 className="text-base font-bold text-[var(--color-text-primary)] mb-4 flex items-center gap-2">
+          <span className="text-lg">⭐</span> 最近積分
+        </h2>
+        {pointsLoading ? (
+          <div className="space-y-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-10 animate-pulse rounded bg-[var(--color-overlay-neutral-strong)]" />
+            ))}
+          </div>
+        ) : pointsData && pointsData.records.length > 0 ? (
+          <div className="space-y-2">
+            {pointsData.records.map((r) => (
+              <div
+                key={r.id}
+                className="flex items-center justify-between rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-surface)]/40 px-4 py-3"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-lg">
+                    {r.action === 'checkin' ? '🔥' : r.action === 'knowledge' ? '📚' : r.action === 'ai-tool' ? '🛠️' : r.action === 'wish' ? '✨' : r.action === 'claim' ? '🎯' : r.action === 'complete' ? '🏆' : '⭐'}
+                  </span>
+                  <div>
+                    <div className="text-sm font-medium text-[var(--color-text-primary)]">
+                      {r.action === 'checkin' ? '每日打卡' : r.action === 'knowledge' ? '知識投稿' : r.action === 'ai-tool' ? 'AI 工具投稿' : r.action === 'wish' ? '許願' : r.action === 'claim' ? '認領任務' : r.action === 'complete' ? '完成任務' : r.action}
+                    </div>
+                    <div className="text-xs text-[var(--color-text-muted)]">
+                      {new Date(r.createdAt).toLocaleString('zh-TW')}
+                    </div>
+                  </div>
+                </div>
+                <span className="text-sm font-bold text-[var(--color-neon-green)]">+{r.points}</span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-sm text-[var(--color-text-secondary)]">
+            還沒有積分記錄，趕快打卡或投稿來賺取積分吧！
+          </div>
+        )}
+      </div>
 
       {/* Weekly Checkpoints */}
       {WEEKS.length > 0 && (

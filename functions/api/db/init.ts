@@ -199,6 +199,18 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         )`,
         args: [],
       },
+      {
+        sql: `CREATE TABLE IF NOT EXISTS points_ledger (
+          id TEXT PRIMARY KEY,
+          user_id TEXT NOT NULL REFERENCES users(id),
+          action TEXT NOT NULL,
+          points INTEGER NOT NULL,
+          ref_type TEXT,
+          ref_id TEXT,
+          created_at TEXT DEFAULT (datetime('now'))
+        )`,
+        args: [],
+      },
     ]);
 
     // --- Migrations: add missing columns to existing tables ---

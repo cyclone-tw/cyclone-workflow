@@ -99,6 +99,15 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     });
 
     const alreadyCheckedIn = result.rowsAffected === 0;
+
+    // 寫入積分明細（僅首次打卡）
+    if (!alreadyCheckedIn) {
+      await db.execute({
+        sql: `INSERT INTO points_ledger (id, user_id, action, points, ref_type, ref_id) VALUES (?, ?, ?, ?, ?, ?)`,
+        args: [crypto.randomUUID(), user.id, 'checkin', 10, 'checkin', id],
+      });
+    }
+
     const streak = await calculateStreak(db, user.id);
 
     return new Response(

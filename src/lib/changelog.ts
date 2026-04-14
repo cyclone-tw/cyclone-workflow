@@ -6,6 +6,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: 'v20260414.1135',
+    date: '2026-04-14 22:45',
+    changes: [
+      'feat(#49): Phase 1 — 積分系統核心（points_ledger 資料表 + /api/points/me + /api/points/leaderboard）',
+      'feat(#49): 打卡成功自動寫入 +10 積分到 points_ledger',
+      'feat(#49): DashboardPanel 新增「最近積分」區塊，顯示最近 5 筆積分記錄',
+    ],
+  },
+  {
     version: '',
     date: '2026-04-14 23:00',
     changes: [
