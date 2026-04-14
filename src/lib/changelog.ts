@@ -7,6 +7,12 @@ export interface ChangelogEntry {
 export const CHANGELOG: ChangelogEntry[] = [
   {
     version: '',
+    date: '2026-04-14 23:00',
+    changes: [
+      'feat(#50): 標籤系統 Phase 1 MVP — 新增 resource_tags 表 sort_order 欄位、/api/tags CRUD API（GET/POST/PATCH/DELETE）、知識庫與 AI 工具箱標籤篩選改為 API 動態載入',
+    ],
+  },
+  {
     date: '2026-04-14 22:20',
     changes: [
       'fix(#52): Bug 回報表單串接後端 — 提交到 /api/issues + 成功後顯示追蹤連結',
