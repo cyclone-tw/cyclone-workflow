@@ -58,13 +58,9 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
           w.created_at, w.updated_at,
           wisher.id AS wisher_id,
           wisher.name AS wisher_name,
-          wisher.avatar_url AS wisher_avatar,
-          claimer.id AS claimer_id,
-          claimer.name AS claimer_name,
-          claimer.avatar_url AS claimer_avatar
+          wisher.avatar_url AS wisher_avatar
         FROM wishes w
         JOIN users wisher ON wisher.id = w.wisher_id AND wisher.archived_at IS NULL AND wisher.status = 'active'
-        LEFT JOIN users claimer ON claimer.id = w.claimer_id AND claimer.archived_at IS NULL AND claimer.status = 'active'
         ${where}
         ORDER BY w.created_at DESC
       `,
@@ -86,9 +82,8 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         name: r.wisher_name,
         avatarUrl: r.wisher_avatar,
       },
-      claimer: r.claimer_id
-        ? { id: r.claimer_id, name: r.claimer_name, avatarUrl: r.claimer_avatar }
-        : null,
+      claimers: [] as { id: string; name: string; avatarUrl: string | null; status: string }[],
+      comments_count: 0,
       history: [] as { from_status: string; to_status: string; changed_by: string; created_at: string }[],
     }));
 
@@ -112,6 +107,45 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
             changed_by: h.changed_by as string,
             created_at: h.created_at as string,
           });
+        }
+      }
+    }
+
+    // Fetch claimers for all wishes
+    if (wishes.length > 0) {
+      const wishIds = wishes.map((w) => w.id as string);
+      const placeholders = wishIds.map(() => '?').join(',');
+      const claimersResult = await db.execute({
+        sql: `
+          SELECT wc.wish_id, wc.status, u.id, u.name, u.avatar_url
+          FROM wish_claimers wc
+          JOIN users u ON u.id = wc.user_id AND u.archived_at IS NULL AND u.status = 'active'
+          WHERE wc.wish_id IN (${placeholders})
+        `,
+        args: wishIds,
+      });
+      const wishMap = new Map(wishes.map((w) => [w.id as string, w]));
+      for (const c of claimersResult.rows) {
+        const wish = wishMap.get(c.wish_id as string);
+        if (wish) {
+          wish.claimers.push({
+            id: c.id as string,
+            name: c.name as string,
+            avatarUrl: c.avatar_url as string | null,
+            status: c.status as string,
+          });
+        }
+      }
+
+      // Fetch comments count
+      const commentsResult = await db.execute({
+        sql: `SELECT wish_id, COUNT(*) AS cnt FROM wish_comments WHERE wish_id IN (${placeholders}) GROUP BY wish_id`,
+        args: wishIds,
+      });
+      for (const c of commentsResult.rows) {
+        const wish = wishMap.get(c.wish_id as string);
+        if (wish) {
+          wish.comments_count = Number(c.cnt);
         }
       }
     }

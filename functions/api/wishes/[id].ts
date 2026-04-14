@@ -80,6 +80,31 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     }
 
     const r = result.rows[0];
+
+    // Fetch claimers
+    const claimersResult = await db.execute({
+      sql: `
+        SELECT wc.status, u.id, u.name, u.avatar_url
+        FROM wish_claimers wc
+        JOIN users u ON u.id = wc.user_id AND u.archived_at IS NULL AND u.status = 'active'
+        WHERE wc.wish_id = ?
+      `,
+      args: [id],
+    });
+    const claimers = claimersResult.rows.map((c) => ({
+      id: c.id as string,
+      name: c.name as string,
+      avatarUrl: c.avatar_url as string | null,
+      status: c.status as string,
+    }));
+
+    // Fetch comments count
+    const commentsCountResult = await db.execute({
+      sql: `SELECT COUNT(*) AS cnt FROM wish_comments WHERE wish_id = ?`,
+      args: [id],
+    });
+    const comments_count = Number(commentsCountResult.rows[0]?.cnt ?? 0);
+
     const wish = {
       id: r.id,
       title: r.title,
@@ -95,9 +120,8 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         name: r.wisher_name,
         avatarUrl: r.wisher_avatar,
       },
-      claimer: r.claimer_id
-        ? { id: r.claimer_id, name: r.claimer_name, avatarUrl: r.claimer_avatar }
-        : null,
+      claimers,
+      comments_count,
     };
 
     return new Response(JSON.stringify({ ok: true, wish }), {
@@ -154,19 +178,79 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
           headers: { 'Content-Type': 'application/json' },
         });
       }
-      if (wish.status !== 'pending') {
-        return new Response(JSON.stringify({ ok: false, error: '此願望無法被認領' }), {
+      if (wish.status !== 'pending' && wish.status !== 'claimed') {
+        return new Response(JSON.stringify({ ok: false, error: '此願望目前無法被認領' }), {
           status: 400,
           headers: { 'Content-Type': 'application/json' },
         });
       }
 
+      // Insert into wish_claimers (idempotent — UNIQUE prevents duplicates)
+      const claimId = crypto.randomUUID();
       await db.execute({
-        sql: `UPDATE wishes SET claimer_id = ?, status = 'claimed', updated_at = datetime('now') WHERE id = ?`,
-        args: [user.id, id],
+        sql: `INSERT OR IGNORE INTO wish_claimers (id, wish_id, user_id, status) VALUES (?, ?, ?, 'claimed')`,
+        args: [claimId, id, user.id],
+      });
+
+      // Update wish status to claimed if it was pending
+      if (wish.status === 'pending') {
+        await db.execute({
+          sql: `UPDATE wishes SET status = 'claimed', updated_at = datetime('now') WHERE id = ?`,
+          args: [id],
+        });
+        await ensureWishHistoryMigration(db);
+        await recordStatusChange(db, id, 'pending', 'claimed', user.id);
+      }
+
+      return new Response(JSON.stringify({ ok: true }), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    // ── Complete action ──────────────────────────────────────────────────
+    if (body.action === 'complete') {
+      const wishRow = wish;
+      // Only wisher or admin+ can mark as completed
+      const canComplete = wishRow.wisher_id === user.id || isAdminOrAbove(user);
+      if (!canComplete) {
+        return new Response(JSON.stringify({ ok: false, error: '權限不足，只有許願者或管理員可確認完成' }), {
+          status: 403,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      if (wishRow.status === 'completed') {
+        return new Response(JSON.stringify({ ok: false, error: '此願望已經完成' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      // Mark all claimers as completed
+      await db.execute({
+        sql: `UPDATE wish_claimers SET status = 'completed' WHERE wish_id = ? AND status = 'claimed'`,
+        args: [id],
+      });
+
+      // Update wish status
+      await db.execute({
+        sql: `UPDATE wishes SET status = 'completed', updated_at = datetime('now') WHERE id = ?`,
+        args: [id],
       });
       await ensureWishHistoryMigration(db);
-      await recordStatusChange(db, id, 'pending', 'claimed', user.id);
+      await recordStatusChange(db, id, wishRow.status as string, 'completed', user.id);
+
+      // Award points to all claimers (+100 each)
+      const claimersResult = await db.execute({
+        sql: `SELECT user_id FROM wish_claimers WHERE wish_id = ? AND status = 'completed'`,
+        args: [id],
+      });
+      for (const row of claimersResult.rows) {
+        const ledgerId = crypto.randomUUID();
+        await db.execute({
+          sql: `INSERT INTO points_ledger (id, user_id, action, points, ref_type, ref_id) VALUES (?, ?, 'wish_completed', 100, 'wish', ?)`,
+          args: [ledgerId, row.user_id as string, id],
+        });
+      }
 
       return new Response(JSON.stringify({ ok: true }), {
         headers: { 'Content-Type': 'application/json' },

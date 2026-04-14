@@ -6,6 +6,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: 'v20260414.1145',
+    date: '2026-04-14 23:45',
+    changes: [
+      'feat(#60): 許願樹認領重設計 — wish_claimers 表（多人認領）+ wish_comments 表（留言）+ 完整 CRUD API',
+      'feat(#60): PATCH /api/wishes/:id 新增 "claim"（多人認領）+ "complete"（完成確認 + 獎勵 +100 積分）',
+      'feat(#60): GET /api/wishes 及 GET /api/wishes/:id 回傳 claimers[] + comments_count',
+      'feat(#60): 遷移 legacy wishes.claimer_id → wish_claimers（INSERT OR IGNORE 防重複）',
+    ],
+  },
+  {
     version: 'v20260414.1135',
     date: '2026-04-14 22:45',
     changes: [
