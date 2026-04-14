@@ -4,7 +4,7 @@ import { timeAgo } from '@/lib/time';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type WishCategory = 'personal' | 'site';
+type WishCategory = 'personal' | 'feature' | 'teaching';
 type WishStatus = 'pending' | 'claimed' | 'in-progress' | 'completed';
 
 interface WishUser {
@@ -44,9 +44,10 @@ const STATUS_CONFIG: Record<WishStatus, { label: string; color: string; borderCo
   completed:   { label: '已完成',   color: '#00F5A0', borderColor: 'rgba(0,245,160,0.25)', badgeBg: 'rgba(0,245,160,0.15)', badgeText: '#00F5A0' },
 };
 
-const CATEGORY_CONFIG: Record<WishCategory, { label: string }> = {
-  personal: { label: '個人需求' },
-  site:     { label: '網站功能' },
+const CATEGORY_CONFIG: Record<WishCategory, { label: string; color: string }> = {
+  personal: { label: '個人需求', color: '#00F5A0' },
+  feature:  { label: '功能建議', color: '#6C63FF' },
+  teaching: { label: '教學許願', color: '#00D9FF' },
 };
 
 const ICON_OPTIONS = ['✨', '🔨', '📚', '💡', '🎯', '🚀', '🎨', '🔧', '📝', '🌟', '💬', '⚡', '🐛', '🔒', '📊', '🎮'];
@@ -54,7 +55,8 @@ const ICON_OPTIONS = ['✨', '🔨', '📚', '💡', '🎯', '🚀', '🎨', '�
 const FILTER_CATEGORIES = [
   { value: '', label: '全部' },
   { value: 'personal', label: '個人需求' },
-  { value: 'site', label: '網站功能' },
+  { value: 'feature', label: '功能建議' },
+  { value: 'teaching', label: '教學許願' },
 ];
 
 const FILTER_STATUSES = [
@@ -235,7 +237,7 @@ function CreateWishModal({ onClose, onCreated }: { onClose: () => void; onCreate
         <div style={{ marginBottom: '1rem' }}>
           <label style={labelStyle}>類別</label>
           <div style={{ display: 'flex', gap: 8 }}>
-            {(['personal', 'site'] as WishCategory[]).map((cat) => (
+            {(['personal', 'feature', 'teaching'] as WishCategory[]).map((cat) => (
               <button
                 key={cat}
                 onClick={() => setCategory(cat)}
@@ -420,8 +422,8 @@ function WishCard({ wish, user, onRefresh, onDelete }: { wish: Wish; user: Retur
               fontSize: '0.7rem',
               padding: '0.1rem 0.4rem',
               borderRadius: '9999px',
-              background: wish.category === 'site' ? 'rgba(0,217,255,0.15)' : 'rgba(108,99,255,0.15)',
-              color: wish.category === 'site' ? '#00D9FF' : '#9B93FF',
+              background: `${(CATEGORY_CONFIG[wish.category] || CATEGORY_CONFIG.personal).color}15`,
+              color: (CATEGORY_CONFIG[wish.category] || CATEGORY_CONFIG.personal).color,
               whiteSpace: 'nowrap',
             }}
           >

@@ -40,7 +40,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     const conditions: string[] = [];
     const args: string[] = [];
 
-    if (category && ['personal', 'site'].includes(category)) {
+    if (category && ['personal', 'feature', 'teaching'].includes(category)) {
       conditions.push('w.category = ?');
       args.push(category);
     }
@@ -147,7 +147,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
     const title = (body.title || '').trim();
     const description = (body.description || '').trim();
-    const category = body.category === 'site' ? 'site' : 'personal';
+    const category = ['personal', 'feature', 'teaching'].includes(body.category || '') ? body.category as string : 'personal';
     const icon = (body.icon || '✨').trim();
 
     if (!title) {
