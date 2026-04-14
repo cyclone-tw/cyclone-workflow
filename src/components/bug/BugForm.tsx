@@ -77,6 +77,9 @@ export default function BugForm() {
   const [errors, setErrors] = useState<Partial<FormData>>({});
   const [submitted, setSubmitted] = useState(false);
   const [toastVisible, setToastVisible] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [issueId, setIssueId] = useState<number | null>(null);
+  const [submitError, setSubmitError] = useState('');
 
   const inputStyle: React.CSSProperties = {
     width: '100%',
@@ -112,25 +115,15 @@ export default function BugForm() {
     return Object.keys(newErrors).length === 0;
   }
 
-  function formatReport(): string {
-    const lines = [
-      '🐛 Bug 回報',
-      '═══════════════════════',
-      `📝 回報者：${formData.nickname}`,
-      `🔖 問題類型：${formData.bugType}`,
-      `📄 問題頁面：${formData.bugPage}`,
-      '',
-      '📋 問題描述：',
-      formData.description,
-    ];
+  function buildDescription(): string {
+    const parts = [formData.description];
     if (formData.steps.trim()) {
-      lines.push('', '🔁 重現步驟：', formData.steps);
+      parts.push('', '🔁 重現步驟：', formData.steps);
     }
     if (formData.screenshotUrl.trim()) {
-      lines.push('', `🖼️ 截圖連結：${formData.screenshotUrl}`);
+      parts.push('', `🖼️ 截圖連結：${formData.screenshotUrl}`);
     }
-    lines.push('', `⏰ 回報時間：${new Date().toLocaleString('zh-TW')}`);
-    return lines.join('\n');
+    return parts.join('\n');
   }
 
   function showToast(message: string) {
@@ -142,21 +135,36 @@ export default function BugForm() {
     e.preventDefault();
     if (!validate()) return;
 
-    const report = formatReport();
-    try {
-      await navigator.clipboard.writeText(report);
-    } catch {
-      // Fallback for older browsers
-      const el = document.createElement('textarea');
-      el.value = report;
-      document.body.appendChild(el);
-      el.select();
-      document.execCommand('copy');
-      document.body.removeChild(el);
-    }
+    setSubmitting(true);
+    setSubmitError('');
 
-    setSubmitted(true);
-    showToast('已複製到剪貼簿！請貼到 Discord 頻道');
+    try {
+      const res = await fetch('/api/issues', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: `[Bug] ${formData.bugPage} — ${formData.bugType}`,
+          description: buildDescription(),
+          author: formData.nickname.trim(),
+          priority: 'medium',
+          category: 'bug',
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || '提交失敗');
+      }
+
+      const data = await res.json();
+      setIssueId(data.id || null);
+      setSubmitted(true);
+      showToast('Bug 回報已送出！');
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : '提交失敗，請稍後再試');
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   function handleReset() {
@@ -190,14 +198,21 @@ export default function BugForm() {
         >
           <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>✅</div>
           <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: '0.75rem' }}>
-            回報已複製！
+            回報已送出！
           </h2>
           <p style={{ color: 'var(--color-text-secondary)', marginBottom: '0.5rem' }}>
-            內容已複製到剪貼簿，請貼到 Discord 的 Bug 回報頻道。
-          </p>
-          <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', marginBottom: '2rem' }}>
             感謝你的回報，我們會盡快處理！
           </p>
+          {issueId && (
+            <p style={{ marginBottom: '1.5rem' }}>
+              <a
+                href={`/issue`}
+                style={{ color: 'var(--color-primary)', fontSize: '0.9rem', textDecoration: 'underline' }}
+              >
+                前往 Issue 追蹤頁面查看 →
+              </a>
+            </p>
+          )}
           <button
             onClick={handleReset}
             style={{
@@ -214,7 +229,7 @@ export default function BugForm() {
             再回報一個問題
           </button>
         </div>
-        <Toast message="已複製到剪貼簿！請貼到 Discord 頻道" visible={toastVisible} />
+        <Toast message="Bug 回報已送出！" visible={toastVisible} />
       </>
     );
   }
@@ -361,6 +376,7 @@ export default function BugForm() {
         {/* Submit */}
         <button
           type="submit"
+          disabled={submitting}
           style={{
             width: '100%',
             background: 'linear-gradient(135deg, var(--color-primary), var(--color-accent))',
@@ -383,10 +399,15 @@ export default function BugForm() {
             (e.target as HTMLButtonElement).style.transform = 'translateY(0)';
           }}
         >
-          📤 送出回報
+          {submitting ? '送出中...' : '📤 送出回報'}
         </button>
+        {submitError && (
+          <p style={{ color: 'var(--color-accent)', fontSize: '0.85rem', marginTop: '0.75rem', textAlign: 'center' }}>
+            {submitError}
+          </p>
+        )}
       </form>
-      <Toast message="已複製到剪貼簿！請貼到 Discord 頻道" visible={toastVisible} />
+      <Toast message="Bug 回報已送出！" visible={toastVisible} />
     </>
   );
 }

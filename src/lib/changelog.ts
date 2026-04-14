@@ -7,6 +7,13 @@ export interface ChangelogEntry {
 export const CHANGELOG: ChangelogEntry[] = [
   {
     version: '',
+    date: '2026-04-14 22:20',
+    changes: [
+      'fix(#52): Bug 回報表單串接後端 — 提交到 /api/issues + 成功後顯示追蹤連結',
+    ],
+  },
+  {
+    version: '',
     date: '2026-04-14 22:15',
     changes: [
       'feat(#53): 許願樹分類重設計 — 個人需求/功能建議/教學許願 + 前端 filter + site→feature 遷移',
