@@ -92,13 +92,34 @@ vi.mock('@libsql/client/web', () => ({
         const msg: DbRow = {
           id: _nextId++,
           author: args[0] as string,
-          content: args[1] as string,
-          tag: args[2] as string,
-          category: args[3] as string,
+          author_id: args[1] as string,
+          content: args[2] as string,
+          tag: args[3] as string,
+          category: args[4] as string,
           created_at: new Date().toISOString(),
           like_count: 0,
         };
         tables.messages.push(msg);
+        return { rows: [], columns: [] };
+      }
+
+      // DELETE messages — by id
+      if (sql.includes('DELETE FROM messages WHERE id')) {
+        const id = args[0];
+        const idx = tables.messages.findIndex((m) => String(m.id) === String(id));
+        if (idx !== -1) tables.messages.splice(idx, 1);
+        return { rows: [], columns: [] };
+      }
+
+      // DELETE discussion_likes — by message_id
+      if (sql.includes('DELETE FROM discussion_likes')) {
+        const msgId = args[0];
+        tables.messages = tables.messages.map((m) => {
+          if (String(m.id) === String(msgId)) {
+            return { ...m, like_count: 0 };
+          }
+          return m;
+        });
         return { rows: [], columns: [] };
       }
 

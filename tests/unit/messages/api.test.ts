@@ -107,4 +107,39 @@ describe('Messages API', () => {
       expect(msg.author).not.toBe('假冒者');
     });
   });
+
+  // ── DELETE /api/messages/:id — author or admin ─────────────────────────────
+
+  describe('DELETE /api/messages/:id', () => {
+    it('未登入應回 401', async () => {
+      const { onRequestDelete } = await import('../../../functions/api/messages/[id].ts');
+      const ctx = makeCtx('DELETE', '/api/messages/999');
+      const res = await onRequestDelete(ctx as any);
+      expect(res.status).toBe(401);
+    });
+
+    it('作者可刪除自己的留言', async () => {
+      // 先用 POST 留言
+      const { onRequestPost } = await import('../../../functions/api/messages/index.ts');
+      await onRequestPost(makeCtx('POST', '/api/messages',
+        { content: '要被刪除的留言', category: '測試' },
+        'valid-member-token'
+      ) as any);
+
+      // 再刪除
+      const { onRequestDelete } = await import('../../../functions/api/messages/[id].ts');
+      const ctx = makeCtx('DELETE', '/api/messages/1', undefined, 'valid-member-token');
+      const res = await onRequestDelete(ctx as any);
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data.ok).toBe(true);
+    });
+
+    it('刪除不存在的留言應回 404', async () => {
+      const { onRequestDelete } = await import('../../../functions/api/messages/[id].ts');
+      const ctx = makeCtx('DELETE', '/api/messages/99999', undefined, 'valid-member-token');
+      const res = await onRequestDelete(ctx as any);
+      expect(res.status).toBe(404);
+    });
+  });
 });
