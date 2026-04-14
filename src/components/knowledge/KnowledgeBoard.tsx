@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@/components/auth/useAuth';
 import { timeAgo } from '@/lib/time';
 import { MEMBERS } from '@/lib/constants';
@@ -380,6 +380,17 @@ function EntryCard({
 }) {
   const cfg = CATEGORY_CONFIG[entry.category] || CATEGORY_CONFIG.other;
   const [favBusy, setFavBusy] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const contentRef = useRef<HTMLParagraphElement>(null);
+  const [isOverflowing, setIsOverflowing] = useState(false);
+
+  const checkOverflow = useCallback(() => {
+    if (contentRef.current) {
+      setIsOverflowing(contentRef.current.scrollHeight > contentRef.current.clientHeight);
+    }
+  }, []);
+
+  useEffect(() => { checkOverflow(); }, [entry.content, checkOverflow]);
 
   async function handleFavorite() {
     setFavBusy(true);
@@ -394,7 +405,7 @@ function EntryCard({
         borderRadius: '0.875rem',
         padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem',
         transition: 'transform 0.2s, box-shadow 0.2s',
-        cursor: 'default',
+        cursor: 'default', overflow: 'hidden',
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.transform = 'translateY(-2px)';
@@ -473,9 +484,42 @@ function EntryCard({
       </h3>
 
       {/* Content */}
-      <p style={{ color: '#9090B0', fontSize: '0.85rem', lineHeight: 1.6, margin: 0, flex: 1 }}>
-        {entry.content}
-      </p>
+      <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>
+        <p
+          ref={contentRef}
+          id={`knowledge-content-${entry.id}`}
+          style={{
+            color: '#9090B0', fontSize: '0.85rem', lineHeight: 1.6, margin: 0,
+            overflowWrap: 'anywhere', wordBreak: 'break-word',
+            ...(expanded ? {} : { maxHeight: '4.8em', overflow: 'hidden' }),
+          }}
+        >
+          {entry.content}
+        </p>
+        {(!expanded && isOverflowing) && (
+          <div
+            style={{
+              position: 'absolute', bottom: 0, left: 0, right: 0, height: '1.6em',
+              background: 'linear-gradient(transparent, rgba(18,18,42,0.9))',
+              pointerEvents: 'none',
+            }}
+          />
+        )}
+      </div>
+      {(isOverflowing || expanded) && (
+        <button
+          onClick={() => setExpanded(!expanded)}
+          aria-expanded={expanded}
+          aria-controls={`knowledge-content-${entry.id}`}
+          style={{
+            fontSize: '0.75rem', color: cfg.color, background: 'transparent',
+            border: 'none', cursor: 'pointer', padding: '0.2rem 0',
+            alignSelf: 'flex-start',
+          }}
+        >
+          {expanded ? '收納 ↑' : '展開更多 ↓'}
+        </button>
+      )}
 
       {/* Tags */}
       {entry.tags.length > 0 && (
