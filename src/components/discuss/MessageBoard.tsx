@@ -1,10 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { useAuth } from '@/components/auth/useAuth';
+import { ROLE_LEVEL } from '@/lib/auth';
 import { timeAgo } from '@/lib/time';
 
 interface Message {
   id: number;
   author: string;
+  author_id: string | null;
   content: string;
   tag: string;
   category: string;
@@ -28,16 +31,25 @@ function MessageCard({
   onToggleLike,
   isLoggedIn,
   likeLoadingIds,
+  currentUser,
+  onDelete,
 }: {
   msg: Message;
   likedIds: Set<number>;
   onToggleLike: (messageId: number, currentLiked: boolean) => void;
   isLoggedIn: boolean;
   likeLoadingIds: Set<number>;
+  currentUser: { id: string; effectiveRole: string } | null;
+  onDelete: (messageId: number) => void;
 }) {
   const color = CATEGORY_COLORS[msg.category] || 'var(--color-primary)';
   const liked = likedIds.has(msg.id);
   const isLikeLoading = likeLoadingIds.has(msg.id);
+
+  const canDelete = currentUser && (
+    msg.author_id === currentUser.id ||
+    (ROLE_LEVEL[currentUser.effectiveRole] ?? 0) >= (ROLE_LEVEL['admin'] ?? 0)
+  );
 
   return (
     <div
@@ -80,13 +92,30 @@ function MessageCard({
           </span>
         </div>
       </div>
-      <p
-        className="text-sm leading-relaxed whitespace-pre-wrap break-words"
+      <div
+        className="text-sm leading-relaxed break-words prose prose-sm max-w-none"
         style={{ color: 'var(--color-text-secondary)', overflowWrap: 'anywhere' }}
       >
-        {msg.content}
-      </p>
-      <div className="flex items-center justify-end mt-2">
+        <ReactMarkdown>{msg.content}</ReactMarkdown>
+      </div>
+      <div className="flex items-center justify-end mt-2 gap-2">
+        {canDelete && (
+          <button
+            onClick={() => {
+              if (confirm('確定要刪除這則留言嗎？')) onDelete(msg.id);
+            }}
+            className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs transition-all hover:opacity-80"
+            style={{
+              background: 'transparent',
+              color: 'var(--color-text-muted)',
+              border: 'none',
+              cursor: 'pointer',
+            }}
+            title="刪除留言"
+          >
+            🗑️ 刪除
+          </button>
+        )}
         <button
           onClick={() => onToggleLike(msg.id, liked)}
           disabled={!isLoggedIn || isLikeLoading}
@@ -291,6 +320,20 @@ export default function MessageBoard() {
 
   const filtered = filter === '全部' ? messages : messages.filter((m) => m.category === filter);
 
+  const handleDelete = async (messageId: number) => {
+    try {
+      const res = await fetch(`/api/messages/${messageId}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.ok) {
+        setMessages((prev) => prev.filter((m) => m.id !== messageId));
+      } else {
+        setError(data.error || '刪除失敗');
+      }
+    } catch {
+      setError('網路錯誤，無法刪除');
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Post form — login required */}
@@ -463,6 +506,8 @@ export default function MessageBoard() {
               onToggleLike={handleToggleLike}
               isLoggedIn={!!user}
               likeLoadingIds={likeLoadingIds}
+              currentUser={user}
+              onDelete={handleDelete}
             />
           ))}
         </div>

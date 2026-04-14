@@ -1,11 +1,16 @@
 import './mock-db.ts';
 import { describe, it, expect, beforeEach } from 'vitest';
-import { resetDb, seedUsers } from './mock-db.ts';
+import { resetDb, seedUsers, tables } from './mock-db.ts';
 
 const BASE = 'http://localhost:4321';
 type MockEnv = { TURSO_DATABASE_URL: string; TURSO_AUTH_TOKEN: string };
 
 function makeCtx(method: string, path: string, body?: unknown, token?: string) {
+  // Extract route params from path like /api/messages/:id → { id: '123' }
+  const params: Record<string, string> = {};
+  const match = path.match(/\/api\/messages\/(\d+)$/);
+  if (match) params.id = match[1];
+
   return {
     request: new Request(`${BASE}${path}`, {
       method,
@@ -16,7 +21,7 @@ function makeCtx(method: string, path: string, body?: unknown, token?: string) {
       ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
     }),
     env: {} as MockEnv,
-    params: {} as Record<string, string>,
+    params,
   };
 }
 
@@ -125,6 +130,7 @@ describe('Messages API', () => {
         { content: '要被刪除的留言', category: '測試' },
         'valid-member-token'
       ) as any);
+      expect(tables.messages.length).toBe(1);
 
       // 再刪除
       const { onRequestDelete } = await import('../../../functions/api/messages/[id].ts');
@@ -133,6 +139,41 @@ describe('Messages API', () => {
       expect(res.status).toBe(200);
       const data = await res.json();
       expect(data.ok).toBe(true);
+
+      // 確認真的被刪除了
+      expect(tables.messages.length).toBe(0);
+    });
+
+    it('管理員可刪除他人的留言', async () => {
+      // member 發留言
+      const { onRequestPost } = await import('../../../functions/api/messages/index.ts');
+      await onRequestPost(makeCtx('POST', '/api/messages',
+        { content: '別人的留言' },
+        'valid-member-token'
+      ) as any);
+
+      // admin 刪除
+      const { onRequestDelete } = await import('../../../functions/api/messages/[id].ts');
+      const ctx = makeCtx('DELETE', '/api/messages/1', undefined, 'valid-admin-token');
+      const res = await onRequestDelete(ctx as any);
+      expect(res.status).toBe(200);
+    });
+
+    it('非作者非管理員刪除他人留言應回 403', async () => {
+      // member-1 發留言
+      const { onRequestPost } = await import('../../../functions/api/messages/index.ts');
+      await onRequestPost(makeCtx('POST', '/api/messages',
+        { content: '別人的留言' },
+        'valid-admin-token'
+      ) as any);
+
+      // member-1（非作者、非 admin）嘗試刪除 → 403
+      // But wait, we need a second member. Let's use the same member-1 token
+      // to delete admin's message — member role < admin, not the author → 403
+      const { onRequestDelete } = await import('../../../functions/api/messages/[id].ts');
+      const ctx = makeCtx('DELETE', '/api/messages/1', undefined, 'valid-member-token');
+      const res = await onRequestDelete(ctx as any);
+      expect(res.status).toBe(403);
     });
 
     it('刪除不存在的留言應回 404', async () => {
