@@ -247,6 +247,10 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       { sql: `ALTER TABLE messages ADD COLUMN author_id TEXT REFERENCES users(id)`, note: 'messages.author_id' },
       { sql: `ALTER TABLE messages ADD COLUMN edited_at TEXT`, note: 'messages.edited_at' },
       { sql: `ALTER TABLE tags ADD COLUMN sort_order INTEGER DEFAULT 0`, note: 'tags.sort_order' },
+      { sql: `ALTER TABLE users ADD COLUMN display_name TEXT DEFAULT ''`, note: 'users.display_name' },
+      { sql: `ALTER TABLE users ADD COLUMN emoji TEXT DEFAULT ''`, note: 'users.emoji' },
+      { sql: `ALTER TABLE users ADD COLUMN color TEXT DEFAULT '#6C63FF'`, note: 'users.color' },
+      { sql: `ALTER TABLE users ADD COLUMN bio TEXT DEFAULT ''`, note: 'users.bio' },
     ];
 
     // --- Migrate legacy wish.claimer_id → wish_claimers ---

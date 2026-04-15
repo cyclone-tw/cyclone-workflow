@@ -61,6 +61,9 @@ export default function DashboardPanel() {
   const [checkingIn, setCheckingIn] = useState(false);
   const [checkedInToday, setCheckedInToday] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [profileForm, setProfileForm] = useState({ display_name: '', emoji: '', color: '#6C63FF', bio: '' });
+  const [savingProfile, setSavingProfile] = useState(false);
 
   // Fetch stats when user logs in
   useEffect(() => {
@@ -102,6 +105,40 @@ export default function DashboardPanel() {
 
     return () => { cancelled = true; };
   }, [user]);
+
+  // Profile form handlers
+  function openProfileEditor() {
+    setProfileForm({
+      display_name: (user as any).display_name || '',
+      emoji: (user as any).emoji || '',
+      color: (user as any).color || '#6C63FF',
+      bio: (user as any).bio || '',
+    });
+    setEditingProfile(true);
+  }
+
+  async function saveProfile() {
+    setSavingProfile(true);
+    try {
+      const res = await fetch('/api/user/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(profileForm),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setEditingProfile(false);
+        setToast('個人資料已更新！');
+        window.dispatchEvent(new CustomEvent('cyclone:auth', { detail: data.user }));
+      } else {
+        setToast(data.error || '儲存失敗');
+      }
+    } catch {
+      setToast('網路錯誤，請稍後再試');
+    } finally {
+      setSavingProfile(false);
+    }
+  }
 
   // Auto-dismiss toast
   useEffect(() => {
@@ -228,11 +265,11 @@ export default function DashboardPanel() {
         <div>
           <div className="flex items-center gap-3 mb-1">
             <h1 className="text-2xl sm:text-3xl font-bold gradient-text">
-              歡迎回來，{user.name}！
+              歡迎回來，{(user as any).display_name || user.name}！
             </h1>
             <span
               className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full text-white"
-              style={{ backgroundColor: roleColor }}
+              style={{ backgroundColor: (user as any).color || roleColor }}
             >
               {roleLabel}
             </span>
@@ -240,6 +277,13 @@ export default function DashboardPanel() {
           <p className="text-[var(--color-text-secondary)] text-sm">
             追蹤你的 AI 工作流學習進度。
           </p>
+          <button
+            onClick={openProfileEditor}
+            className="mt-2 text-xs px-3 py-1 rounded-lg transition-opacity hover:opacity-80"
+            style={{ background: 'var(--color-bg-surface)', border: '1px solid var(--color-border)', color: 'var(--color-text-muted)' }}
+          >
+            ✏️ 個人資料設定
+          </button>
         </div>
         {/* Quick checkin */}
         <button
@@ -270,6 +314,82 @@ export default function DashboardPanel() {
           )}
         </button>
       </div>
+
+      {/* Profile Editor */}
+      {editingProfile && (
+        <div className="glass rounded-2xl border border-[var(--color-primary)]/40 p-5">
+          <h2 className="text-base font-bold text-[var(--color-text-primary)] mb-4 flex items-center gap-2">
+            <span>✏️</span> 個人資料設定
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+            <label className="block">
+              <span className="block text-xs font-medium mb-1" style={{ color: 'var(--color-text-muted)' }}>顯示名稱</span>
+              <input
+                value={profileForm.display_name}
+                onChange={(e) => setProfileForm((f) => ({ ...f, display_name: e.target.value }))}
+                className="form-input"
+                placeholder="在團隊頁面顯示的暱稱"
+              />
+            </label>
+            <label className="block">
+              <span className="block text-xs font-medium mb-1" style={{ color: 'var(--color-text-muted)' }}>頭像 Emoji</span>
+              <input
+                value={profileForm.emoji}
+                onChange={(e) => setProfileForm((f) => ({ ...f, emoji: e.target.value }))}
+                className="form-input"
+                placeholder="例如 🐣、🚀"
+                maxLength={8}
+              />
+            </label>
+            <label className="block">
+              <span className="block text-xs font-medium mb-1" style={{ color: 'var(--color-text-muted)' }}>代表色</span>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={profileForm.color}
+                  onChange={(e) => setProfileForm((f) => ({ ...f, color: e.target.value }))}
+                  className="form-input w-12 h-10 p-1 cursor-pointer"
+                  style={{ background: 'var(--color-bg-dark)' }}
+                />
+                <input
+                  type="text"
+                  value={profileForm.color}
+                  onChange={(e) => setProfileForm((f) => ({ ...f, color: e.target.value }))}
+                  className="form-input flex-1"
+                  placeholder="#6C63FF"
+                />
+              </div>
+            </label>
+            <label className="block">
+              <span className="block text-xs font-medium mb-1" style={{ color: 'var(--color-text-muted)' }}>自我介紹</span>
+              <textarea
+                value={profileForm.bio}
+                onChange={(e) => setProfileForm((f) => ({ ...f, bio: e.target.value }))}
+                className="form-input resize-none"
+                rows={2}
+                placeholder="簡單介紹自己..."
+              />
+            </label>
+          </div>
+          <div className="flex items-center justify-end gap-2">
+            <button
+              onClick={() => setEditingProfile(false)}
+              className="px-4 py-2 rounded-lg text-sm font-medium transition-opacity hover:opacity-90"
+              style={{ background: 'var(--color-bg-dark)', border: '1px solid var(--color-border)', color: 'var(--color-text-secondary)' }}
+            >
+              取消
+            </button>
+            <button
+              onClick={saveProfile}
+              disabled={savingProfile}
+              className="px-4 py-2 rounded-lg text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+              style={{ background: 'var(--color-primary)' }}
+            >
+              {savingProfile ? '儲存中...' : '儲存'}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Personal Stats Grid */}
       {statsLoading ? (
@@ -470,6 +590,31 @@ export default function DashboardPanel() {
           </div>
         </div>
       )}
+
+      <DashboardFormStyles />
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Shared form styles (duplicated here since not in global.css)
+// ---------------------------------------------------------------------------
+function DashboardFormStyles() {
+  return (
+    <style>{`
+      .form-input {
+        width: 100%;
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.5rem;
+        background: var(--color-bg-dark);
+        border: 1px solid var(--color-border);
+        color: var(--color-text-primary);
+        font-size: 0.875rem;
+      }
+      .form-input:focus {
+        outline: 2px solid var(--color-primary);
+        outline-offset: -1px;
+      }
+    `}</style>
   );
 }

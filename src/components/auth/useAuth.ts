@@ -8,6 +8,10 @@ export interface AuthUser {
   avatar_url: string | null;
   roles: GroupRole[];
   effectiveRole: GroupRole;
+  display_name: string;
+  emoji: string;
+  color: string;
+  bio: string;
 }
 
 interface AuthState {

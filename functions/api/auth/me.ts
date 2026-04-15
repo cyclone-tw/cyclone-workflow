@@ -26,12 +26,17 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     });
 
     const row = await db.execute({
-      sql: `SELECT email, avatar_url FROM users WHERE id = ?`,
+      sql: `SELECT email, avatar_url, display_name, emoji, color, bio FROM users WHERE id = ?`,
       args: [user.id],
     });
 
-    const email = row.rows[0]?.email as string | undefined;
-    const avatar_url = row.rows[0]?.avatar_url as string | undefined;
+    const r = row.rows[0];
+    const email = r?.email as string | undefined;
+    const avatar_url = r?.avatar_url as string | undefined;
+    const display_name = r?.display_name as string | undefined;
+    const emoji = r?.emoji as string | undefined;
+    const color = r?.color as string | undefined;
+    const bio = r?.bio as string | undefined;
 
     return new Response(
       JSON.stringify({
@@ -44,6 +49,10 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
           roles: user.roles,
           effectiveRole: user.effectiveRole,
           status: user.status,
+          display_name: display_name || '',
+          emoji: emoji || '',
+          color: color || '#6C63FF',
+          bio: bio || '',
         },
       }),
       { headers: { 'Content-Type': 'application/json' } },
