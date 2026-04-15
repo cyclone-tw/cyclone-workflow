@@ -2,10 +2,10 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
-import DOMPurify from 'dompurify';
 import { useAuth } from '@/components/auth/useAuth';
 import { ROLE_LEVEL } from '@/lib/auth';
 import { timeAgo } from '@/lib/time';
+import { sanitizeMarkdown, sanitizeUrl, sanitizeImgSrc } from '@/lib/markdown';
 
 interface Message {
   id: number;
@@ -218,19 +218,21 @@ function MessageCard({
           </div>
         </div>
       ) : msg.deleted_at ? (
-        <div
-          className="text-sm leading-relaxed"
-          style={{
-            color: 'var(--color-text-muted)',
-            background: 'rgba(255,77,106,0.05)',
-            border: '1px solid rgba(255,77,106,0.15)',
-            borderRadius: '0.5rem',
-            padding: '0.75rem 1rem',
-            fontStyle: 'italic',
-          }}
-        >
-          此留言已被刪除
-        </div>
+        <>
+          <div
+            className="text-sm leading-relaxed"
+            style={{
+              color: 'var(--color-text-muted)',
+              background: 'rgba(255,77,106,0.05)',
+              border: '1px solid rgba(255,77,106,0.15)',
+              borderRadius: '0.5rem',
+              padding: '0.75rem 1rem',
+              fontStyle: 'italic',
+            }}
+          >
+            此留言已被刪除
+          </div>
+        </>
       ) : (
             <>
             <div
@@ -266,11 +268,9 @@ function MessageCard({
                   );
                 },
                 a({ href, children, ...props }) {
-                  if (!href) return <span {...props}>{children}</span>;
-                  const safe = DOMPurify.sanitize(href, { RETURN_TRUSTED_TYPE: false }) as string;
                   return (
                     <a
-                      href={safe}
+                      href={href ? sanitizeUrl(href) : '#'}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="underline hover:opacity-80"
@@ -281,9 +281,20 @@ function MessageCard({
                     </a>
                   );
                 },
+                img({ src, alt, ...props }) {
+                  if (!src) return null;
+                  return (
+                    <img
+                      src={sanitizeImgSrc(src)}
+                      alt={alt || ''}
+                      style={{ maxWidth: '100%', height: 'auto', borderRadius: '0.5rem' }}
+                      {...props}
+                    />
+                  );
+                },
               }}
             >
-              {msg.content}
+              {sanitize(msg.content)}
             </ReactMarkdown>
           </div>
           <div className="flex items-center justify-end mt-2 gap-2">
@@ -549,7 +560,7 @@ export default function MessageBoard() {
       if (data.ok) {
         // Soft delete: mark locally so placeholder renders
         setMessages((prev) => prev.map((m) =>
-          m.id === messageId ? { ...m, deleted_at: new Date().toISOString() } : m
+          m.id === messageId ? { ...m, deleted_at: new Date().toISOString(), deleted_by: user?.id ?? null } : m
         ));
       } else {
         setError(data.error || '刪除失敗');
