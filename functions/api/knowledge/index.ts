@@ -29,7 +29,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
 
     let sql = `
       SELECT
-        ke.id, ke.title, ke.content, ke.category, ke.icon,
+        ke.id, ke.title, ke.content, ke.category, ke.icon, ke.url,
         ke.contributor_id, ke.upvotes,
         ke.created_at, ke.updated_at,
         u.name AS contributor_name,
@@ -129,7 +129,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     const user = await requireAuth(context.request, context.env);
 
     const body = (await context.request.json()) as Record<string, string>;
-    const { title, content, category, icon } = body;
+    const { title, content, category, icon, url } = body;
 
     if (!title?.trim() || !content?.trim()) {
       return new Response(JSON.stringify({ ok: false, error: '請填寫標題和內容' }), {
@@ -146,9 +146,9 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     const now = new Date().toISOString();
 
     await db.execute({
-      sql: `INSERT INTO knowledge_entries (id, title, content, category, icon, contributor_id, upvotes, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?)`,
-      args: [id, title.trim(), content.trim(), finalCategory, icon?.trim() || '📘', user.id, now, now],
+      sql: `INSERT INTO knowledge_entries (id, title, content, category, icon, contributor_id, upvotes, created_at, updated_at, url)
+            VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, ?)`,
+      args: [id, title.trim(), content.trim(), finalCategory, icon?.trim() || '📘', user.id, now, now, url?.trim() || ''],
     });
 
     return new Response(JSON.stringify({ ok: true, id }), {

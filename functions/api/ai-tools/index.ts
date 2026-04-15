@@ -21,12 +21,16 @@ const INIT_SQL = `CREATE TABLE IF NOT EXISTS ai_tools (
   contributor_id TEXT DEFAULT '',
   upvotes INTEGER DEFAULT 0,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  github_url TEXT DEFAULT ''
 )`;
 
 async function ensureMigration(db: ReturnType<typeof createClient>) {
   try {
     await db.execute({ sql: `ALTER TABLE ai_tools ADD COLUMN contributor_id TEXT DEFAULT ''`, args: [] });
+  } catch { /* column already exists */ }
+  try {
+    await db.execute({ sql: `ALTER TABLE ai_tools ADD COLUMN github_url TEXT DEFAULT ''`, args: [] });
   } catch { /* column already exists */ }
 }
 
