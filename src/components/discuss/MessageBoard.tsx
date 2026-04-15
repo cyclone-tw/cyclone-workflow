@@ -18,6 +18,8 @@ interface Message {
   edited_at: string | null;
   pinned: number;
   like_count: number;
+  deleted_at: string | null;
+  deleted_by: string | null;
 }
 
 const CATEGORIES = ['閒聊', '成果分享', '問題', '建議'];
@@ -64,7 +66,6 @@ function MessageCard({
   );
   const canPin = currentUser &&
     (ROLE_LEVEL[currentUser.effectiveRole] ?? 0) >= (ROLE_LEVEL['admin'] ?? 0);
-
   const handlePinToggle = async () => {
     if (pinLoading) return;
     const nextPinned = msg.pinned ? 0 : 1;
@@ -216,12 +217,26 @@ function MessageCard({
             </div>
           </div>
         </div>
+      ) : msg.deleted_at ? (
+        <div
+          className="text-sm leading-relaxed"
+          style={{
+            color: 'var(--color-text-muted)',
+            background: 'rgba(255,77,106,0.05)',
+            border: '1px solid rgba(255,77,106,0.15)',
+            borderRadius: '0.5rem',
+            padding: '0.75rem 1rem',
+            fontStyle: 'italic',
+          }}
+        >
+          此留言已被刪除
+        </div>
       ) : (
-        <>
-          <div
-            className="text-sm leading-relaxed break-words prose prose-sm max-w-none"
-            style={{ color: 'var(--color-text-secondary)', overflowWrap: 'anywhere' }}
-          >
+            <>
+            <div
+              className="text-sm leading-relaxed break-words prose prose-sm max-w-none"
+              style={{ color: 'var(--color-text-secondary)', overflowWrap: 'anywhere' }}
+            >
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               rehypePlugins={[rehypeRaw]}
@@ -532,7 +547,10 @@ export default function MessageBoard() {
       const res = await fetch(`/api/messages/${messageId}`, { method: 'DELETE' });
       const data = await res.json();
       if (data.ok) {
-        setMessages((prev) => prev.filter((m) => m.id !== messageId));
+        // Soft delete: mark locally so placeholder renders
+        setMessages((prev) => prev.map((m) =>
+          m.id === messageId ? { ...m, deleted_at: new Date().toISOString() } : m
+        ));
       } else {
         setError(data.error || '刪除失敗');
       }

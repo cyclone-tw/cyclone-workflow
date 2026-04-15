@@ -254,6 +254,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       { sql: `ALTER TABLE users ADD COLUMN emoji TEXT DEFAULT ''`, note: 'users.emoji' },
       { sql: `ALTER TABLE users ADD COLUMN color TEXT DEFAULT '#6C63FF'`, note: 'users.color' },
       { sql: `ALTER TABLE users ADD COLUMN bio TEXT DEFAULT ''`, note: 'users.bio' },
+      { sql: `ALTER TABLE messages ADD COLUMN deleted_at TEXT`, note: 'messages.deleted_at' },
+      { sql: `ALTER TABLE messages ADD COLUMN deleted_by TEXT`, note: 'messages.deleted_by' },
       { sql: `ALTER TABLE knowledge_entries ADD COLUMN url TEXT DEFAULT ''`, note: 'knowledge_entries.url' },
     ];
 
