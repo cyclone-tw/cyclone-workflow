@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { timeAgo } from '@/lib/time';
+import { useAuth } from '@/components/auth/useAuth';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -416,11 +417,10 @@ interface DetailViewProps {
 function DetailView({ issueId, onBack }: DetailViewProps) {
   const [issue, setIssue] = useState<IssueDetail | null>(null);
   const [loading, setLoading] = useState(true);
-  const [commentAuthor, setCommentAuthor] = useState('');
-  const [commentTag, setCommentTag] = useState('');
   const [commentContent, setCommentContent] = useState('');
   const [commentErrors, setCommentErrors] = useState<Record<string, string>>({});
   const [submittingComment, setSubmittingComment] = useState(false);
+  const { user, loading: authLoading, login } = useAuth();
 
   async function fetchIssue() {
     setLoading(true);
@@ -441,7 +441,6 @@ function DetailView({ issueId, onBack }: DetailViewProps) {
   async function handleAddComment(e: React.FormEvent) {
     e.preventDefault();
     const errs: Record<string, string> = {};
-    if (!commentAuthor.trim()) errs.author = '請填寫名稱';
     if (!commentContent.trim()) errs.content = '請填寫留言內容';
     setCommentErrors(errs);
     if (Object.keys(errs).length > 0) return;
@@ -451,11 +450,9 @@ function DetailView({ issueId, onBack }: DetailViewProps) {
       const res = await fetch(`/api/issues/${issueId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ author: commentAuthor, author_tag: commentTag, content: commentContent }),
+        body: JSON.stringify({ content: commentContent }),
       });
       if (!res.ok) throw new Error('留言失敗');
-      setCommentAuthor('');
-      setCommentTag('');
       setCommentContent('');
       setCommentErrors({});
       await fetchIssue();
@@ -613,72 +610,70 @@ function DetailView({ issueId, onBack }: DetailViewProps) {
       </div>
 
       {/* Add comment form */}
-      <div style={cardStyle}>
-        <h3 style={{ color: '#9090B0', fontWeight: 600, fontSize: '0.8rem', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '1rem' }}>
-          新增留言
-        </h3>
-        <form onSubmit={handleAddComment}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
-            <div>
-              <label style={labelStyle}>名稱 <span style={{ color: '#E94560' }}>*</span></label>
-              <input
-                type="text"
-                placeholder="你的名稱"
-                value={commentAuthor}
-                onChange={e => setCommentAuthor(e.target.value)}
+      {!authLoading && !user ? (
+        <div
+          className="rounded-xl p-5 flex flex-col items-center gap-3 text-center"
+          style={cardStyle}
+        >
+          <p className="text-2xl">💬</p>
+          <p className="text-sm font-medium" style={{ color: '#F0F0FF' }}>
+            登入後即可留言
+          </p>
+          <p className="text-xs" style={{ color: '#9090B0' }}>
+            已有帳號的隊員才能發表留言
+          </p>
+          <button
+            onClick={login}
+            className="px-5 py-2 rounded-lg text-sm font-medium transition-opacity hover:opacity-80"
+            style={{ background: '#6C63FF', color: '#fff' }}
+          >
+            🔐 登入 Discord
+          </button>
+        </div>
+      ) : !authLoading && user ? (
+        <div style={cardStyle}>
+          <h3 style={{ color: '#9090B0', fontWeight: 600, fontSize: '0.8rem', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '1rem' }}>
+            新增留言
+            <span className="ml-2 text-xs font-normal" style={{ color: '#9090B0' }}>
+              以 {user.name} 發表
+            </span>
+          </h3>
+          <form onSubmit={handleAddComment}>
+            <div style={{ marginBottom: '1rem' }}>
+              <label style={labelStyle}>留言內容 <span style={{ color: '#E94560' }}>*</span></label>
+              <textarea
+                placeholder="輸入留言…"
+                rows={3}
+                value={commentContent}
+                onChange={e => setCommentContent(e.target.value)}
                 onFocus={handleFocusIn}
                 onBlur={handleFocusOut}
-                style={{ ...inputStyle, borderColor: commentErrors.author ? '#E94560' : '#2A2A4A' }}
+                style={{ ...inputStyle, resize: 'vertical', borderColor: commentErrors.content ? '#E94560' : '#2A2A4A' }}
               />
-              {commentErrors.author && <p style={{ color: '#E94560', fontSize: '0.75rem', marginTop: '0.2rem' }}>{commentErrors.author}</p>}
+              {commentErrors.content && <p style={{ color: '#E94560', fontSize: '0.75rem', marginTop: '0.2rem' }}>{commentErrors.content}</p>}
             </div>
-            <div>
-              <label style={labelStyle}>Discord Tag（選填）</label>
-              <input
-                type="text"
-                placeholder="@username"
-                value={commentTag}
-                onChange={e => setCommentTag(e.target.value)}
-                onFocus={handleFocusIn}
-                onBlur={handleFocusOut}
-                style={inputStyle}
-              />
+            {commentErrors.submit && <p style={{ color: '#E94560', fontSize: '0.8rem', marginBottom: '0.75rem' }}>{commentErrors.submit}</p>}
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <button
+                type="submit"
+                disabled={submittingComment}
+                style={{
+                  padding: '0.6rem 1.5rem',
+                  background: submittingComment ? 'rgba(108,99,255,0.4)' : 'linear-gradient(135deg, #6C63FF, #E94560)',
+                  border: 'none',
+                  borderRadius: '0.5rem',
+                  color: '#F0F0FF',
+                  fontSize: '0.875rem',
+                  fontWeight: 600,
+                  cursor: submittingComment ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {submittingComment ? '送出中…' : '送出留言'}
+              </button>
             </div>
-          </div>
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={labelStyle}>留言內容 <span style={{ color: '#E94560' }}>*</span></label>
-            <textarea
-              placeholder="輸入留言…"
-              rows={3}
-              value={commentContent}
-              onChange={e => setCommentContent(e.target.value)}
-              onFocus={handleFocusIn}
-              onBlur={handleFocusOut}
-              style={{ ...inputStyle, resize: 'vertical', borderColor: commentErrors.content ? '#E94560' : '#2A2A4A' }}
-            />
-            {commentErrors.content && <p style={{ color: '#E94560', fontSize: '0.75rem', marginTop: '0.2rem' }}>{commentErrors.content}</p>}
-          </div>
-          {commentErrors.submit && <p style={{ color: '#E94560', fontSize: '0.8rem', marginBottom: '0.75rem' }}>{commentErrors.submit}</p>}
-          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <button
-              type="submit"
-              disabled={submittingComment}
-              style={{
-                padding: '0.6rem 1.5rem',
-                background: submittingComment ? 'rgba(108,99,255,0.4)' : 'linear-gradient(135deg, #6C63FF, #E94560)',
-                border: 'none',
-                borderRadius: '0.5rem',
-                color: '#F0F0FF',
-                fontSize: '0.875rem',
-                fontWeight: 600,
-                cursor: submittingComment ? 'not-allowed' : 'pointer',
-              }}
-            >
-              {submittingComment ? '送出中…' : '送出留言'}
-            </button>
-          </div>
-        </form>
-      </div>
+          </form>
+        </div>
+      ) : null}
     </div>
   );
 }
