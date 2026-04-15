@@ -36,6 +36,13 @@ interface WishHistoryEntry {
   created_at: string;
 }
 
+interface LinkedTool {
+  id: number;
+  name: string;
+  url: string;
+  contributor_id: string;
+}
+
 interface Wish {
   id: string;
   title: string;
@@ -51,6 +58,7 @@ interface Wish {
   history: WishHistoryEntry[];
   comments?: WishComment[];
   comments_count?: number;
+  linked_tools?: LinkedTool[];
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -367,6 +375,150 @@ function DeleteConfirmModal({ wish, onClose, onDeleted }: { wish: Wish; onClose:
   );
 }
 
+// ─── SubmitToolModal ───────────────────────────────────────────────────────────
+
+function SubmitToolModal({ wishId, onClose, onSubmitted }: { wishId: string; onClose: () => void; onSubmitted: () => void }) {
+  const { user } = useAuth();
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [url, setUrl] = useState('');
+  const [category, setCategory] = useState<'agent' | 'llm' | 'productivity' | 'dev' | 'other'>('other');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async () => {
+    if (!name.trim() || !description.trim() || !url.trim()) {
+      setError('請填寫工具名稱、簡介和連結');
+      return;
+    }
+    setSubmitting(true);
+    setError('');
+    try {
+      const res = await fetch('/api/ai-tools', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name.trim(),
+          description: description.trim(),
+          url: url.trim(),
+          category,
+          wish_id: wishId,
+        }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        onSubmitted();
+        onClose();
+      } else {
+        setError(data.error || '投稿失敗');
+      }
+    } catch {
+      setError('網路錯誤，請稍後再試');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div
+      style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div
+        style={{
+          ...glassStyle,
+          borderRadius: '1rem',
+          padding: '1.5rem',
+          width: '100%',
+          maxWidth: 480,
+          maxHeight: '90vh',
+          overflowY: 'auto',
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+          <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: '#F0F0FF', margin: 0 }}>🛠️ 投稿到 AI 工具箱</h3>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#9090B0', fontSize: '1.25rem', cursor: 'pointer', lineHeight: 1 }}>✕</button>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
+          <div>
+            <label style={labelStyle}>工具名稱 *</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Claude Code"
+              style={{ ...inputStyle, width: '100%' }}
+              onFocus={handleFocusIn}
+              onBlur={handleFocusOut}
+            />
+          </div>
+          <div>
+            <label style={labelStyle}>分類</label>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value as typeof category)}
+              style={{ ...inputStyle, width: '100%', cursor: 'pointer' }}
+              onFocus={handleFocusIn}
+              onBlur={handleFocusOut}
+            >
+              <option value="agent">🤖 Agent</option>
+              <option value="llm">🧠 LLM</option>
+              <option value="productivity">⚡ 生產力</option>
+              <option value="dev">💻 開發</option>
+              <option value="other">📦 其他</option>
+            </select>
+          </div>
+        </div>
+
+        <div style={{ marginBottom: '0.75rem' }}>
+          <label style={labelStyle}>連結 *</label>
+          <input
+            type="url"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder="https://..."
+            style={{ ...inputStyle, width: '100%' }}
+            onFocus={handleFocusIn}
+            onBlur={handleFocusOut}
+          />
+        </div>
+
+        <div style={{ marginBottom: '1rem' }}>
+          <label style={labelStyle}>簡介 *</label>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="簡短描述這個工具的用途和特色..."
+            rows={3}
+            style={{ ...inputStyle, width: '100%', resize: 'vertical' }}
+            onFocus={handleFocusIn}
+            onBlur={handleFocusOut}
+          />
+        </div>
+
+        {error && <p style={{ color: '#FF6B6B', fontSize: '0.85rem', marginBottom: '0.75rem' }}>{error}</p>}
+
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+          <button
+            onClick={onClose}
+            style={{ padding: '0.625rem 1rem', borderRadius: '0.75rem', border: '1px solid #2A2A4A', background: 'transparent', color: '#9090B0', cursor: 'pointer', fontSize: '0.875rem' }}
+          >
+            取消
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={submitting || !user}
+            style={{ ...neonBtnStyle, opacity: submitting ? 0.6 : 1 }}
+          >
+            {submitting ? '投稿中...' : '確認投稿'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── ClaimerBadge ──────────────────────────────────────────────────────────────
 
 function ClaimerBadge({ status }: { status: 'claimed' | 'completed' }) {
@@ -411,6 +563,7 @@ function WishCard({ wish, user, onRefresh, onDelete }: { wish: Wish; user: Retur
   const [commentsLoading, setCommentsLoading] = useState(false);
   const [commentContent, setCommentContent] = useState('');
   const [commentSubmitting, setCommentSubmitting] = useState(false);
+  const [showSubmitTool, setShowSubmitTool] = useState(false);
 
   const cfg = STATUS_CONFIG[wish.status];
   const isCompleted = wish.status === 'completed';
@@ -567,30 +720,77 @@ function WishCard({ wish, user, onRefresh, onDelete }: { wish: Wish; user: Retur
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '0.5rem', background: 'rgba(10,10,26,0.4)', borderRadius: '0.5rem', border: '1px solid rgba(108,99,255,0.1)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ fontSize: '0.7rem', color: '#606080', fontWeight: 600 }}>認領者</div>
-            <a
-              href="/ai-tools"
-              style={{
-                fontSize: '0.7rem',
-                color: '#00D9FF',
-                textDecoration: 'none',
-                fontWeight: 600,
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 2,
-              }}
-            >
-              🛠️ 投稿到工具箱
-            </a>
+            {isClaimer && !isCompleted && (
+              <button
+                onClick={() => setShowSubmitTool(true)}
+                style={{
+                  fontSize: '0.7rem',
+                  color: '#00D9FF',
+                  background: 'transparent',
+                  border: 'none',
+                  fontWeight: 600,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 2,
+                  cursor: 'pointer',
+                  padding: 0,
+                }}
+              >
+                🛠️ 投稿到工具箱
+              </button>
+            )}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {wish.claimers.map((claimer) => (
-              <div key={claimer.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Avatar name={claimer.name} avatarUrl={claimer.avatarUrl} size={24} />
-                <span style={{ fontSize: '0.8rem', color: '#F0F0FF', fontWeight: 500 }}>{claimer.name}</span>
-                <ClaimerBadge status={claimer.status} />
-              </div>
-            ))}
+            {wish.claimers.map((claimer) => {
+              const hasTool = wish.linked_tools?.some(t => t.contributor_id === claimer.id);
+              return (
+                <div key={claimer.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Avatar name={claimer.name} avatarUrl={claimer.avatarUrl} size={24} />
+                  <span style={{ fontSize: '0.8rem', color: '#F0F0FF', fontWeight: 500 }}>{claimer.name}</span>
+                  <ClaimerBadge status={claimer.status} />
+                  {hasTool && (
+                    <span style={{
+                      fontSize: '0.6rem',
+                      fontWeight: 700,
+                      padding: '0.05rem 0.35rem',
+                      borderRadius: '9999px',
+                      background: 'rgba(0,217,255,0.15)',
+                      color: '#00D9FF',
+                      border: '1px solid rgba(0,217,255,0.3)',
+                      whiteSpace: 'nowrap',
+                    }}>
+                      已投稿
+                    </span>
+                  )}
+                </div>
+              );
+            })}
           </div>
+          {wish.linked_tools && wish.linked_tools.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 4 }}>
+              <div style={{ fontSize: '0.7rem', color: '#606080', fontWeight: 600 }}>關聯工具</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {wish.linked_tools.map((tool) => (
+                  <a
+                    key={tool.id}
+                    href={tool.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      fontSize: '0.75rem',
+                      color: '#00D9FF',
+                      textDecoration: 'none',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 4,
+                    }}
+                  >
+                    🔗 {tool.name}
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
           {visibleClaimers.length < wish.claimers.length && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
               <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -689,6 +889,14 @@ function WishCard({ wish, user, onRefresh, onDelete }: { wish: Wish; user: Retur
             );
           })}
         </div>
+      )}
+
+      {showSubmitTool && (
+        <SubmitToolModal
+          wishId={wish.id}
+          onClose={() => setShowSubmitTool(false)}
+          onSubmitted={() => { setShowSubmitTool(false); onRefresh(); }}
+        />
       )}
 
       {/* Comments Section */}

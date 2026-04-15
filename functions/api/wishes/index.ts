@@ -85,6 +85,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       claimers: [] as { id: string; name: string; avatarUrl: string | null; status: string }[],
       comments_count: 0,
       history: [] as { from_status: string; to_status: string; changed_by: string; created_at: string }[],
+      linked_tools: [] as { id: number; name: string; url: string; contributor_id: string }[],
     }));
 
     // Fetch history for all wishes
@@ -146,6 +147,23 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         const wish = wishMap.get(c.wish_id as string);
         if (wish) {
           wish.comments_count = Number(c.cnt);
+        }
+      }
+
+      // Fetch linked AI tools
+      const toolsResult = await db.execute({
+        sql: `SELECT id, name, url, contributor_id, wish_id FROM ai_tools WHERE wish_id IN (${placeholders})`,
+        args: wishIds,
+      });
+      for (const t of toolsResult.rows) {
+        const wish = wishMap.get(t.wish_id as string);
+        if (wish) {
+          wish.linked_tools.push({
+            id: Number(t.id),
+            name: t.name as string,
+            url: t.url as string,
+            contributor_id: t.contributor_id as string,
+          });
         }
       }
     }

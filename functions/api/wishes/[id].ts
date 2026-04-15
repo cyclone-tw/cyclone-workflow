@@ -105,6 +105,18 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     });
     const comments_count = Number(commentsCountResult.rows[0]?.cnt ?? 0);
 
+    // Fetch linked AI tools
+    const toolsResult = await db.execute({
+      sql: `SELECT id, name, url, contributor_id FROM ai_tools WHERE wish_id = ?`,
+      args: [id],
+    });
+    const linked_tools = toolsResult.rows.map((t) => ({
+      id: Number(t.id),
+      name: t.name as string,
+      url: t.url as string,
+      contributor_id: t.contributor_id as string,
+    }));
+
     const wish = {
       id: r.id,
       title: r.title,
@@ -122,6 +134,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       },
       claimers,
       comments_count,
+      linked_tools,
     };
 
     return new Response(JSON.stringify({ ok: true, wish }), {
@@ -239,16 +252,22 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
       await ensureWishHistoryMigration(db);
       await recordStatusChange(db, id, wishRow.status as string, 'completed', user.id);
 
-      // Award points to all claimers (+100 each)
+      // Award points to claimers based on linked AI tool submissions
       const claimersResult = await db.execute({
         sql: `SELECT user_id FROM wish_claimers WHERE wish_id = ? AND status = 'completed'`,
         args: [id],
       });
       for (const row of claimersResult.rows) {
+        const claimerId = row.user_id as string;
+        const toolCheck = await db.execute({
+          sql: `SELECT id FROM ai_tools WHERE wish_id = ? AND contributor_id = ? LIMIT 1`,
+          args: [id, claimerId],
+        });
+        const hasTool = toolCheck.rows.length > 0;
         const ledgerId = crypto.randomUUID();
         await db.execute({
-          sql: `INSERT INTO points_ledger (id, user_id, action, points, ref_type, ref_id) VALUES (?, ?, 'wish_completed', 100, 'wish', ?)`,
-          args: [ledgerId, row.user_id as string, id],
+          sql: `INSERT INTO points_ledger (id, user_id, action, points, ref_type, ref_id) VALUES (?, ?, ?, ?, 'wish', ?)`,
+          args: [ledgerId, claimerId, hasTool ? 'wish_completed_ai_tool' : 'wish_completed', hasTool ? 300 : 100, id],
         });
       }
 

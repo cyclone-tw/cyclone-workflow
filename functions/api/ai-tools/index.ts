@@ -22,7 +22,8 @@ const INIT_SQL = `CREATE TABLE IF NOT EXISTS ai_tools (
   upvotes INTEGER DEFAULT 0,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  github_url TEXT DEFAULT ''
+  github_url TEXT DEFAULT '',
+  wish_id TEXT DEFAULT ''
 )`;
 
 async function ensureMigration(db: ReturnType<typeof createClient>) {
@@ -31,6 +32,9 @@ async function ensureMigration(db: ReturnType<typeof createClient>) {
   } catch { /* column already exists */ }
   try {
     await db.execute({ sql: `ALTER TABLE ai_tools ADD COLUMN github_url TEXT DEFAULT ''`, args: [] });
+  } catch { /* column already exists */ }
+  try {
+    await db.execute({ sql: `ALTER TABLE ai_tools ADD COLUMN wish_id TEXT DEFAULT ''`, args: [] });
   } catch { /* column already exists */ }
 }
 
@@ -129,7 +133,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
 export const onRequestPost: PagesFunction<Env> = async (context) => {
   try {
     const user = await requireAuth(context.request, context.env);
-    const { name, description, url, category, author, author_tag } = await context.request.json() as Record<string, string>;
+    const { name, description, url, category, author, author_tag, wish_id } = await context.request.json() as Record<string, string>;
 
     if (!name?.trim() || !description?.trim() || !url?.trim()) {
       return new Response(JSON.stringify({ error: '請填寫工具名稱、簡介和連結' }), {
@@ -142,8 +146,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     await ensureMigration(db);
 
     const result = await db.execute({
-      sql: `INSERT INTO ai_tools (name, description, url, category, author, author_tag, contributor_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id`,
+      sql: `INSERT INTO ai_tools (name, description, url, category, author, author_tag, contributor_id, wish_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id`,
       args: [
         name.trim(),
         description.trim(),
@@ -152,6 +156,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         (author || user.name).trim(),
         author_tag?.trim() || '',
         user.id,
+        wish_id?.trim() || '',
       ],
     });
 
