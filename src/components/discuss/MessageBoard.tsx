@@ -1,5 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
+import DOMPurify from 'dompurify';
 import { useAuth } from '@/components/auth/useAuth';
 import { ROLE_LEVEL } from '@/lib/auth';
 import { timeAgo } from '@/lib/time';
@@ -96,7 +99,54 @@ function MessageCard({
         className="text-sm leading-relaxed break-words prose prose-sm max-w-none"
         style={{ color: 'var(--color-text-secondary)', overflowWrap: 'anywhere' }}
       >
-        <ReactMarkdown>{msg.content}</ReactMarkdown>
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          rehypePlugins={[rehypeRaw]}
+          components={{
+            code({ className, children, ...props }) {
+              const match = /language-(\w+)/.exec(className || '');
+              const isInline = !match && !String(children).includes('\n');
+              if (isInline) {
+                return (
+                  <code
+                    className="px-1.5 py-0.5 rounded text-xs font-mono"
+                    style={{ background: 'rgba(255,255,255,0.08)', color: 'var(--color-neon-green)' }}
+                    {...props}
+                  >
+                    {children}
+                  </code>
+                );
+              }
+              return (
+                <code
+                  className="block p-3 rounded-lg text-xs font-mono overflow-x-auto"
+                  style={{ background: 'rgba(255,255,255,0.06)', color: 'var(--color-neon-blue)' }}
+                  {...props}
+                >
+                  {children}
+                </code>
+              );
+            },
+            a({ href, children, ...props }) {
+              if (!href) return <span {...props}>{children}</span>;
+              const safe = DOMPurify.sanitize(href, { RETURN_TRUSTED_TYPE: false }) as string;
+              return (
+                <a
+                  href={safe}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline hover:opacity-80"
+                  style={{ color: 'var(--color-neon-blue)' }}
+                  {...props}
+                >
+                  {children}
+                </a>
+              );
+            },
+          }}
+        >
+          {msg.content}
+        </ReactMarkdown>
       </div>
       <div className="flex items-center justify-end mt-2 gap-2">
         {canDelete && (
