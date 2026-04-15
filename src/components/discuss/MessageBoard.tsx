@@ -16,17 +16,17 @@ interface Message {
   category: string;
   created_at: string;
   edited_at: string | null;
+  pinned: number;
   like_count: number;
 }
 
-const CATEGORIES = ['一般討論', '功能建議', '許願樹討論', '技術問題', '成果分享'];
+const CATEGORIES = ['閒聊', '成果分享', '問題', '建議'];
 
 const CATEGORY_COLORS: Record<string, string> = {
-  '一般討論': 'var(--color-primary)',
-  '功能建議': 'var(--color-neon-green)',
-  '許願樹討論': 'var(--color-accent)',
-  '技術問題': 'var(--color-neon-blue)',
+  '閒聊': 'var(--color-primary)',
   '成果分享': '#FFD93D',
+  '問題': 'var(--color-neon-blue)',
+  '建議': 'var(--color-neon-green)',
 };
 
 function MessageCard({
@@ -38,6 +38,7 @@ function MessageCard({
   currentUser,
   onDelete,
   onEdit,
+  onPinToggle,
 }: {
   msg: Message;
   likedIds: Set<number>;
@@ -47,6 +48,7 @@ function MessageCard({
   currentUser: { id: string; effectiveRole: string } | null;
   onDelete: (messageId: number) => void;
   onEdit: (messageId: number, newContent: string) => void;
+  onPinToggle: (messageId: number, pinned: number) => void;
 }) {
   const color = CATEGORY_COLORS[msg.category] || 'var(--color-primary)';
   const liked = likedIds.has(msg.id);
@@ -54,11 +56,37 @@ function MessageCard({
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(msg.content);
   const [editSaving, setEditSaving] = useState(false);
+  const [pinLoading, setPinLoading] = useState(false);
 
   const canModify = currentUser && (
     msg.author_id === currentUser.id ||
     (ROLE_LEVEL[currentUser.effectiveRole] ?? 0) >= (ROLE_LEVEL['admin'] ?? 0)
   );
+  const canPin = currentUser &&
+    (ROLE_LEVEL[currentUser.effectiveRole] ?? 0) >= (ROLE_LEVEL['admin'] ?? 0);
+
+  const handlePinToggle = async () => {
+    if (pinLoading) return;
+    const nextPinned = msg.pinned ? 0 : 1;
+    setPinLoading(true);
+    try {
+      const res = await fetch(`/api/messages/${msg.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pinned: nextPinned }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        onPinToggle(msg.id, nextPinned);
+      } else {
+        alert(data.error || '操作失敗');
+      }
+    } catch {
+      alert('網路錯誤，無法置頂');
+    } finally {
+      setPinLoading(false);
+    }
+  };
 
   const handleSave = async () => {
     const trimmed = editContent.trim();
@@ -122,6 +150,11 @@ function MessageCard({
           </div>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
+          {msg.pinned ? (
+            <span className="text-xs" style={{ color: '#FFC107' }} title="置頂留言">
+              📌
+            </span>
+          ) : null}
           <span
             className="text-xs px-2 py-0.5 rounded-full"
             style={{ background: `${color}20`, color }}
@@ -239,6 +272,23 @@ function MessageCard({
             </ReactMarkdown>
           </div>
           <div className="flex items-center justify-end mt-2 gap-2">
+            {canPin && (
+              <button
+                onClick={handlePinToggle}
+                disabled={pinLoading}
+                className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs transition-all hover:opacity-80"
+                style={{
+                  background: msg.pinned ? 'rgba(255, 193, 7, 0.1)' : 'transparent',
+                  color: msg.pinned ? '#FFC107' : 'var(--color-text-muted)',
+                  border: 'none',
+                  cursor: pinLoading ? 'not-allowed' : 'pointer',
+                  opacity: pinLoading ? 0.5 : 1,
+                }}
+                title={msg.pinned ? '取消置頂' : '置頂留言'}
+              >
+                {pinLoading ? '處理中...' : (msg.pinned ? '🔽 取消置頂' : '📌 置頂')}
+              </button>
+            )}
             {canModify && (
               <button
                 onClick={() => setIsEditing(true)}
@@ -300,7 +350,7 @@ export default function MessageBoard() {
   const [posting, setPosting] = useState(false);
   const [tag, setTag] = useState('');
   const [content, setContent] = useState('');
-  const [category, setCategory] = useState('一般討論');
+  const [category, setCategory] = useState('閒聊');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [filter, setFilter] = useState('全部');
@@ -499,6 +549,16 @@ export default function MessageBoard() {
     );
   };
 
+  const handlePinToggle = (messageId: number, pinned: number) => {
+    setMessages((prev) => {
+      const updated = prev.map((m) => (m.id === messageId ? { ...m, pinned } : m));
+      return updated.sort((a, b) => {
+        if (b.pinned !== a.pinned) return b.pinned - a.pinned;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
+    });
+  };
+
   return (
     <div className="space-y-6">
       {/* Post form — login required */}
@@ -674,6 +734,7 @@ export default function MessageBoard() {
               currentUser={user}
               onDelete={handleDelete}
               onEdit={handleEdit}
+              onPinToggle={handlePinToggle}
             />
           ))}
         </div>

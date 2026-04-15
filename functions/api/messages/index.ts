@@ -26,7 +26,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
               FROM discussion_likes
               GROUP BY message_id
             ) lc ON lc.message_id = m.id
-            ORDER BY m.created_at DESC LIMIT 100`,
+            ORDER BY m.pinned DESC, m.created_at DESC LIMIT 100`,
       args: [],
     });
 
@@ -76,7 +76,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
     await db.execute({
       sql: `INSERT INTO messages (author, author_id, content, tag, category) VALUES (?, ?, ?, ?, ?)`,
-      args: [author.trim(), user.id, content.trim(), tag?.trim() || '', category || '一般討論'],
+      args: [author.trim(), user.id, content.trim(), tag?.trim() || '', category || '閒聊'],
     });
 
     return new Response(JSON.stringify({ ok: true }), {
