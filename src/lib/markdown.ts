@@ -12,11 +12,18 @@ const ALLOWED_TAGS = [
 ];
 
 const ALLOWED_ATTR = [
-  'href', 'src', 'alt', 'title', 'class', 'target', 'rel',
+  'href', 'alt', 'title', 'class', 'target', 'rel',
   'checked', 'disabled', 'type', 'colspan', 'rowspan', 'align',
 ];
 
 const FORBID_TAGS = ['script', 'iframe', 'style', 'form', 'textarea', 'button'];
+
+// Block all on* event handler attributes globally
+DOMPurify.addHook('uponSanitizeAttribute', (_node, data) => {
+  if (data.attrName?.startsWith('on')) {
+    data.forceKeepAttr = false;
+  }
+});
 
 // ─── URL Sanitization ───────────────────────────────────────────────────────
 
@@ -37,7 +44,6 @@ export function sanitizeImgSrc(src: string | undefined): string {
   if (!src) return '';
   try {
     const parsed = new URL(src, window.location.origin);
-    // Only allow https images (no http, data:, blob:, etc.)
     if (parsed.protocol !== 'https:') return '';
     return parsed.href;
   } catch {
@@ -52,9 +58,6 @@ export function sanitizeMarkdown(html: string): string {
     ALLOWED_TAGS,
     ALLOWED_ATTR,
     FORBID_TAGS,
-    FORBID_ATTR: ['style', 'onerror', 'onload', 'onclick', 'onmouseover'],
-    // Ban all on* event handler attributes
     ALLOW_DATA_ATTR: false,
-    ADD_TAGS: [],
   });
 }

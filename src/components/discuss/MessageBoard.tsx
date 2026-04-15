@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
-import { sanitizeUrl, sanitizeImgSrc } from '../../lib/markdown';
+import { sanitizeUrl, sanitizeImgSrc, sanitizeMarkdown } from '../../lib/markdown';
 import { useAuth } from '@/components/auth/useAuth';
 import { ROLE_LEVEL } from '@/lib/auth';
 import { timeAgo } from '@/lib/time';
@@ -273,7 +273,7 @@ function MessageCard({
                 },
               }}
             >
-              {msg.content}
+              {sanitizeMarkdown(msg.content)}
             </ReactMarkdown>
           </div>
           <div className="flex items-center justify-end mt-2 gap-2">
