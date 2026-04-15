@@ -7,6 +7,16 @@ export interface ChangelogEntry {
 export const CHANGELOG: ChangelogEntry[] = [
   {
     version: '',
+    date: '2026-04-15 16:25',
+    changes: [
+      'feat(#50): 知識庫成員篩選改 API — /api/members 動態取得未封存成員',
+      'feat(#50): AI 工具箱成員篩選改 API — 共用 /api/members',
+      'feat(#50): 知識庫投稿新增「相關連結」欄位（選填）',
+      'feat(#50): AI 工具箱投稿新增「GitHub Repo URL」欄位（選填）',
+    ],
+  },
+  {
+    version: '',
     date: '2026-04-15 00:15',
     changes: [
       'fix(#69): 公告系統前台修正 — 移除 X 按鈕、顯示 3 則公告、支援換行、字體放大',

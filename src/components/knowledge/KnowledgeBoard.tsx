@@ -1,7 +1,14 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import DOMPurify from 'dompurify';
 import { useAuth } from '@/components/auth/useAuth';
 import { timeAgo } from '@/lib/time';
-import { MEMBERS } from '@/lib/constants';
+
+
+// ─── Helpers ───────────────────────────────────────────────────────────────────
+
+function sanitizeUrl(raw: string): string {
+  return DOMPurify.sanitize(raw || '', { RETURN_TRUSTED_TYPE: false }) as string;
+}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -27,6 +34,7 @@ interface KnowledgeEntry {
   updated_at: string;
   tags: Tag[];
   is_favorited?: boolean;
+  url?: string;
 }
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
@@ -86,6 +94,7 @@ function EntryModal({ entry, onClose, onSaved }: ModalProps) {
   const isEdit = !!entry;
   const [title, setTitle] = useState(entry?.title ?? '');
   const [content, setContent] = useState(entry?.content ?? '');
+  const [url, setUrl] = useState(entry?.url ?? '');
   const [category, setCategory] = useState<KnowledgeCategory>(entry?.category ?? 'template');
   const [icon, setIcon] = useState(entry?.icon ?? '📘');
   const [showIconPicker, setShowIconPicker] = useState(false);
@@ -106,7 +115,7 @@ function EntryModal({ entry, onClose, onSaved }: ModalProps) {
         const res = await fetch(`/api/knowledge/${entry!.id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title: title.trim(), content: content.trim(), category, icon }),
+          body: JSON.stringify({ title: title.trim(), content: content.trim(), category, icon, url: url.trim() }),
         });
         if (!res.ok) {
           const data = await res.json();
@@ -116,7 +125,7 @@ function EntryModal({ entry, onClose, onSaved }: ModalProps) {
         const res = await fetch('/api/knowledge', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title: title.trim(), content: content.trim(), category, icon }),
+          body: JSON.stringify({ title: title.trim(), content: content.trim(), category, icon, url: url.trim() }),
         });
         if (!res.ok) {
           const data = await res.json();
@@ -243,6 +252,20 @@ function EntryModal({ entry, onClose, onSaved }: ModalProps) {
               style={{ ...inputStyle, resize: 'vertical', borderColor: errors.content ? '#E94560' : '#2A2A4A' }}
             />
             {errors.content && <p style={{ color: '#E94560', fontSize: '0.75rem', marginTop: '0.2rem' }}>{errors.content}</p>}
+          </div>
+
+          {/* URL */}
+          <div style={{ marginBottom: '0.75rem' }}>
+            <label style={labelStyle}>相關連結 <span style={{ color: '#9090B0', fontWeight: 400 }}>(選填)</span></label>
+            <input
+              type="url"
+              placeholder="https://..."
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              onFocus={handleFocusIn}
+              onBlur={handleFocusOut}
+              style={inputStyle}
+            />
           </div>
 
           {errors.submit && (
@@ -643,6 +666,7 @@ export default function KnowledgeBoard() {
   const [contributorFilter, setContributorFilter] = useState<string>('');
   const [tagFilter, setTagFilter] = useState<string>('');
   const [availableTags, setAvailableTags] = useState<Tag[]>([]);
+  const [members, setMembers] = useState<{ id: string; name: string; avatar: string }[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingEntry, setEditingEntry] = useState<KnowledgeEntry | null>(null);
   const [deletingEntry, setDeletingEntry] = useState<KnowledgeEntry | null>(null);
@@ -682,6 +706,17 @@ export default function KnowledgeBoard() {
 
   useEffect(() => {
     fetchTags();
+  }, []);
+
+  useEffect(() => {
+    async function fetchMembers() {
+      try {
+        const res = await fetch('/api/members');
+        const data = await res.json();
+        if (data.ok) setMembers(data.members);
+      } catch { /* silent */ }
+    }
+    fetchMembers();
   }, []);
 
   async function toggleFavorite(entry: KnowledgeEntry) {
@@ -810,7 +845,7 @@ export default function KnowledgeBoard() {
           }}
         >
           <option value="">全部成員</option>
-          {MEMBERS.map((m) => (
+          {members.map((m) => (
             <option key={m.id} value={m.id} style={{ background: '#12122A' }}>
               {m.avatar} {m.name}
             </option>

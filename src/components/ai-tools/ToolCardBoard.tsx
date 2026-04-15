@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@/components/auth/useAuth';
 import { timeAgo } from '@/lib/time';
-import { MEMBERS } from '@/lib/constants';
 import { ROLE_LEVEL } from '@/lib/auth';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -30,6 +29,7 @@ interface Tool {
   updated_at: string;
   tags: Tag[];
   is_favorited?: boolean;
+  github_url?: string;
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -194,6 +194,14 @@ function ToolModal({ tool, onClose, onSaved }: ModalProps) {
               onChange={e => setUrl(e.target.value)} onFocus={handleFocusIn} onBlur={handleFocusOut}
               style={{ ...inputStyle, borderColor: errors.url ? '#E94560' : '#2A2A4A' }} />
             {errors.url && <p style={{ color: '#E94560', fontSize: '0.75rem', marginTop: '0.2rem' }}>{errors.url}</p>}
+          </div>
+
+          {/* GitHub URL */}
+          <div style={{ marginBottom: '0.75rem' }}>
+            <label style={labelStyle}>GitHub Repo <span style={{ color: '#9090B0', fontWeight: 400 }}>(選填)</span></label>
+            <input type="url" placeholder="https://github.com/..." value={githubUrl}
+              onChange={e => setGithubUrl(e.target.value)} onFocus={handleFocusIn} onBlur={handleFocusOut}
+              style={inputStyle} />
           </div>
 
           {/* Description */}
@@ -529,6 +537,7 @@ export default function ToolCardBoard() {
   const [contributorFilter, setContributorFilter] = useState<string>('');
   const [tagFilter, setTagFilter] = useState<string>('');
   const [availableTags, setAvailableTags] = useState<Tag[]>([]);
+  const [members, setMembers] = useState<{ id: string; name: string; avatar: string }[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingTool, setEditingTool] = useState<Tool | null>(null);
   const [deletingTool, setDeletingTool] = useState<Tool | null>(null);
@@ -666,7 +675,7 @@ export default function ToolCardBoard() {
           }}
         >
           <option value="">全部成員</option>
-          {MEMBERS.map((m) => (
+          {members.map((m) => (
             <option key={m.id} value={m.id} style={{ background: '#12122A' }}>
               {m.avatar} {m.name}
             </option>
