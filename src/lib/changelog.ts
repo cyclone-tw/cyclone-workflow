@@ -10,6 +10,12 @@ export const CHANGELOG: ChangelogEntry[] = [
     date: '2026-04-15 17:45',
     changes: [
       'feat(#51): 討論區留言編輯功能 — 作者/管理員可編輯、顯示已編輯標記、PATCH /api/messages/:id',
+      'feat(#50 Phase2): 成員個人化欄位 — display_name、emoji、color、bio (ALTER TABLE migration)',
+      'feat(#50 Phase2): Admin 可編輯成員個人化欄位 — EditMemberForm 擴充',
+      'feat(#50 Phase2): Dashboard 個人資料設定 — PATCH /api/user/profile + 編輯器 UI',
+      'feat(#50 Phase2): 團隊頁面動態化 — TeamBoard client fetch /api/members',
+      'feat(#50 Phase2): /api/members 回傳 display_name、emoji、bio',
+      'feat(#50 Phase2): /api/auth/me 回傳新個人化欄位',
     ],
   },
   {

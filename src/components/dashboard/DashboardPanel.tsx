@@ -590,6 +590,31 @@ export default function DashboardPanel() {
           </div>
         </div>
       )}
+
+      <DashboardFormStyles />
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Shared form styles (duplicated here since not in global.css)
+// ---------------------------------------------------------------------------
+function DashboardFormStyles() {
+  return (
+    <style>{`
+      .form-input {
+        width: 100%;
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.5rem;
+        background: var(--color-bg-dark);
+        border: 1px solid var(--color-border);
+        color: var(--color-text-primary);
+        font-size: 0.875rem;
+      }
+      .form-input:focus {
+        outline: 2px solid var(--color-primary);
+        outline-offset: -1px;
+      }
+    `}</style>
   );
 }
