@@ -155,9 +155,11 @@ export const onRequestDelete: PagesFunction<Env> = async (context) => {
       });
     }
 
-    // Delete related likes first, then the message
-    await db.execute({ sql: 'DELETE FROM discussion_likes WHERE message_id = ?', args: [id] });
-    await db.execute({ sql: 'DELETE FROM messages WHERE id = ?', args: [id] });
+    // Soft delete: set deleted_at and deleted_by instead of actually deleting
+    await db.execute({
+      sql: `UPDATE messages SET deleted_at = datetime('now'), deleted_by = ? WHERE id = ?`,
+      args: [user.id, id],
+    });
 
     return new Response(JSON.stringify({ ok: true }), {
       headers: { 'Content-Type': 'application/json' },

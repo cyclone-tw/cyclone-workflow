@@ -2,10 +2,10 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
-import DOMPurify from 'dompurify';
 import { useAuth } from '@/components/auth/useAuth';
 import { ROLE_LEVEL } from '@/lib/auth';
 import { timeAgo } from '@/lib/time';
+import { sanitizeMarkdown, sanitizeUrl, sanitizeImgSrc } from '@/lib/markdown';
 
 interface Message {
   id: number;
@@ -18,6 +18,8 @@ interface Message {
   edited_at: string | null;
   pinned: number;
   like_count: number;
+  deleted_at: string | null;
+  deleted_by: string | null;
 }
 
 const CATEGORIES = ['閒聊', '成果分享', '問題', '建議'];
@@ -65,7 +67,6 @@ function MessageCard({
   );
   const canPin = currentUser &&
     (ROLE_LEVEL[currentUser.effectiveRole] ?? 0) >= (ROLE_LEVEL['admin'] ?? 0);
-
   const handlePinToggle = async () => {
     if (pinLoading) return;
     const nextPinned = msg.pinned ? 0 : 1;
@@ -217,12 +218,28 @@ function MessageCard({
             </div>
           </div>
         </div>
-      ) : (
+      ) : msg.deleted_at ? (
         <>
           <div
-            className="text-sm leading-relaxed break-words prose prose-sm max-w-none"
-            style={{ color: 'var(--color-text-secondary)', overflowWrap: 'anywhere' }}
+            className="text-sm leading-relaxed"
+            style={{
+              color: 'var(--color-text-muted)',
+              background: 'rgba(255,77,106,0.05)',
+              border: '1px solid rgba(255,77,106,0.15)',
+              borderRadius: '0.5rem',
+              padding: '0.75rem 1rem',
+              fontStyle: 'italic',
+            }}
           >
+            此留言已被刪除
+          </div>
+        </>
+      ) : (
+            <>
+            <div
+              className="text-sm leading-relaxed break-words prose prose-sm max-w-none"
+              style={{ color: 'var(--color-text-secondary)', overflowWrap: 'anywhere' }}
+            >
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               rehypePlugins={[rehypeRaw]}
@@ -252,11 +269,9 @@ function MessageCard({
                   );
                 },
                 a({ href, children, ...props }) {
-                  if (!href) return <span {...props}>{children}</span>;
-                  const safe = DOMPurify.sanitize(href, { RETURN_TRUSTED_TYPE: false }) as string;
                   return (
                     <a
-                      href={safe}
+                      href={href ? sanitizeUrl(href) : '#'}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="underline hover:opacity-80"
@@ -267,9 +282,20 @@ function MessageCard({
                     </a>
                   );
                 },
+                img({ src, alt, ...props }) {
+                  if (!src) return null;
+                  return (
+                    <img
+                      src={sanitizeImgSrc(src)}
+                      alt={alt || ''}
+                      style={{ maxWidth: '100%', height: 'auto', borderRadius: '0.5rem' }}
+                      {...props}
+                    />
+                  );
+                },
               }}
             >
-              {msg.content}
+              {sanitize(msg.content)}
             </ReactMarkdown>
           </div>
           <div className="flex items-center justify-end mt-2 gap-2">
@@ -541,7 +567,10 @@ export default function MessageBoard() {
       const res = await fetch(`/api/messages/${messageId}`, { method: 'DELETE' });
       const data = await res.json();
       if (data.ok) {
-        setMessages((prev) => prev.filter((m) => m.id !== messageId));
+        // Soft delete: mark locally so placeholder renders
+        setMessages((prev) => prev.map((m) =>
+          m.id === messageId ? { ...m, deleted_at: new Date().toISOString(), deleted_by: user?.id ?? null } : m
+        ));
       } else {
         setError(data.error || '刪除失敗');
       }
