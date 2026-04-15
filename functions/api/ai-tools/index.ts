@@ -141,9 +141,30 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       });
     }
 
+    // Validate URL format
+    const trimmedUrl = url.trim();
+    if (!trimmedUrl.startsWith('http://') && !trimmedUrl.startsWith('https://')) {
+      return new Response(JSON.stringify({ error: '連結必須以 http:// 或 https:// 開頭' }), {
+        status: 400, headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     const db = getDb(context.env);
     await db.execute({ sql: INIT_SQL, args: [] });
     await ensureMigration(db);
+
+    // Validate wish_id: submitter must be a claimer of that wish
+    if (wish_id?.trim()) {
+      const claimCheck = await db.execute({
+        sql: `SELECT 1 FROM wish_claimers WHERE wish_id = ? AND user_id = ? AND status = 'claimed'`,
+        args: [wish_id.trim(), user.id],
+      });
+      if (claimCheck.rows.length === 0) {
+        return new Response(JSON.stringify({ error: '無效的許願卡或非認領者' }), {
+          status: 403, headers: { 'Content-Type': 'application/json' },
+        });
+      }
+    }
 
     const result = await db.execute({
       sql: `INSERT INTO ai_tools (name, description, url, category, author, author_tag, contributor_id, wish_id)
@@ -151,7 +172,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       args: [
         name.trim(),
         description.trim(),
-        url.trim(),
+        trimmedUrl,
         category || 'other',
         (author || user.name).trim(),
         author_tag?.trim() || '',

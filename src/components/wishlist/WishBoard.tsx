@@ -773,7 +773,7 @@ function WishCard({ wish, user, onRefresh, onDelete }: { wish: Wish; user: Retur
                 {wish.linked_tools.map((tool) => (
                   <a
                     key={tool.id}
-                    href={tool.url}
+                    href={tool.url?.startsWith('http') ? tool.url : '#'}
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{

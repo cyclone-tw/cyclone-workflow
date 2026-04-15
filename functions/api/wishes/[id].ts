@@ -259,6 +259,13 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
       });
       for (const row of claimersResult.rows) {
         const claimerId = row.user_id as string;
+        // Idempotent: skip if points already awarded for this wish+claimer
+        const existingPoints = await db.execute({
+          sql: `SELECT id FROM points_ledger WHERE user_id = ? AND ref_type = 'wish' AND ref_id = ?`,
+          args: [claimerId, id],
+        });
+        if (existingPoints.rows.length > 0) continue;
+
         const toolCheck = await db.execute({
           sql: `SELECT id FROM ai_tools WHERE wish_id = ? AND contributor_id = ? LIMIT 1`,
           args: [id, claimerId],
