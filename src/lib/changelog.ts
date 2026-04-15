@@ -7,6 +7,13 @@ export interface ChangelogEntry {
 export const CHANGELOG: ChangelogEntry[] = [
   {
     version: '',
+    date: '2026-04-15 17:45',
+    changes: [
+      'feat(#51): 討論區留言編輯功能 — 作者/管理員可編輯、顯示已編輯標記、PATCH /api/messages/:id',
+    ],
+  },
+  {
+    version: '',
     date: '2026-04-15 16:25',
     changes: [
       'feat(#50): 知識庫成員篩選改 API — /api/members 動態取得未封存成員',
