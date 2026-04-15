@@ -83,6 +83,7 @@ export const NAV_ITEMS = [
   { label: 'AI工具箱', href: '/ai-tools', icon: '🤖' },
   { label: '管家', href: '/agent', icon: '🎩' },
   { label: '許願樹', href: '/wishlist', icon: '🌳' },
+  { label: '成員聲音', href: '/member-voices', icon: '📣' },
   { label: '討論', href: '/discuss', icon: '💬' },
   { label: 'Issues', href: '/issue', icon: '📋' },
   { label: 'Bug', href: '/bug', icon: '🐛' },
