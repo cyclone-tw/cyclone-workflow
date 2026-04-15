@@ -530,7 +530,7 @@ function WishCard({ wish, user, onRefresh, onDelete }: { wish: Wish; user: Retur
               whiteSpace: 'nowrap',
             }}
           >
-            {CATEGORY_CONFIG[wish.category].label}
+            {(CATEGORY_CONFIG[wish.category] || CATEGORY_CONFIG.personal).label}
           </span>
         </div>
         {(isWisher || isAdminUser) && (

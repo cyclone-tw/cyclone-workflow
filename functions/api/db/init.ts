@@ -259,9 +259,34 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     } catch { /* no legacy claimers to migrate */ }
 
     // --- Migrate wish categories: site → feature ---
+    // Must rebuild table because CHECK(category IN ('personal','site')) blocks UPDATE to 'feature'
     try {
-      await db.execute({ sql: `UPDATE wishes SET category = 'feature' WHERE category = 'site'`, args: [] });
-    } catch { /* no rows or already migrated */ }
+      await db.execute({ sql: `CREATE TABLE IF NOT EXISTS wishes_new (
+        id TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        description TEXT NOT NULL,
+        category TEXT DEFAULT 'personal' CHECK(category IN ('personal', 'feature', 'teaching')),
+        status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'claimed', 'in-progress', 'completed')),
+        wisher_id TEXT NOT NULL REFERENCES users(id),
+        claimer_id TEXT REFERENCES users(id),
+        icon TEXT DEFAULT '✨',
+        points INTEGER DEFAULT 10,
+        created_at TEXT DEFAULT (datetime('now')),
+        updated_at TEXT DEFAULT (datetime('now'))
+      )`, args: [] });
+      await db.execute({ sql: `INSERT OR IGNORE INTO wishes_new (id, title, description, category, status, wisher_id, claimer_id, icon, points, created_at, updated_at)
+        SELECT id, title, description,
+          CASE WHEN category = 'site' THEN 'feature' ELSE category END,
+          status, wisher_id, claimer_id, icon, points, created_at, updated_at
+        FROM wishes`, args: [] });
+      // Verify data copied before dropping
+      const newCount = await db.execute({ sql: `SELECT count(*) as cnt FROM wishes_new`, args: [] });
+      const oldCount = await db.execute({ sql: `SELECT count(*) as cnt FROM wishes`, args: [] });
+      if (Number(newCount.rows[0].cnt) >= Number(oldCount.rows[0].cnt)) {
+        await db.execute({ sql: `DROP TABLE wishes`, args: [] });
+        await db.execute({ sql: `ALTER TABLE wishes_new RENAME TO wishes`, args: [] });
+      }
+    } catch { /* already migrated or no old table */ }
 
     for (const m of migrations) {
       try { await db.execute({ sql: m.sql, args: [] }); } catch { /* column already exists */ }
