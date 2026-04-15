@@ -6,6 +6,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: 'v20260414.1454',
+    date: '2026-04-15 15:30',
+    changes: [
+      'fix(#70): Issue 頁面留言權限控制 — 未登入隱藏輸入框並顯示登入提示，登入後自動帶入用戶身份',
+      'fix(#70): POST /api/issues/:id/comments 新增 requireAuth 驗證，禁止匿名留言',
+    ],
+  },
+  {
     version: 'v20260414.1451',
     date: '2026-04-14 23:55',
     changes: [
