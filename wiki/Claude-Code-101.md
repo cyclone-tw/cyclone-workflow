@@ -42,8 +42,8 @@ Claude Code 會自動讀取專案根目錄的設定檔，包括：
 
 | 文件 | 用途 | 為什麼重要 |
 |------|------|-----------|
-| [`AGENTS.md`](../AGENTS.md) | 全 AI 共用規則 | 分支命名、PR 流程、禁止直推 main、風格敏感任務誰來做 |
-| [`CLAUDE.md`](../CLAUDE.md) | Claude Code 專屬 | Changelog 維護、superpowers 使用時機、subagent 路由 |
+| [`AGENTS.md`](https://github.com/cyclone-tw/cyclone-workflow/blob/main/AGENTS.md) | 全 AI 共用規則 | 分支命名、PR 流程、禁止直推 main、風格敏感任務誰來做 |
+| [`CLAUDE.md`](https://github.com/cyclone-tw/cyclone-workflow/blob/main/CLAUDE.md) | Claude Code 專屬 | Changelog 維護、superpowers 使用時機、subagent 路由 |
 | [`wiki/Home.md`](Home) | Wiki 導覽 | 快速找到架構、API、資料庫、權限等文件 |
 
 ### 特別注意 🚨
