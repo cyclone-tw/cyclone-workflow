@@ -1,7 +1,14 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import DOMPurify from 'dompurify';
 import { useAuth } from '@/components/auth/useAuth';
 import { timeAgo } from '@/lib/time';
 
+
+// ─── Helpers ───────────────────────────────────────────────────────────────────
+
+function sanitizeUrl(raw: string): string {
+  return DOMPurify.sanitize(raw || '', { RETURN_TRUSTED_TYPE: false }) as string;
+}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

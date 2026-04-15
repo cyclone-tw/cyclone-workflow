@@ -1,5 +1,4 @@
 import { createClient } from '@libsql/client/web';
-import { getSessionUser } from '../../../src/lib/auth.ts';
 
 interface Env {
   TURSO_DATABASE_URL: string;
@@ -12,7 +11,6 @@ function getDb(env: Env) {
 
 export const onRequestGet: PagesFunction<Env> = async (context) => {
   try {
-    await getSessionUser(context.request, context.env); // verify auth but don't require it
     const db = getDb(context.env);
 
     const result = await db.execute({

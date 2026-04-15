@@ -19,6 +19,7 @@
     "@libsql/client": "^0.17.2",
     "@playwright/test": "^1.59.1",
     "@types/bun": "latest",
+    "@types/dompurify": "^3.2.0",
     "playwright": "^1.59.1",
     "vitest": "^4.1.4"
   },
@@ -31,6 +32,7 @@
     "@astrojs/tailwind": "^6.0.2",
     "@tailwindcss/vite": "^4.2.2",
     "astro": "^6.1.4",
+    "dompurify": "^3.4.0",
     "nanoid": "^5.1.7",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",

@@ -67,6 +67,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       content: row.content,
       category: row.category,
       icon: row.icon,
+      url: row.url,
       contributor_id: row.contributor_id,
       contributor_name: row.contributor_name,
       contributor_avatar: row.contributor_avatar,
@@ -161,5 +162,40 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });
+  }
+};
+
+// ─── PATCH /api/knowledge/:id ─────────────────────────────────────────────────
+
+export const onRequestPatch: PagesFunction<Env> = async (context) => {
+  try {
+    const user = await requireAuth(context.request, context.env);
+    const url = new URL(context.request.url);
+    const id = url.pathname.split('/').filter(Boolean).pop();
+    if (!id) return new Response(JSON.stringify({ ok: false, error: '缺少 ID' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+
+    const body = (await context.request.json()) as Record<string, string>;
+    const { title, content, category, icon, url: entryUrl } = body;
+
+    if (!title?.trim() || !content?.trim()) {
+      return new Response(JSON.stringify({ ok: false, error: '請填寫標題和內容' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+    }
+
+    const validCategories = ['template', 'best-practice', 'qa', 'other'];
+    const finalCategory = validCategories.includes(category) ? category : 'other';
+
+    const db = getDb(context.env);
+    const now = new Date().toISOString();
+
+    await db.execute({
+      sql: `UPDATE knowledge_entries SET title=?, content=?, category=?, icon=?, updated_at=?, url=? WHERE id=? AND contributor_id=?`,
+      args: [title.trim(), content.trim(), finalCategory, icon?.trim() || '📘', now, entryUrl?.trim() || '', id, user.id],
+    });
+
+    return new Response(JSON.stringify({ ok: true }), { headers: { 'Content-Type': 'application/json' } });
+  } catch (err: unknown) {
+    if (err instanceof Response) return err;
+    const msg = err instanceof Error ? err.message : 'Unknown error';
+    return new Response(JSON.stringify({ ok: false, error: msg }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 };
