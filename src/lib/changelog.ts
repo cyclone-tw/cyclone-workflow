@@ -6,6 +6,13 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '',
+    date: '2026-04-15 00:15',
+    changes: [
+      'fix(#69): 公告系統前台修正 — 移除 X 按鈕、顯示 3 則公告、支援換行、字體放大',
+    ],
+  },
+  {
     version: 'v20260414.1451',
     date: '2026-04-14 23:55',
     changes: [
