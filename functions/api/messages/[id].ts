@@ -86,6 +86,13 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
       });
     }
 
+    if (wantsPinned && pinned !== 0 && pinned !== 1) {
+      return new Response(JSON.stringify({ ok: false, error: 'pinned 只能是 0 或 1' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     const updates: string[] = [];
     const args: (string | number)[] = [];
 

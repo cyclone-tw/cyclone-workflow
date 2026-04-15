@@ -56,6 +56,7 @@ function MessageCard({
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(msg.content);
   const [editSaving, setEditSaving] = useState(false);
+  const [pinLoading, setPinLoading] = useState(false);
 
   const canModify = currentUser && (
     msg.author_id === currentUser.id ||
@@ -65,7 +66,9 @@ function MessageCard({
     (ROLE_LEVEL[currentUser.effectiveRole] ?? 0) >= (ROLE_LEVEL['admin'] ?? 0);
 
   const handlePinToggle = async () => {
+    if (pinLoading) return;
     const nextPinned = msg.pinned ? 0 : 1;
+    setPinLoading(true);
     try {
       const res = await fetch(`/api/messages/${msg.id}`, {
         method: 'PATCH',
@@ -80,6 +83,8 @@ function MessageCard({
       }
     } catch {
       alert('網路錯誤，無法置頂');
+    } finally {
+      setPinLoading(false);
     }
   };
 
@@ -270,16 +275,18 @@ function MessageCard({
             {canPin && (
               <button
                 onClick={handlePinToggle}
+                disabled={pinLoading}
                 className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs transition-all hover:opacity-80"
                 style={{
                   background: msg.pinned ? 'rgba(255, 193, 7, 0.1)' : 'transparent',
                   color: msg.pinned ? '#FFC107' : 'var(--color-text-muted)',
                   border: 'none',
-                  cursor: 'pointer',
+                  cursor: pinLoading ? 'not-allowed' : 'pointer',
+                  opacity: pinLoading ? 0.5 : 1,
                 }}
                 title={msg.pinned ? '取消置頂' : '置頂留言'}
               >
-                {msg.pinned ? '🔽 取消置頂' : '📌 置頂'}
+                {pinLoading ? '處理中...' : (msg.pinned ? '🔽 取消置頂' : '📌 置頂')}
               </button>
             )}
             {canModify && (
