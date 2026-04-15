@@ -15,6 +15,7 @@ interface Message {
   tag: string;
   category: string;
   created_at: string;
+  edited_at: string | null;
   like_count: number;
 }
 
@@ -36,6 +37,7 @@ function MessageCard({
   likeLoadingIds,
   currentUser,
   onDelete,
+  onEdit,
 }: {
   msg: Message;
   likedIds: Set<number>;
@@ -44,15 +46,51 @@ function MessageCard({
   likeLoadingIds: Set<number>;
   currentUser: { id: string; effectiveRole: string } | null;
   onDelete: (messageId: number) => void;
+  onEdit: (messageId: number, newContent: string) => void;
 }) {
   const color = CATEGORY_COLORS[msg.category] || 'var(--color-primary)';
   const liked = likedIds.has(msg.id);
   const isLikeLoading = likeLoadingIds.has(msg.id);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editContent, setEditContent] = useState(msg.content);
+  const [editSaving, setEditSaving] = useState(false);
 
-  const canDelete = currentUser && (
+  const canModify = currentUser && (
     msg.author_id === currentUser.id ||
     (ROLE_LEVEL[currentUser.effectiveRole] ?? 0) >= (ROLE_LEVEL['admin'] ?? 0)
   );
+
+  const handleSave = async () => {
+    const trimmed = editContent.trim();
+    if (!trimmed || trimmed === msg.content) {
+      setIsEditing(false);
+      return;
+    }
+    setEditSaving(true);
+    try {
+      const res = await fetch(`/api/messages/${msg.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: trimmed }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        onEdit(msg.id, trimmed);
+        setIsEditing(false);
+      } else {
+        alert(data.error || '儲存失敗');
+      }
+    } catch {
+      alert('網路錯誤，無法儲存');
+    } finally {
+      setEditSaving(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setEditContent(msg.content);
+    setIsEditing(false);
+  };
 
   return (
     <div
@@ -92,97 +130,166 @@ function MessageCard({
           </span>
           <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
             {timeAgo(msg.created_at)}
+            {msg.edited_at && ' (已編輯)'}
           </span>
         </div>
       </div>
-      <div
-        className="text-sm leading-relaxed break-words prose prose-sm max-w-none"
-        style={{ color: 'var(--color-text-secondary)', overflowWrap: 'anywhere' }}
-      >
-        <ReactMarkdown
-          remarkPlugins={[remarkGfm]}
-          rehypePlugins={[rehypeRaw]}
-          components={{
-            code({ className, children, ...props }) {
-              const match = /language-(\w+)/.exec(className || '');
-              const isInline = !match && !String(children).includes('\n');
-              if (isInline) {
-                return (
-                  <code
-                    className="px-1.5 py-0.5 rounded text-xs font-mono"
-                    style={{ background: 'rgba(255,255,255,0.08)', color: 'var(--color-neon-green)' }}
-                    {...props}
-                  >
-                    {children}
-                  </code>
-                );
-              }
-              return (
-                <code
-                  className="block p-3 rounded-lg text-xs font-mono overflow-x-auto"
-                  style={{ background: 'rgba(255,255,255,0.06)', color: 'var(--color-neon-blue)' }}
-                  {...props}
-                >
-                  {children}
-                </code>
-              );
-            },
-            a({ href, children, ...props }) {
-              if (!href) return <span {...props}>{children}</span>;
-              const safe = DOMPurify.sanitize(href, { RETURN_TRUSTED_TYPE: false }) as string;
-              return (
-                <a
-                  href={safe}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline hover:opacity-80"
-                  style={{ color: 'var(--color-neon-blue)' }}
-                  {...props}
-                >
-                  {children}
-                </a>
-              );
-            },
-          }}
-        >
-          {msg.content}
-        </ReactMarkdown>
-      </div>
-      <div className="flex items-center justify-end mt-2 gap-2">
-        {canDelete && (
-          <button
-            onClick={() => {
-              if (confirm('確定要刪除這則留言嗎？')) onDelete(msg.id);
-            }}
-            className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs transition-all hover:opacity-80"
+
+      {isEditing ? (
+        <div className="space-y-2">
+          <textarea
+            value={editContent}
+            onChange={(e) => setEditContent(e.target.value)}
+            disabled={editSaving}
+            rows={3}
+            maxLength={2000}
+            className="w-full px-3 py-2 rounded-lg text-sm outline-none resize-y"
             style={{
-              background: 'transparent',
-              color: 'var(--color-text-muted)',
-              border: 'none',
-              cursor: 'pointer',
+              background: 'var(--color-bg-surface)',
+              border: '1px solid var(--color-border)',
+              color: 'var(--color-text-primary)',
             }}
-            title="刪除留言"
+          />
+          <div className="flex items-center justify-between">
+            <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+              {editContent.length}/2000
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleCancel}
+                disabled={editSaving}
+                className="px-3 py-1.5 rounded-lg text-xs transition-opacity"
+                style={{
+                  background: 'transparent',
+                  color: 'var(--color-text-muted)',
+                  border: '1px solid var(--color-border)',
+                  opacity: editSaving ? 0.6 : 1,
+                }}
+              >
+                取消
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={editSaving}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium transition-opacity"
+                style={{
+                  background: 'var(--color-primary)',
+                  color: '#fff',
+                  opacity: editSaving ? 0.6 : 1,
+                }}
+              >
+                {editSaving ? '儲存中...' : '儲存'}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div
+            className="text-sm leading-relaxed break-words prose prose-sm max-w-none"
+            style={{ color: 'var(--color-text-secondary)', overflowWrap: 'anywhere' }}
           >
-            🗑️ 刪除
-          </button>
-        )}
-        <button
-          onClick={() => onToggleLike(msg.id, liked)}
-          disabled={!isLoggedIn || isLikeLoading}
-          className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs transition-all"
-          style={{
-            background: liked ? 'rgba(255, 77, 106, 0.1)' : 'transparent',
-            color: liked ? '#FF4D6A' : 'var(--color-text-muted)',
-            cursor: !isLoggedIn || isLikeLoading ? 'not-allowed' : 'pointer',
-            opacity: !isLoggedIn ? 0.5 : 1,
-            border: 'none',
-          }}
-          title={!isLoggedIn ? '請先登入才能按讚' : liked ? '收回讚' : '按讚'}
-        >
-          <span style={{ fontSize: '14px' }}>{liked ? '❤️' : '🤍'}</span>
-          <span>{msg.like_count > 0 ? msg.like_count : ''}</span>
-        </button>
-      </div>
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              rehypePlugins={[rehypeRaw]}
+              components={{
+                code({ className, children, ...props }) {
+                  const match = /language-(\w+)/.exec(className || '');
+                  const isInline = !match && !String(children).includes('\n');
+                  if (isInline) {
+                    return (
+                      <code
+                        className="px-1.5 py-0.5 rounded text-xs font-mono"
+                        style={{ background: 'rgba(255,255,255,0.08)', color: 'var(--color-neon-green)' }}
+                        {...props}
+                      >
+                        {children}
+                      </code>
+                    );
+                  }
+                  return (
+                    <code
+                      className="block p-3 rounded-lg text-xs font-mono overflow-x-auto"
+                      style={{ background: 'rgba(255,255,255,0.06)', color: 'var(--color-neon-blue)' }}
+                      {...props}
+                    >
+                      {children}
+                    </code>
+                  );
+                },
+                a({ href, children, ...props }) {
+                  if (!href) return <span {...props}>{children}</span>;
+                  const safe = DOMPurify.sanitize(href, { RETURN_TRUSTED_TYPE: false }) as string;
+                  return (
+                    <a
+                      href={safe}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline hover:opacity-80"
+                      style={{ color: 'var(--color-neon-blue)' }}
+                      {...props}
+                    >
+                      {children}
+                    </a>
+                  );
+                },
+              }}
+            >
+              {msg.content}
+            </ReactMarkdown>
+          </div>
+          <div className="flex items-center justify-end mt-2 gap-2">
+            {canModify && (
+              <button
+                onClick={() => setIsEditing(true)}
+                className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs transition-all hover:opacity-80"
+                style={{
+                  background: 'transparent',
+                  color: 'var(--color-text-muted)',
+                  border: 'none',
+                  cursor: 'pointer',
+                }}
+                title="編輯留言"
+              >
+                ✏️ 編輯
+              </button>
+            )}
+            {canModify && (
+              <button
+                onClick={() => {
+                  if (confirm('確定要刪除這則留言嗎？')) onDelete(msg.id);
+                }}
+                className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs transition-all hover:opacity-80"
+                style={{
+                  background: 'transparent',
+                  color: 'var(--color-text-muted)',
+                  border: 'none',
+                  cursor: 'pointer',
+                }}
+                title="刪除留言"
+              >
+                🗑️ 刪除
+              </button>
+            )}
+            <button
+              onClick={() => onToggleLike(msg.id, liked)}
+              disabled={!isLoggedIn || isLikeLoading}
+              className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs transition-all"
+              style={{
+                background: liked ? 'rgba(255, 77, 106, 0.1)' : 'transparent',
+                color: liked ? '#FF4D6A' : 'var(--color-text-muted)',
+                cursor: !isLoggedIn || isLikeLoading ? 'not-allowed' : 'pointer',
+                opacity: !isLoggedIn ? 0.5 : 1,
+                border: 'none',
+              }}
+              title={!isLoggedIn ? '請先登入才能按讚' : liked ? '收回讚' : '按讚'}
+            >
+              <span style={{ fontSize: '14px' }}>{liked ? '❤️' : '🤍'}</span>
+              <span>{msg.like_count > 0 ? msg.like_count : ''}</span>
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -384,6 +491,14 @@ export default function MessageBoard() {
     }
   };
 
+  const handleEdit = (messageId: number, newContent: string) => {
+    setMessages((prev) =>
+      prev.map((m) =>
+        m.id === messageId ? { ...m, content: newContent, edited_at: new Date().toISOString() } : m
+      )
+    );
+  };
+
   return (
     <div className="space-y-6">
       {/* Post form — login required */}
@@ -558,6 +673,7 @@ export default function MessageBoard() {
               likeLoadingIds={likeLoadingIds}
               currentUser={user}
               onDelete={handleDelete}
+              onEdit={handleEdit}
             />
           ))}
         </div>

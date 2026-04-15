@@ -15,6 +15,68 @@ function isAdminOrAbove(user: { effectiveRole: string }): boolean {
 }
 
 // ---------------------------------------------------------------------------
+// PATCH /api/messages/:id — only author or admin+
+// ---------------------------------------------------------------------------
+
+export const onRequestPatch: PagesFunction<Env> = async (context) => {
+  try {
+    const user = await requireAuth(context.request, context.env);
+    const id = context.params.id as string;
+    const db = getDb(context.env);
+
+    const existing = await db.execute({
+      sql: 'SELECT author_id FROM messages WHERE id = ?',
+      args: [id],
+    });
+
+    if (!existing.rows.length) {
+      return new Response(JSON.stringify({ ok: false, error: '找不到此留言' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    const canEdit = existing.rows[0].author_id === user.id || isAdminOrAbove(user);
+    if (!canEdit) {
+      return new Response(JSON.stringify({ ok: false, error: '權限不足' }), {
+        status: 403,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    const { content } = (await context.request.json()) as { content?: string };
+    if (!content?.trim()) {
+      return new Response(JSON.stringify({ ok: false, error: '請填寫留言內容' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    if (content.length > 2000) {
+      return new Response(JSON.stringify({ ok: false, error: '留言不得超過 2000 字' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    await db.execute({
+      sql: `UPDATE messages SET content = ?, edited_at = datetime('now') WHERE id = ?`,
+      args: [content.trim(), id],
+    });
+
+    return new Response(JSON.stringify({ ok: true }), {
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } catch (err: unknown) {
+    if (err instanceof Response) return err;
+    const msg = err instanceof Error ? err.message : 'Unknown error';
+    return new Response(JSON.stringify({ ok: false, error: msg }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+};
+
+// ---------------------------------------------------------------------------
 // DELETE /api/messages/:id — only author or admin+
 // ---------------------------------------------------------------------------
 

@@ -245,6 +245,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       { sql: `ALTER TABLE users ADD COLUMN status TEXT NOT NULL DEFAULT 'active'`, note: 'users.status' },
       { sql: `ALTER TABLE users ADD COLUMN archived_at TEXT`, note: 'users.archived_at' },
       { sql: `ALTER TABLE messages ADD COLUMN author_id TEXT REFERENCES users(id)`, note: 'messages.author_id' },
+      { sql: `ALTER TABLE messages ADD COLUMN edited_at TEXT`, note: 'messages.edited_at' },
       { sql: `ALTER TABLE tags ADD COLUMN sort_order INTEGER DEFAULT 0`, note: 'tags.sort_order' },
     ];
 
