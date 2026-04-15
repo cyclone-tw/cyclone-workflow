@@ -44,23 +44,65 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
       });
     }
 
-    const { content } = (await context.request.json()) as { content?: string };
-    if (!content?.trim()) {
-      return new Response(JSON.stringify({ ok: false, error: '請填寫留言內容' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-    if (content.length > 2000) {
-      return new Response(JSON.stringify({ ok: false, error: '留言不得超過 2000 字' }), {
+    const body = (await context.request.json()) as { content?: string; pinned?: number };
+    const { content, pinned } = body;
+
+    const wantsContent = content !== undefined;
+    const wantsPinned = pinned !== undefined;
+
+    if (!wantsContent && !wantsPinned) {
+      return new Response(JSON.stringify({ ok: false, error: '請提供 content 或 pinned' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
       });
     }
 
+    if (wantsContent) {
+      const canEditContent = existing.rows[0].author_id === user.id || isAdminOrAbove(user);
+      if (!canEditContent) {
+        return new Response(JSON.stringify({ ok: false, error: '權限不足' }), {
+          status: 403,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      if (!content?.trim()) {
+        return new Response(JSON.stringify({ ok: false, error: '請填寫留言內容' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      if (content.length > 2000) {
+        return new Response(JSON.stringify({ ok: false, error: '留言不得超過 2000 字' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
+    if (wantsPinned && !isAdminOrAbove(user)) {
+      return new Response(JSON.stringify({ ok: false, error: '權限不足' }), {
+        status: 403,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    const updates: string[] = [];
+    const args: (string | number)[] = [];
+
+    if (wantsContent) {
+      updates.push('content = ?');
+      args.push(content.trim());
+      updates.push("edited_at = datetime('now')");
+    }
+    if (wantsPinned) {
+      updates.push('pinned = ?');
+      args.push(pinned);
+    }
+    args.push(id);
+
     await db.execute({
-      sql: `UPDATE messages SET content = ?, edited_at = datetime('now') WHERE id = ?`,
-      args: [content.trim(), id],
+      sql: `UPDATE messages SET ${updates.join(', ')} WHERE id = ?`,
+      args,
     });
 
     return new Response(JSON.stringify({ ok: true }), {

@@ -182,7 +182,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
           author_id TEXT REFERENCES users(id),
           content TEXT NOT NULL,
           tag TEXT DEFAULT '',
-          category TEXT DEFAULT '一般討論',
+          category TEXT DEFAULT '閒聊',
+          pinned INTEGER DEFAULT 0,
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )`,
         args: [],
@@ -246,6 +247,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       { sql: `ALTER TABLE users ADD COLUMN archived_at TEXT`, note: 'users.archived_at' },
       { sql: `ALTER TABLE messages ADD COLUMN author_id TEXT REFERENCES users(id)`, note: 'messages.author_id' },
       { sql: `ALTER TABLE messages ADD COLUMN edited_at TEXT`, note: 'messages.edited_at' },
+      { sql: `ALTER TABLE messages ADD COLUMN pinned INTEGER DEFAULT 0`, note: 'messages.pinned' },
       { sql: `ALTER TABLE tags ADD COLUMN sort_order INTEGER DEFAULT 0`, note: 'tags.sort_order' },
       { sql: `ALTER TABLE users ADD COLUMN display_name TEXT DEFAULT ''`, note: 'users.display_name' },
       { sql: `ALTER TABLE users ADD COLUMN emoji TEXT DEFAULT ''`, note: 'users.emoji' },
