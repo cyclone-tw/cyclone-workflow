@@ -144,6 +144,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
           icon TEXT DEFAULT '📘',
           contributor_id TEXT NOT NULL REFERENCES users(id),
           upvotes INTEGER DEFAULT 0,
+          url TEXT DEFAULT '',
           created_at TEXT DEFAULT (datetime('now')),
           updated_at TEXT DEFAULT (datetime('now'))
         )`,
@@ -253,6 +254,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       { sql: `ALTER TABLE users ADD COLUMN emoji TEXT DEFAULT ''`, note: 'users.emoji' },
       { sql: `ALTER TABLE users ADD COLUMN color TEXT DEFAULT '#6C63FF'`, note: 'users.color' },
       { sql: `ALTER TABLE users ADD COLUMN bio TEXT DEFAULT ''`, note: 'users.bio' },
+      { sql: `ALTER TABLE knowledge_entries ADD COLUMN url TEXT DEFAULT ''`, note: 'knowledge_entries.url' },
     ];
 
     // --- Migrate legacy wish.claimer_id → wish_claimers ---
