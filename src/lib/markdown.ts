@@ -1,0 +1,60 @@
+import DOMPurify from 'dompurify';
+
+// ─── Tag & Attribute Whitelist ──────────────────────────────────────────────
+
+const ALLOWED_TAGS = [
+  'p', 'br', 'strong', 'em', 'a', 'code', 'pre',
+  'ul', 'ol', 'li', 'blockquote', 'img',
+  'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+  'table', 'thead', 'tbody', 'th', 'td', 'tr',
+  'hr', 'del', 'input',
+  'span', 'div',
+];
+
+const ALLOWED_ATTR = [
+  'href', 'src', 'alt', 'title', 'class', 'target', 'rel',
+  'checked', 'disabled', 'type', 'colspan', 'rowspan', 'align',
+];
+
+const FORBID_TAGS = ['script', 'iframe', 'style', 'form', 'textarea', 'button'];
+
+// ─── URL Sanitization ───────────────────────────────────────────────────────
+
+const SAFE_PROTOCOLS = ['http:', 'https:'];
+
+export function sanitizeUrl(url: string | undefined): string {
+  if (!url) return '';
+  try {
+    const parsed = new URL(url, window.location.origin);
+    if (!SAFE_PROTOCOLS.includes(parsed.protocol)) return '';
+    return parsed.href;
+  } catch {
+    return '';
+  }
+}
+
+export function sanitizeImgSrc(src: string | undefined): string {
+  if (!src) return '';
+  try {
+    const parsed = new URL(src, window.location.origin);
+    // Only allow https images (no http, data:, blob:, etc.)
+    if (parsed.protocol !== 'https:') return '';
+    return parsed.href;
+  } catch {
+    return '';
+  }
+}
+
+// ─── Full Markdown Content Sanitization ─────────────────────────────────────
+
+export function sanitizeMarkdown(html: string): string {
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS,
+    ALLOWED_ATTR,
+    FORBID_TAGS,
+    FORBID_ATTR: ['style', 'onerror', 'onload', 'onclick', 'onmouseover'],
+    // Ban all on* event handler attributes
+    ALLOW_DATA_ATTR: false,
+    ADD_TAGS: [],
+  });
+}

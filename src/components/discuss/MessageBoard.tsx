@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
-import DOMPurify from 'dompurify';
+import { sanitizeUrl, sanitizeImgSrc } from '../../lib/markdown';
 import { useAuth } from '@/components/auth/useAuth';
 import { ROLE_LEVEL } from '@/lib/auth';
 import { timeAgo } from '@/lib/time';
@@ -252,7 +252,8 @@ function MessageCard({
                 },
                 a({ href, children, ...props }) {
                   if (!href) return <span {...props}>{children}</span>;
-                  const safe = DOMPurify.sanitize(href, { RETURN_TRUSTED_TYPE: false }) as string;
+                  const safe = sanitizeUrl(href);
+                  if (!safe) return <span {...props}>{children}</span>;
                   return (
                     <a
                       href={safe}
@@ -260,11 +261,15 @@ function MessageCard({
                       rel="noopener noreferrer"
                       className="underline hover:opacity-80"
                       style={{ color: 'var(--color-neon-blue)' }}
-                      {...props}
                     >
                       {children}
                     </a>
                   );
+                },
+                img({ src, alt, ...props }) {
+                  const safeSrc = sanitizeImgSrc(src);
+                  if (!safeSrc) return null;
+                  return <img src={safeSrc} alt={alt || ''} loading="lazy" style={{ maxWidth: '100%' }} />;
                 },
               }}
             >
