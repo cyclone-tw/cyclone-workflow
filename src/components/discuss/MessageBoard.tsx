@@ -21,6 +21,7 @@ interface Message {
 }
 
 const CATEGORIES = ['閒聊', '成果分享', '問題', '建議'];
+const SORT_OPTIONS = ['最新', '最舊', '最多回饋'] as const;
 
 const CATEGORY_COLORS: Record<string, string> = {
   '閒聊': 'var(--color-primary)',
@@ -354,6 +355,7 @@ export default function MessageBoard() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [filter, setFilter] = useState('全部');
+  const [sortBy, setSortBy] = useState<(typeof SORT_OPTIONS)[number]>('最新');
   const [likedIds, setLikedIds] = useState<Set<number>>(new Set());
   const [likeLoadingIds, setLikeLoadingIds] = useState<Set<number>>(new Set());
   const formRef = useRef<HTMLFormElement>(null);
@@ -526,6 +528,13 @@ export default function MessageBoard() {
   };
 
   const filtered = filter === '全部' ? messages : messages.filter((m) => m.category === filter);
+  const sortedFiltered = [...filtered].sort((a, b) => {
+    if (b.pinned !== a.pinned) return b.pinned - a.pinned;
+    if (sortBy === '最新') return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    if (sortBy === '最舊') return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+    if (sortBy === '最多回饋') return b.like_count - a.like_count;
+    return 0;
+  });
 
   const handleDelete = async (messageId: number) => {
     try {
@@ -681,26 +690,45 @@ export default function MessageBoard() {
         </form>
       ) : null}
 
-      {/* Filter tabs */}
-      <div className="flex flex-wrap gap-2">
-        {['全部', ...CATEGORIES].map((c) => {
-          const color = c === '全部' ? 'var(--color-text-muted)' : (CATEGORY_COLORS[c] || 'var(--color-primary)');
-          const active = filter === c;
-          return (
-            <button
-              key={c}
-              onClick={() => setFilter(c)}
-              className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
-              style={{
-                background: active ? `${color}20` : 'transparent',
-                color: active ? color : 'var(--color-text-muted)',
-                border: `1px solid ${active ? color : 'var(--color-border)'}`,
-              }}
-            >
-              {c} {c !== '全部' && `(${messages.filter((m) => m.category === c).length})`}
-            </button>
-          );
-        })}
+      {/* Filter tabs + Sort */}
+      <div className="flex flex-wrap items-center gap-3 justify-between">
+        <div className="flex flex-wrap gap-2">
+          {['全部', ...CATEGORIES].map((c) => {
+            const color = c === '全部' ? 'var(--color-text-muted)' : (CATEGORY_COLORS[c] || 'var(--color-primary)');
+            const active = filter === c;
+            return (
+              <button
+                key={c}
+                onClick={() => setFilter(c)}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+                style={{
+                  background: active ? `${color}20` : 'transparent',
+                  color: active ? color : 'var(--color-text-muted)',
+                  border: `1px solid ${active ? color : 'var(--color-border)'}`,
+                }}
+              >
+                {c} {c !== '全部' && `(${messages.filter((m) => m.category === c).length})`}
+              </button>
+            );
+          })}
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>排序</span>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as (typeof SORT_OPTIONS)[number])}
+            className="px-2 py-1.5 rounded-lg text-xs outline-none"
+            style={{
+              background: 'var(--color-bg-surface)',
+              border: '1px solid var(--color-border)',
+              color: 'var(--color-text-primary)',
+            }}
+          >
+            {SORT_OPTIONS.map((opt) => (
+              <option key={opt} value={opt}>{opt}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Messages list */}
@@ -708,7 +736,7 @@ export default function MessageBoard() {
         <div className="text-center py-12" style={{ color: 'var(--color-text-muted)' }}>
           載入留言中...
         </div>
-      ) : filtered.length === 0 ? (
+      ) : sortedFiltered.length === 0 ? (
         <div
           className="text-center py-12 rounded-xl"
           style={{
@@ -723,7 +751,7 @@ export default function MessageBoard() {
         </div>
       ) : (
         <div className="space-y-3">
-          {filtered.map((msg) => (
+          {sortedFiltered.map((msg) => (
             <MessageCard
               key={msg.id}
               msg={msg}
