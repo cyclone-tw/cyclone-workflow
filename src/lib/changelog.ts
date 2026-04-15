@@ -10,6 +10,8 @@ export const CHANGELOG: ChangelogEntry[] = [
     date: '2026-04-15 17:45',
     changes: [
       'security(#51-E4): 討論區 Markdown XSS 防護 — URL 白名單、標籤/屬性白名單、img src 限制 https',
+      'feat(#51): 討論區排序選項 — 支援最新 / 最舊 / 最多回饋，置頂留言始終在最上方',
+      'feat(#51): 討論區留言軟刪除 — 新增 deleted_at/deleted_by 欄位，軟刪除而非實體刪除',
       'feat(#51): 討論區留言編輯功能 — 作者/管理員可編輯、顯示已編輯標記、PATCH /api/messages/:id',
       'feat(#51): 討論區留言分類重設計 — 閒聊/成果分享/問題/建議',
       'feat(#51): 討論區置頂留言 — 管理員可置頂/取消置頂，置頂留言顯示於最上方',

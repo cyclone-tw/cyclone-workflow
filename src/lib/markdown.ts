@@ -18,12 +18,14 @@ const ALLOWED_ATTR = [
 
 const FORBID_TAGS = ['script', 'iframe', 'style', 'form', 'textarea', 'button'];
 
-// Block all on* event handler attributes globally
-DOMPurify.addHook('uponSanitizeAttribute', (_node, data) => {
-  if (data.attrName?.startsWith('on')) {
-    data.forceKeepAttr = false;
-  }
-});
+// Block all on* event handler attributes globally (browser only)
+if (typeof window !== 'undefined') {
+  DOMPurify.addHook('uponSanitizeAttribute', (_node, data) => {
+    if (data.attrName?.startsWith('on')) {
+      data.forceKeepAttr = false;
+    }
+  });
+}
 
 // ─── URL Sanitization ───────────────────────────────────────────────────────
 

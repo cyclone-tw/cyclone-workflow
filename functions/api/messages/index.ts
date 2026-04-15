@@ -26,6 +26,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
               FROM discussion_likes
               GROUP BY message_id
             ) lc ON lc.message_id = m.id
+            WHERE m.deleted_at IS NULL
             ORDER BY m.pinned DESC, m.created_at DESC LIMIT 100`,
       args: [],
     });
