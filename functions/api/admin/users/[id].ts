@@ -35,6 +35,10 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
       email?: string;
       discord_id?: string | null;
       status?: 'active' | 'pending';
+      display_name?: string;
+      emoji?: string;
+      color?: string;
+      bio?: string;
     };
 
     const updates: string[] = [];
@@ -88,6 +92,26 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
       }
       updates.push('status = ?');
       args.push(body.status);
+    }
+
+    if (body.display_name !== undefined) {
+      updates.push('display_name = ?');
+      args.push(body.display_name.trim());
+    }
+
+    if (body.emoji !== undefined) {
+      updates.push('emoji = ?');
+      args.push(body.emoji.trim());
+    }
+
+    if (body.color !== undefined) {
+      updates.push('color = ?');
+      args.push(body.color.trim());
+    }
+
+    if (body.bio !== undefined) {
+      updates.push('bio = ?');
+      args.push(body.bio.trim());
     }
 
     if (updates.length === 0) {

@@ -14,7 +14,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     const db = getDb(context.env);
 
     const result = await db.execute({
-      sql: `SELECT id, name, tag, role, avatar_url, color, effective_role
+      sql: `SELECT id, name, tag, role, avatar_url, color, effective_role, display_name, emoji, bio
             FROM users
             WHERE status = 'active' AND archived_at IS NULL
             ORDER BY effective_role DESC, name ASC`,
@@ -25,9 +25,11 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       name: String(row.name),
       tag: String(row.tag ?? ''),
       role: String(row.role ?? ''),
-      avatar: String(row.avatar_url ?? '👤'),
+      avatar: String(row.emoji ?? row.avatar_url ?? '👤'),
       color: String(row.color ?? '#9090B0'),
       groupRole: String(row.effective_role ?? 'member'),
+      display_name: String(row.display_name ?? ''),
+      bio: String(row.bio ?? ''),
     }));
 
     return new Response(JSON.stringify({ ok: true, members }), {
