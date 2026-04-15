@@ -22,7 +22,8 @@ const INIT_SQL = `CREATE TABLE IF NOT EXISTS ai_tools (
   upvotes INTEGER DEFAULT 0,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  github_url TEXT DEFAULT ''
+  github_url TEXT DEFAULT '',
+  wish_id TEXT DEFAULT ''
 )`;
 
 async function ensureMigration(db: ReturnType<typeof createClient>) {
@@ -31,6 +32,9 @@ async function ensureMigration(db: ReturnType<typeof createClient>) {
   } catch { /* column already exists */ }
   try {
     await db.execute({ sql: `ALTER TABLE ai_tools ADD COLUMN github_url TEXT DEFAULT ''`, args: [] });
+  } catch { /* column already exists */ }
+  try {
+    await db.execute({ sql: `ALTER TABLE ai_tools ADD COLUMN wish_id TEXT DEFAULT ''`, args: [] });
   } catch { /* column already exists */ }
 }
 
@@ -129,10 +133,18 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
 export const onRequestPost: PagesFunction<Env> = async (context) => {
   try {
     const user = await requireAuth(context.request, context.env);
-    const { name, description, url, category, author, author_tag } = await context.request.json() as Record<string, string>;
+    const { name, description, url, category, author, author_tag, wish_id } = await context.request.json() as Record<string, string>;
 
     if (!name?.trim() || !description?.trim() || !url?.trim()) {
       return new Response(JSON.stringify({ error: '請填寫工具名稱、簡介和連結' }), {
+        status: 400, headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Validate URL format
+    const trimmedUrl = url.trim();
+    if (!trimmedUrl.startsWith('http://') && !trimmedUrl.startsWith('https://')) {
+      return new Response(JSON.stringify({ error: '連結必須以 http:// 或 https:// 開頭' }), {
         status: 400, headers: { 'Content-Type': 'application/json' },
       });
     }
@@ -141,17 +153,31 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     await db.execute({ sql: INIT_SQL, args: [] });
     await ensureMigration(db);
 
+    // Validate wish_id: submitter must be a claimer of that wish
+    if (wish_id?.trim()) {
+      const claimCheck = await db.execute({
+        sql: `SELECT 1 FROM wish_claimers WHERE wish_id = ? AND user_id = ? AND status = 'claimed'`,
+        args: [wish_id.trim(), user.id],
+      });
+      if (claimCheck.rows.length === 0) {
+        return new Response(JSON.stringify({ error: '無效的許願卡或非認領者' }), {
+          status: 403, headers: { 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
     const result = await db.execute({
-      sql: `INSERT INTO ai_tools (name, description, url, category, author, author_tag, contributor_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id`,
+      sql: `INSERT INTO ai_tools (name, description, url, category, author, author_tag, contributor_id, wish_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id`,
       args: [
         name.trim(),
         description.trim(),
-        url.trim(),
+        trimmedUrl,
         category || 'other',
         (author || user.name).trim(),
         author_tag?.trim() || '',
         user.id,
+        wish_id?.trim() || '',
       ],
     });
 

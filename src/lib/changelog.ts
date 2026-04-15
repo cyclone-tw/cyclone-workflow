@@ -7,6 +7,14 @@ export interface ChangelogEntry {
 export const CHANGELOG: ChangelogEntry[] = [
   {
     version: '',
+    date: '2026-04-15 18:05',
+    changes: [
+      'feat(#60): 許願樹 AI 工具箱關聯 — 認領者可投稿工具並綁定許願卡',
+      'feat(#60): 許願完成差異化積分 — 有 AI 工具投稿 +300，一般完成 +100',
+    ],
+  },
+  {
+    version: '',
     date: '2026-04-15 17:45',
     changes: [
       'security(#51-E4): 討論區 Markdown XSS 防護 — URL 白名單、標籤/屬性白名單、img src 限制 https',
