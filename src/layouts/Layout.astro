@@ -99,7 +99,7 @@ const currentPath = Astro.url.pathname;
                 id="more-menu-btn"
                 class:list={[
                   'flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap',
-                  ['/leaderboard','/team','/knowledge','/ai-tools','/agent','/wishlist','/discuss','/issue','/bug'].some(p => currentPath === p || currentPath.startsWith(p + '/'))
+                  ['/leaderboard','/team','/knowledge','/ai-tools','/agent','/wishlist','/member-voices','/discuss','/issue','/bug'].some(p => currentPath === p || currentPath.startsWith(p + '/'))
                     ? 'bg-[var(--color-primary)]/20 text-[var(--color-primary-light)]'
                     : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-overlay-neutral-weak)]',
                 ]}
@@ -143,6 +143,7 @@ const currentPath = Astro.url.pathname;
                 <p class="px-4 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">許願 & 反饋</p>
                 {[
                   { label: '許願樹', href: '/wishlist', icon: '🌳' },
+                  { label: '成員聲音', href: '/member-voices', icon: '📣' },
                   { label: '討論', href: '/discuss', icon: '💬' },
                   { label: 'Issues', href: '/issue', icon: '📋' },
                   { label: 'Bug', href: '/bug', icon: '🐛' },

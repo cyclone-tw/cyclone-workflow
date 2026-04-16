@@ -1,0 +1,33 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import MemberVoiceBoard from '@/components/member-voices/MemberVoiceBoard';
+---
+
+<Layout title="成員聲音" description="分享 AI 服務盤點與團隊回饋">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <!-- Header -->
+    <div class="text-center mb-10">
+      <div class="relative inline-block mb-4">
+        <span class="text-7xl block leading-none select-none">📣</span>
+      </div>
+      <h1 class="text-4xl sm:text-5xl font-bold mb-3">
+        <span class="gradient-text">成員聲音</span>
+      </h1>
+      <p class="text-lg text-[var(--color-text-secondary)] max-w-2xl mx-auto">
+        每位成員的分享與回饋空間。盤點手邊的 AI 工具、分享使用心得，<br />
+        或針對網站與活動提出建議，讓個人經驗累積成團隊知識。
+      </p>
+    </div>
+
+    <!-- Member Voice Board -->
+    <MemberVoiceBoard client:load />
+
+    <!-- Info -->
+    <div class="mt-10 glass rounded-xl p-5 text-center">
+      <p class="text-xs text-[var(--color-text-muted)]">
+        登入後即可發表內容，每次成功發表可獲得 +10 積分。<br />
+        請友善交流，尊重每位夥伴的觀點。
+      </p>
+    </div>
+  </div>
+</Layout>

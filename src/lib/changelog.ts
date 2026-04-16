@@ -7,6 +7,15 @@ export interface ChangelogEntry {
 export const CHANGELOG: ChangelogEntry[] = [
   {
     version: '',
+    date: '2026-04-15 18:30',
+    changes: [
+      'feat(#44): 成員聲音 — 新增 /member-voices 頁面，支援 AI 服務盤點與痛點回饋',
+      'feat(#44): 成員聲音 API — GET/POST/PATCH/DELETE /api/member-voices',
+      'feat(#44): 發表成員聲音自動獲得 +10 積分',
+    ],
+  },
+  {
+    version: '',
     date: '2026-04-15 18:05',
     changes: [
       'feat(#60): 許願樹 AI 工具箱關聯 — 認領者可投稿工具並綁定許願卡',

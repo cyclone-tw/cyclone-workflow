@@ -11,6 +11,7 @@ const mermaidDiagram = `flowchart TD
     HOME --> AITOOLS["🤖 AI 工具箱 /ai-tools"]
     HOME --> AGENT["🎩 Cyclone 管家 /agent"]
     HOME --> WISH["🌳 許願樹 /wishlist"]
+    HOME --> VOICES["📣 成員聲音 /member-voices"]
     HOME --> DISCUSS["💬 討論區 /discuss"]
     HOME --> ISSUE["📋 Issues /issue"]
     HOME --> BUG["🐛 Bug 回報 /bug"]
@@ -76,6 +77,7 @@ const mermaidDiagram = `flowchart TD
         <ul class="space-y-2">
           {[
             { path: '/qa', icon: '❓', name: 'QA 知識集', desc: '密碼保護問答' },
+            { path: '/member-voices', icon: '📣', name: '成員聲音', desc: 'AI 盤點與回饋' },
             { path: '/discuss', icon: '💬', name: '討論區', desc: '公開留言板' },
             { path: '/issue', icon: '📋', name: 'Issues', desc: '問題追蹤系統' },
             { path: '/bug', icon: '🐛', name: 'Bug 回報', desc: '表單 → 剪貼簿' },
@@ -104,6 +106,8 @@ const mermaidDiagram = `flowchart TD
           { method: 'POST', path: '/api/db/init', desc: 'DB 初始化' },
           { method: 'GET', path: '/api/messages', desc: '讀取留言' },
           { method: 'POST', path: '/api/messages', desc: '發表留言' },
+          { method: 'GET', path: '/api/member-voices', desc: '讀取成員聲音' },
+          { method: 'POST', path: '/api/member-voices', desc: '發表成員聲音' },
           { method: 'GET', path: '/api/issues', desc: '列出 Issues' },
           { method: 'POST', path: '/api/issues', desc: '建立 Issue' },
           { method: 'GET', path: '/api/issues/:id', desc: 'Issue 詳情' },

@@ -234,6 +234,19 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         )`,
         args: [],
       },
+      {
+        sql: `CREATE TABLE IF NOT EXISTS member_voices (
+          id TEXT PRIMARY KEY,
+          user_id TEXT NOT NULL REFERENCES users(id),
+          type TEXT NOT NULL CHECK(type IN ('ai_inventory', 'pain_point')),
+          title TEXT NOT NULL,
+          content TEXT NOT NULL,
+          metadata TEXT DEFAULT '{}',
+          created_at TEXT DEFAULT (datetime('now')),
+          updated_at TEXT DEFAULT (datetime('now'))
+        )`,
+        args: [],
+      },
     ]);
 
     // --- Migrations: add missing columns to existing tables ---
