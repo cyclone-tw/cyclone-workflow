@@ -1,26 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/components/auth/useAuth';
 import type { GroupRole } from '@/lib/constants';
+import AdminStats from './tabs/AdminStats';
+import AdminAnalytics from './tabs/AdminAnalytics';
+import AdminMessages from './tabs/AdminMessages';
+import AdminReports from './tabs/AdminReports';
+import type { SiteStats, Analytics, AdminMessage, AdminReport } from './types';
 
 // ---------------------------------------------------------------------------
-// Types
+// Types(只保留 AdminPanel 內部用到的;共享型別搬到 ./types.ts)
 // ---------------------------------------------------------------------------
-
-interface SiteStats {
-  totalUsers: number;
-  totalCheckins: number;
-  totalKnowledge: number;
-  totalWishes: number;
-  totalMessages: number;
-}
-
-interface Analytics {
-  activeUsers: { value: string; sessions: string; avgSessionDuration: string; bounceRate: string };
-  pageviews30d: string;
-  topPages: Array<{ path: string; views: string; users: string }>;
-  trafficSources: Array<{ source: string; sessions: string; users: string }>;
-  error: string | null;
-}
 
 interface AdminUser {
   id: string;
@@ -57,34 +46,6 @@ interface Announcement {
   updated_at: string;
 }
 
-interface AdminMessage {
-  id: number;
-  author: string;
-  author_id: string | null;
-  author_name: string | null;
-  content: string;
-  category: string;
-  tag: string;
-  pinned: number;
-  like_count: number;
-  created_at: string;
-  edited_at: string | null;
-  deleted_at: string | null;
-  deleted_by: string | null;
-}
-
-interface AdminReport {
-  id: number;
-  message_id: number;
-  reporter_id: string;
-  reason: string;
-  status: 'pending' | 'resolved';
-  created_at: string;
-  message_content: string | null;
-  message_author: string | null;
-  reporter_name: string | null;
-}
-
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
@@ -107,21 +68,7 @@ const ROLE_LABELS: Record<string, string> = {
 
 const ROLE_LEVEL_ORDER: GroupRole[] = ['captain', 'tech', 'admin', 'member', 'companion'];
 
-const STAT_ITEMS: { key: keyof SiteStats; label: string; icon: string }[] = [
-  { key: 'totalUsers', label: '總成員數', icon: '👥' },
-  { key: 'totalCheckins', label: '打卡次數', icon: '✅' },
-  { key: 'totalKnowledge', label: '知識條目', icon: '📚' },
-  { key: 'totalWishes', label: '願望數量', icon: '🌳' },
-  { key: 'totalMessages', label: '討論留言', icon: '💬' },
-];
-
-const STAT_BORDER_COLORS: Record<string, string> = {
-  totalUsers: '#6C63FF',
-  totalCheckins: '#00F5A0',
-  totalKnowledge: '#00D9FF',
-  totalWishes: '#A78BFA',
-  totalMessages: '#E94560',
-};
+// STAT_ITEMS / STAT_BORDER_COLORS 搬到 ./types.ts 給 AdminStats 用
 
 // ---------------------------------------------------------------------------
 // Modal wrapper
@@ -570,100 +517,9 @@ export default function AdminPanel() {
         </div>
       )}
 
-      {/* Stats Grid */}
-      {stats && (
-        <section>
-          <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text-primary)' }}>
-            站點統計
-          </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-            {STAT_ITEMS.map(({ key, label, icon }) => (
-              <div
-                key={key}
-                className="rounded-xl p-4"
-                style={{
-                  background: 'var(--color-bg-card)',
-                  border: '1px solid var(--color-border)',
-                  borderLeftWidth: '3px',
-                  borderLeftColor: STAT_BORDER_COLORS[key],
-                }}
-              >
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-lg">{icon}</span>
-                  <span className="text-xs font-medium" style={{ color: 'var(--color-text-muted)' }}>
-                    {label}
-                  </span>
-                </div>
-                <p className="text-2xl font-bold" style={{ color: STAT_BORDER_COLORS[key] }}>
-                  {stats[key].toLocaleString()}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
+      <AdminStats stats={stats} />
 
-      {/* Analytics Section */}
-      {analytics && !analytics.error && (
-        <section>
-          <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text-primary)' }}>
-            📊 Google Analytics（近 7 日）
-          </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
-            <div className="rounded-xl p-4" style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)', borderLeftWidth: '3px', borderLeftColor: '#6C63FF' }}>
-              <div className="text-xs font-medium mb-1" style={{ color: 'var(--color-text-muted)' }}>活躍用戶</div>
-              <p className="text-2xl font-bold" style={{ color: '#6C63FF' }}>{analytics.activeUsers.value}</p>
-            </div>
-            <div className="rounded-xl p-4" style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)', borderLeftWidth: '3px', borderLeftColor: '#00F5A0' }}>
-              <div className="text-xs font-medium mb-1" style={{ color: 'var(--color-text-muted)' }}>工作階段</div>
-              <p className="text-2xl font-bold" style={{ color: '#00F5A0' }}>{analytics.activeUsers.sessions}</p>
-            </div>
-            <div className="rounded-xl p-4" style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)', borderLeftWidth: '3px', borderLeftColor: '#00D9FF' }}>
-              <div className="text-xs font-medium mb-1" style={{ color: 'var(--color-text-muted)' }}>平均工作階段</div>
-              <p className="text-2xl font-bold" style={{ color: '#00D9FF' }}>{analytics.activeUsers.avgSessionDuration}</p>
-            </div>
-            <div className="rounded-xl p-4" style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)', borderLeftWidth: '3px', borderLeftColor: '#E94560' }}>
-              <div className="text-xs font-medium mb-1" style={{ color: 'var(--color-text-muted)' }}>跳出率</div>
-              <p className="text-2xl font-bold" style={{ color: '#E94560' }}>{analytics.activeUsers.bounceRate}%</p>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-            <div className="rounded-xl p-4" style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}>
-              <div className="text-xs font-medium mb-2" style={{ color: 'var(--color-text-muted)' }}>熱門頁面</div>
-              <div className="space-y-1">
-                {analytics.topPages.slice(0, 5).map((p) => (
-                  <div key={p.path} className="flex items-center justify-between text-sm">
-                    <span className="truncate flex-1" style={{ color: 'var(--color-text-primary)' }}>{p.path}</span>
-                    <span className="ml-2 text-xs" style={{ color: 'var(--color-text-muted)' }}>{parseInt(p.views).toLocaleString()} 瀏覽</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="rounded-xl p-4" style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}>
-              <div className="text-xs font-medium mb-2" style={{ color: 'var(--color-text-muted)' }}>流量來源</div>
-              <div className="space-y-1">
-                {analytics.trafficSources.slice(0, 5).map((s) => (
-                  <div key={s.source} className="flex items-center justify-between text-sm">
-                    <span className="truncate flex-1" style={{ color: 'var(--color-text-primary)' }}>{s.source}</span>
-                    <span className="ml-2 text-xs" style={{ color: 'var(--color-text-muted)' }}>{parseInt(s.sessions).toLocaleString()}  session</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-          <div className="rounded-xl px-4 py-2 text-xs" style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)', color: 'var(--color-text-muted)' }}>
-            30 日總瀏覽量：{parseInt(analytics.pageviews30d).toLocaleString()}
-          </div>
-        </section>
-      )}
-
-      {analytics?.error && (
-        <div className="rounded-xl px-4 py-3 text-sm" style={{ background: '#E9456020', border: '1px solid #E9456040', color: '#E94560' }}>
-          {analytics.error}
-          <br />
-          <span className="text-xs opacity-70">請確認 Google Cloud Console 已啟用 Analytics Data API，且 API Key 有該 API 的使用權限。</span>
-        </div>
-      )}
+      <AdminAnalytics analytics={analytics} />
 
       {/* Announcements Management */}
       <section>
@@ -1062,244 +918,26 @@ export default function AdminPanel() {
         </p>
       </section>
 
-      {/* 討論區管理 */}
-      <section
-        className="rounded-xl p-5"
-        style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}
-      >
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-            討論區管理
-          </h3>
-          <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-            {adminMessages.length} / {messagesTotal} 則留言
-          </span>
-        </div>
+      <AdminMessages
+        messages={adminMessages}
+        total={messagesTotal}
+        loading={messagesLoading}
+        action={messageAction}
+        onDelete={handleDeleteMessage}
+        onRestore={handleRestore}
+        onTogglePinned={handleTogglePinned}
+        onLoadMore={() => setMessagesOffset((o) => o + 50)}
+      />
 
-        {adminMessages.length === 0 && !messagesLoading ? (
-          <p className="text-sm text-center py-4" style={{ color: 'var(--color-text-muted)' }}>
-            尚無留言
-          </p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left" style={{ color: 'var(--color-text-muted)', borderBottom: '1px solid var(--color-border)' }}>
-                  <th className="pb-2 pr-3 font-medium">作者</th>
-                  <th className="pb-2 pr-3 font-medium">內容摘要</th>
-                  <th className="pb-2 pr-3 font-medium">分類</th>
-                  <th className="pb-2 pr-3 font-medium">時間</th>
-                  <th className="pb-2 pr-3 font-medium">狀態</th>
-                  <th className="pb-2 font-medium">操作</th>
-                </tr>
-              </thead>
-              <tbody>
-                {adminMessages.map((msg) => {
-                  const isDeleted = !!msg.deleted_at;
-                  const isPinned = msg.pinned === 1;
-                  const isActing = messageAction?.id === msg.id;
-                  return (
-                    <tr
-                      key={msg.id}
-                      className="border-b"
-                      style={{ borderColor: 'var(--color-border)', opacity: isDeleted ? 0.6 : 1 }}
-                    >
-                      <td className="py-2 pr-3">
-                        <span className="text-xs">{msg.author_name || msg.author || '未知'}</span>
-                      </td>
-                      <td className="py-2 pr-3">
-                        <span className="text-xs truncate max-w-[200px] block">{msg.content}</span>
-                      </td>
-                      <td className="py-2 pr-3">
-                        <span className="text-xs">{msg.category || '-'}</span>
-                      </td>
-                      <td className="py-2 pr-3">
-                        <span className="text-xs whitespace-nowrap">
-                          {new Date(msg.created_at).toLocaleString('zh-TW', { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                      </td>
-                      <td className="py-2 pr-3">
-                        <div className="flex flex-wrap gap-1">
-                          {isPinned && (
-                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-yellow-500/20 text-yellow-500">
-                              置頂
-                            </span>
-                          )}
-                          {isDeleted ? (
-                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-500/20 text-red-500">
-                              已刪除
-                            </span>
-                          ) : (
-                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-green-500/20 text-green-500">
-                              正常
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="py-2">
-                        <div className="flex gap-1">
-                          {isDeleted ? (
-                            <button
-                              onClick={() => handleRestore(msg.id)}
-                              disabled={isActing}
-                              className="text-[10px] px-2 py-1 rounded text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 transition-colors"
-                            >
-                              {isActing ? '復原中...' : '復原'}
-                            </button>
-                          ) : (
-                            <button
-                              onClick={() => handleDeleteMessage(msg.id)}
-                              disabled={isActing}
-                              className="text-[10px] px-2 py-1 rounded text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 transition-colors"
-                            >
-                              {isActing ? '刪除中...' : '刪除'}
-                            </button>
-                          )}
-                          <button
-                            onClick={() => handleTogglePinned(msg.id, isPinned ? 0 : 1)}
-                            disabled={isActing}
-                            className="text-[10px] px-2 py-1 rounded text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 transition-colors"
-                          >
-                            {isActing ? '...' : isPinned ? '取消置頂' : '置頂'}
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
+      <AdminReports
+        reports={adminReports}
+        total={reportsTotal}
+        loading={reportsLoading}
+        action={reportAction}
+        onResolve={handleResolveReport}
+        onLoadMore={() => setReportsOffset((o) => o + 50)}
+      />
 
-        {messagesLoading && (
-          <p className="text-sm text-center py-3" style={{ color: 'var(--color-text-muted)' }}>
-            載入中...
-          </p>
-        )}
-
-        {adminMessages.length < messagesTotal && !messagesLoading && (
-          <div className="text-center mt-3">
-            <button
-              onClick={() => setMessagesOffset((o) => o + 50)}
-              className="text-xs px-4 py-1.5 rounded-full border transition-colors hover:bg-[var(--color-bg-hover)]"
-              style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-secondary)' }}
-            >
-              載入更多 ({adminMessages.length} / {messagesTotal})
-            </button>
-          </div>
-        )}
-      </section>
-
-      {/* 檢舉管理 */}
-      <section
-        className="rounded-xl p-5"
-        style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}
-      >
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-            🚩 檢舉管理
-          </h3>
-          <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-            {adminReports.length} / {reportsTotal} 筆檢舉
-          </span>
-        </div>
-
-        {adminReports.length === 0 && !reportsLoading ? (
-          <p className="text-sm text-center py-4" style={{ color: 'var(--color-text-muted)' }}>
-            尚無檢舉記錄
-          </p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left" style={{ color: 'var(--color-text-muted)', borderBottom: '1px solid var(--color-border)' }}>
-                  <th className="pb-2 pr-3 font-medium">留言作者</th>
-                  <th className="pb-2 pr-3 font-medium">留言摘要</th>
-                  <th className="pb-2 pr-3 font-medium">檢舉人</th>
-                  <th className="pb-2 pr-3 font-medium">原因</th>
-                  <th className="pb-2 pr-3 font-medium">時間</th>
-                  <th className="pb-2 pr-3 font-medium">狀態</th>
-                  <th className="pb-2 font-medium">操作</th>
-                </tr>
-              </thead>
-              <tbody>
-                {adminReports.map((rep) => {
-                  const isPending = rep.status === 'pending';
-                  const isActing = reportAction?.id === rep.id;
-                  return (
-                    <tr
-                      key={rep.id}
-                      className="border-b"
-                      style={{ borderColor: 'var(--color-border)', opacity: !isPending ? 0.6 : 1 }}
-                    >
-                      <td className="py-2 pr-3">
-                        <span className="text-xs">{rep.message_author || '未知'}</span>
-                      </td>
-                      <td className="py-2 pr-3">
-                        <span className="text-xs truncate max-w-[180px] block">
-                          {rep.message_content?.slice(0, 30) || '（已刪除）'}...
-                        </span>
-                      </td>
-                      <td className="py-2 pr-3">
-                        <span className="text-xs">{rep.reporter_name || rep.reporter_id}</span>
-                      </td>
-                      <td className="py-2 pr-3">
-                        <span className="text-xs truncate max-w-[150px] block" title={rep.reason}>
-                          {rep.reason}
-                        </span>
-                      </td>
-                      <td className="py-2 pr-3">
-                        <span className="text-xs whitespace-nowrap">
-                          {new Date(rep.created_at).toLocaleString('zh-TW', { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                      </td>
-                      <td className="py-2 pr-3">
-                        <span
-                          className="text-[10px] px-1.5 py-0.5 rounded"
-                          style={{
-                            background: isPending ? 'rgba(233,69,96,0.1)' : 'rgba(0,245,160,0.1)',
-                            color: isPending ? '#E94560' : '#00F5A0',
-                          }}
-                        >
-                          {isPending ? '待處理' : '已處理'}
-                        </span>
-                      </td>
-                      <td className="py-2">
-                        {isPending ? (
-                          <button
-                            onClick={() => handleResolveReport(rep.id)}
-                            disabled={isActing}
-                            className="text-[10px] px-2 py-1 rounded text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 transition-colors"
-                          >
-                            {isActing ? '處理中...' : '標記已處理'}
-                          </button>
-                        ) : (
-                          <span className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>
-                            已結案
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {adminReports.length < reportsTotal && !reportsLoading && (
-          <div className="text-center mt-3">
-            <button
-              onClick={() => setReportsOffset((o) => o + 50)}
-              className="text-xs px-4 py-1.5 rounded-full border transition-colors hover:bg-[var(--color-bg-hover)]"
-              style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-secondary)' }}
-            >
-              載入更多 ({adminReports.length} / {reportsTotal})
-            </button>
-          </div>
-        )}
-      </section>
 
       {/* Add Member Modal */}
       {addOpen && (
