@@ -9,7 +9,7 @@ created: 2026-04-17
 updated: 2026-04-17
 github_issue: https://github.com/cyclone-tw/cyclone-workflow/issues/98
 branch: refactor/98_api-client-logger  # Phase 1 branch
-pr: null
+pr: https://github.com/cyclone-tw/cyclone-workflow/pull/99  # Phase 1 draft
 related_files:
   - src/components/admin/AdminPanel.tsx
   - src/lib/
