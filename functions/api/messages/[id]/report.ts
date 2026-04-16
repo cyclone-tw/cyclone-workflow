@@ -92,6 +92,11 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         status: 400, headers: { 'Content-Type': 'application/json' },
       });
     }
+    if (reason.trim().length > 500) {
+      return new Response(JSON.stringify({ ok: false, error: '檢舉原因不得超過 500 字' }), {
+        status: 400, headers: { 'Content-Type': 'application/json' },
+      });
+    }
 
     const db = getDb(context.env);
 
