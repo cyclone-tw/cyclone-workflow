@@ -7,6 +7,13 @@ export interface ChangelogEntry {
 export const CHANGELOG: ChangelogEntry[] = [
   {
     version: '',
+    date: '2026-04-16',
+    changes: [
+      'fix(#88): AI 工具箱成員篩選下拉選單無內容 — 補上 fetchMembers useEffect',
+    ],
+  },
+  {
+    version: '',
     date: '2026-04-15 18:45',
     changes: [
       'feat(#50): 成員個人空間 — /team/:id 顯示成員資訊、AI 工具投稿、知識庫貢獻',

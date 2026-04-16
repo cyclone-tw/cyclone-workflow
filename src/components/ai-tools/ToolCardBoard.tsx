@@ -575,6 +575,17 @@ export default function ToolCardBoard() {
 
   useEffect(() => { fetchTags(); }, []);
 
+  useEffect(() => {
+    async function fetchMembers() {
+      try {
+        const res = await fetch('/api/members');
+        const data = await res.json();
+        if (data.ok) setMembers(data.members);
+      } catch { /* silent */ }
+    }
+    fetchMembers();
+  }, []);
+
   async function toggleFavorite(tool: Tool) {
     try {
       const res = await fetch('/api/favorites', {
