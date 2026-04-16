@@ -7,6 +7,13 @@ export interface ChangelogEntry {
 export const CHANGELOG: ChangelogEntry[] = [
   {
     version: '',
+    date: '2026-04-16',
+    changes: [
+      'feat(#51-E5): Admin Panel 討論區管理 — 顯示所有留言含已刪除，管理員可軟刪除/復原/切換置頂',
+    ],
+  },
+  {
+    version: '',
     date: '2026-04-15 18:30',
     changes: [
       'feat(#44): 成員聲音 — 新增 /member-voices 頁面，支援 AI 服務盤點與痛點回饋',
