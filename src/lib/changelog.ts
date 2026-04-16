@@ -9,32 +9,19 @@ export const CHANGELOG: ChangelogEntry[] = [
     version: '',
     date: '2026-04-16',
     changes: [
-      'fix(#88): AI 工具箱成員篩選下拉選單無內容 — 補上 fetchMembers useEffect',
-    ],
-  },
-  {
-    version: '',
-    date: '2026-04-15 18:45',
-    changes: [
-      'feat(#50): 成員個人空間 — /team/:id 顯示成員資訊、AI 工具投稿、知識庫貢獻',
-      'feat(#50): 團隊頁新增「查看空間」按鈕，連結至成員個人頁面',
+      'feat(#89): 知識庫 / AI 工具箱 Markdown 渲染支援 — 支援 GFM 語法（表格、刪除線等），所有內容經 XSS 防護過濾',
     ],
   },
   {
     version: '',
     date: '2026-04-16',
     changes: [
-      'feat(#51-E5): Admin Panel 討論區管理 — 顯示所有留言含已刪除，管理員可軟刪除/復原/切換置頂',
+      'fix(#88): AI 工具箱成員篩選下拉選單無內容 — 補上 fetchMembers useEffect',
     ],
   },
   {
     version: '',
-    date: '2026-04-15 18:30',
-    changes: [
-      'feat(#44): 成員聲音 — 新增 /member-voices 頁面，支援 AI 服務盤點與痛點回饋',
-      'feat(#44): 成員聲音 API — GET/POST/PATCH/DELETE /api/member-voices',
-      'feat(#44): 發表成員聲音自動獲得 +10 積分',
-    ],
+    date: '2026-04-15 18:45',
   },
   {
     version: '',

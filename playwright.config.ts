@@ -21,9 +21,6 @@ const useLambdaTest = !!process.env.LT_USERNAME;
 
 export default defineConfig({
   testDir: './e2e',
-  // demo-tour 是給 stakeholder 看的導覽影片，不屬於 regression 套件 —
-  // 只有明確設 RUN_DEMO_TOUR=1（或 `bun run test:e2e:demo`）才納入。
-  testIgnore: process.env.RUN_DEMO_TOUR ? [] : ['**/demo-tour.spec.ts'],
   timeout: 60_000,
   retries: 1,
   reporter: [['list'], ['html', { open: 'never' }]],

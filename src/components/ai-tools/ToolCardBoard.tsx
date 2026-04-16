@@ -1,7 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
 import { useAuth } from '@/components/auth/useAuth';
 import { timeAgo } from '@/lib/time';
 import { ROLE_LEVEL } from '@/lib/auth';
+import { sanitizeMarkdown, sanitizeUrl, sanitizeImgSrc } from '@/lib/markdown';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -422,17 +426,44 @@ function ToolCard({ tool, canEdit, loggedIn, onEdit, onDelete, onToggleFavorite 
 
       {/* Description */}
       <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>
-        <p
-          ref={contentRef}
-          id={`tool-content-${tool.id}`}
-          style={{
-            color: '#9090B0', fontSize: '0.85rem', lineHeight: 1.6, margin: 0,
-            overflowWrap: 'anywhere', wordBreak: 'break-word',
-            ...(expanded ? {} : { maxHeight: '4.8em', overflow: 'hidden' }),
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          rehypePlugins={[rehypeRaw]}
+          components={{
+            code({ className, children, ...props }) {
+              const match = /language-(\w+)/.exec(className || '');
+              const isInline = !match && !String(children).includes('\n');
+              if (isInline) {
+                return (
+                  <code style={{ background: '#2a2a4a', color: '#b0b0d0', borderRadius: '4px', padding: '0.1em 0.4em', fontSize: '0.85em', fontFamily: 'monospace' }} {...props}>
+                    {children}
+                  </code>
+                );
+              }
+              return (
+                <code style={{ background: '#1e1e3a', color: '#90b0ff', borderRadius: '6px', padding: '0.8em 1em', display: 'block', overflowX: 'auto', fontSize: '0.85em', fontFamily: 'monospace', border: '1px solid #3a3a6a' }} {...props}>
+                  {children}
+                </code>
+              );
+            },
+            a({ href, children, ...props }) {
+              const safe = sanitizeUrl(href);
+              if (!safe) return <span {...props}>{children}</span>;
+              return (
+                <a href={safe} target="_blank" rel="noopener noreferrer" style={{ color: '#80a0ff', textDecoration: 'underline' }} {...props}>
+                  {children}
+                </a>
+              );
+            },
+            img({ src, alt }) {
+              const safeSrc = sanitizeImgSrc(src);
+              if (!safeSrc) return null;
+              return <img src={safeSrc} alt={alt || ''} style={{ maxWidth: '100%', borderRadius: '6px', marginTop: '0.5em' }} />;
+            },
           }}
         >
-          {tool.description}
-        </p>
+          {sanitizeMarkdown(tool.description)}
+        </ReactMarkdown>
         {(!expanded && isOverflowing) && (
           <div
             style={{
