@@ -54,8 +54,26 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         headers: { 'Content-Type': 'application/json' },
       });
     }
+    if (content.trim().length > 1000) {
+      return new Response(JSON.stringify({ ok: false, error: '留言內容不得超過 1000 字' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
 
     const db = getDb(context.env);
+
+    // Rate limit: max 10 comments per minute per user
+    const recent = await db.execute({
+      sql: `SELECT COUNT(*) AS cnt FROM resource_comments WHERE user_id = ? AND created_at > datetime('now', '-1 minute')`,
+      args: [user.id],
+    });
+    if (Number(recent.rows[0]?.cnt) >= 10) {
+      return new Response(JSON.stringify({ ok: false, error: '留言太頻繁，請稍後再試' }), {
+        status: 429,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
 
     const entryResult = await db.execute({
       sql: 'SELECT contributor_id FROM knowledge_entries WHERE id = ?',

@@ -40,6 +40,12 @@ export const onRequestDelete: PagesFunction<Env> = async (context) => {
       });
     }
 
+    // Also remove points_ledger entry for this comment
+    await db.execute({
+      sql: `DELETE FROM points_ledger WHERE ref_type = 'resource_comment' AND ref_id = ?`,
+      args: [id],
+    });
+
     await db.execute({
       sql: 'DELETE FROM resource_comments WHERE id = ?',
       args: [id],
