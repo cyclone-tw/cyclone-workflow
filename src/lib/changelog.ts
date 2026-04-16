@@ -16,7 +16,6 @@ export const CHANGELOG: ChangelogEntry[] = [
       'fix(#88): AI 工具箱成員篩選下拉選單無內容 — 補上 fetchMembers useEffect',
     ],
   },
-  },
   {
     version: '',
     date: '2026-04-15 17:45',

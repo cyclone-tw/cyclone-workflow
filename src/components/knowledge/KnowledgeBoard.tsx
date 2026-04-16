@@ -6,7 +6,6 @@ import { useAuth } from '@/components/auth/useAuth';
 import { timeAgo } from '@/lib/time';
 import { sanitizeMarkdown, sanitizeUrl, sanitizeImgSrc } from '@/lib/markdown';
 import ResourceComments from '@/components/ResourceComments';
-import ResourceComments from '@/components/ResourceComments';
 
 
 // ─── Types ────────────────────────────────────────────────────────────────────
