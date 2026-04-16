@@ -12,7 +12,8 @@
     "test:e2e": "playwright test",
     "test:e2e:local": "E2E_BASE_URL=http://localhost:4321 playwright test",
     "test:e2e:lt": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:demo": "RUN_DEMO_TOUR=1 playwright test e2e/demo-tour.spec.ts"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260413.1",
