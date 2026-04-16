@@ -247,6 +247,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         )`,
         args: [],
       },
+<<<<<<< HEAD
       {
         sql: `CREATE TABLE IF NOT EXISTS resource_comments (
           id TEXT PRIMARY KEY,
@@ -259,6 +260,21 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         )`,
         args: [],
       },
+||||||| parent of b8886d9 (feat(#51-E6): 討論區留言檢舉機制)
+=======
+      {
+        sql: `CREATE TABLE IF NOT EXISTS message_reports (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          message_id INTEGER NOT NULL REFERENCES messages(id),
+          reporter_id TEXT NOT NULL REFERENCES users(id),
+          reason TEXT NOT NULL,
+          status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'resolved')),
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE(message_id, reporter_id)
+        )`,
+        args: [],
+      },
+>>>>>>> b8886d9 (feat(#51-E6): 討論區留言檢舉機制)
     ]);
 
     // --- Migrations: add missing columns to existing tables ---

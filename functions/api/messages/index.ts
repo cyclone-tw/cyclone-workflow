@@ -18,20 +18,55 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   try {
     const db = getDb(context.env);
 
+    // 嘗試取得當前登入使用者（optional — 不強迫登入）
+    let currentUserId: string | null = null;
+    try {
+      const { requireAuth } = await import('../../../src/lib/auth.ts');
+      const u = await requireAuth(context.request, context.env);
+      currentUserId = u.id;
+    } catch {
+      // 未登入，繼續以訪客身份
+    }
+
     const result = await db.execute({
-      sql: `SELECT m.*, COALESCE(lc.like_count, 0) as like_count
+      sql: `SELECT m.*,
+                   COALESCE(lc.like_count, 0) as like_count,
+                   COALESCE(mr.report_count, 0) AS report_count
             FROM messages m
             LEFT JOIN (
               SELECT message_id, COUNT(*) as like_count
               FROM discussion_likes
               GROUP BY message_id
             ) lc ON lc.message_id = m.id
+            LEFT JOIN (
+              SELECT message_id, COUNT(*) AS report_count
+              FROM message_reports
+              WHERE status = 'pending'
+              GROUP BY message_id
+            ) mr ON mr.message_id = m.id
             WHERE m.deleted_at IS NULL
             ORDER BY m.pinned DESC, m.created_at DESC LIMIT 100`,
       args: [],
     });
 
-    return new Response(JSON.stringify({ ok: true, messages: result.rows }), {
+    // 如果已登入，撈出該使用者的檢舉記錄
+    let reportedByMe: Set<number> = new Set();
+    if (currentUserId) {
+      const reports = await db.execute({
+        sql: 'SELECT message_id FROM message_reports WHERE reporter_id = ?',
+        args: [currentUserId],
+      });
+      for (const row of reports.rows) {
+        reportedByMe.add(row.message_id as number);
+      }
+    }
+
+    const messages = result.rows.map((row) => ({
+      ...row,
+      reported_by_me: reportedByMe.has(row.id as number),
+    }));
+
+    return new Response(JSON.stringify({ ok: true, messages }), {
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',

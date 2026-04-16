@@ -14,6 +14,7 @@ export const CHANGELOG: ChangelogEntry[] = [
       'feat(#90): 收到 resource 留言時投稿者自動獲得 +2 積分',
       'fix(#90): 修復 Dashboard 累計積分未正確顯示 points_ledger 總分問題',
       'fix(#88): AI 工具箱成員篩選下拉選單無內容 — 補上 fetchMembers useEffect',
+      'feat(#51-E6): 討論區留言檢舉機制 — message_reports 表 + POST /api/messages/:id/report + GET/DELETE /api/admin/reports + 前端檢舉按鈕與對話框 + Admin Panel 檢舉管理 + 被檢舉 3 次自動隱藏',
     ],
   },
   {
