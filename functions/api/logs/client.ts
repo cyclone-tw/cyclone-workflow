@@ -55,6 +55,38 @@ function invalidEntry(): Response {
   });
 }
 
+/**
+ * 串流讀 body,邊讀邊累計 byte 數。超過 limit 就 cancel reader,
+ * 不會把整包大 body 讀進記憶體 —— 匿名 endpoint 的 DoS 防護。
+ */
+async function readBounded(request: Request, maxBytes: number): Promise<string | null> {
+  if (!request.body) return '';
+  const reader = request.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      total += value.byteLength;
+      if (total > maxBytes) {
+        await reader.cancel().catch(() => {});
+        return null;
+      }
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  const buf = new Uint8Array(total);
+  let offset = 0;
+  for (const c of chunks) {
+    buf.set(c, offset);
+    offset += c.byteLength;
+  }
+  return new TextDecoder().decode(buf);
+}
+
 export const onRequestPost: PagesFunction<Env> = async (context) => {
   const { request } = context;
 
@@ -62,11 +94,9 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   const declaredLength = Number(request.headers.get('content-length') ?? '0');
   if (declaredLength > MAX_BODY_BYTES) return tooLarge();
 
-  // 權威檢查:實際讀 body,以實收 byte 數為準。
-  const bodyText = await request.text();
-  if (new TextEncoder().encode(bodyText).byteLength > MAX_BODY_BYTES) {
-    return tooLarge();
-  }
+  // 權威檢查:串流讀取,超過 MAX_BODY_BYTES 就中止 —— 不會完整讀入大 body。
+  const bodyText = await readBounded(request, MAX_BODY_BYTES);
+  if (bodyText === null) return tooLarge();
 
   let parsed: unknown;
   try {
