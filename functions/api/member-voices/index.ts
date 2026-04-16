@@ -108,6 +108,27 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         status: 400, headers: { 'Content-Type': 'application/json' },
       });
     }
+    if (title.length > 200) {
+      return new Response(JSON.stringify({ ok: false, error: '標題不得超過 200 字' }), {
+        status: 400, headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    if (content.length > 5000) {
+      return new Response(JSON.stringify({ ok: false, error: '內容不得超過 5000 字' }), {
+        status: 400, headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Rate limit: max 5 posts per minute
+    const recent = await db.execute({
+      sql: `SELECT COUNT(*) AS cnt FROM member_voices WHERE user_id = ? AND created_at > datetime('now', '-1 minute')`,
+      args: [user.id],
+    });
+    if (Number(recent.rows[0]?.cnt) >= 5) {
+      return new Response(JSON.stringify({ ok: false, error: '發文太頻繁，請稍後再試' }), {
+        status: 429, headers: { 'Content-Type': 'application/json' },
+      });
+    }
 
     const id = crypto.randomUUID();
     const metadata = JSON.stringify(body.metadata || {});

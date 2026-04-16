@@ -105,12 +105,24 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
     const args: (string | number)[] = [];
 
     if (body.title !== undefined) {
+      const trimmed = body.title.trim();
+      if (!trimmed) {
+        return new Response(JSON.stringify({ ok: false, error: '標題不得為空' }), {
+          status: 400, headers: { 'Content-Type': 'application/json' },
+        });
+      }
       updates.push('title = ?');
-      args.push(body.title.trim());
+      args.push(trimmed);
     }
     if (body.content !== undefined) {
+      const trimmed = body.content.trim();
+      if (!trimmed) {
+        return new Response(JSON.stringify({ ok: false, error: '內容不得為空' }), {
+          status: 400, headers: { 'Content-Type': 'application/json' },
+        });
+      }
       updates.push('content = ?');
-      args.push(body.content.trim());
+      args.push(trimmed);
     }
     if (body.metadata !== undefined) {
       updates.push('metadata = ?');
@@ -171,6 +183,12 @@ export const onRequestDelete: PagesFunction<Env> = async (context) => {
     await db.execute({
       sql: 'DELETE FROM member_voices WHERE id = ?',
       args: [id],
+    });
+
+    // Remove associated points
+    await db.execute({
+      sql: `DELETE FROM points_ledger WHERE user_id = ? AND ref_type = 'member_voice' AND ref_id = ?`,
+      args: [existing.rows[0].user_id, id],
     });
 
     return new Response(JSON.stringify({ ok: true }), {
