@@ -20,6 +20,8 @@ interface Message {
   like_count: number;
   deleted_at: string | null;
   deleted_by: string | null;
+  report_count: number;
+  reported_by_me?: boolean;
 }
 
 const CATEGORIES = ['閒聊', '成果分享', '問題', '建議'];
@@ -42,6 +44,7 @@ function MessageCard({
   onDelete,
   onEdit,
   onPinToggle,
+  onReport,
 }: {
   msg: Message;
   likedIds: Set<number>;
@@ -52,6 +55,7 @@ function MessageCard({
   onDelete: (messageId: number) => void;
   onEdit: (messageId: number, newContent: string) => void;
   onPinToggle: (messageId: number, pinned: number) => void;
+  onReport: (messageId: number, reason: string) => void;
 }) {
   const color = CATEGORY_COLORS[msg.category] || 'var(--color-primary)';
   const liked = likedIds.has(msg.id);
@@ -60,6 +64,9 @@ function MessageCard({
   const [editContent, setEditContent] = useState(msg.content);
   const [editSaving, setEditSaving] = useState(false);
   const [pinLoading, setPinLoading] = useState(false);
+  const [showReportDialog, setShowReportDialog] = useState(false);
+  const [reportReason, setReportReason] = useState('');
+  const [reportSubmitting, setReportSubmitting] = useState(false);
 
   const canModify = currentUser && (
     msg.author_id === currentUser.id ||
@@ -234,6 +241,22 @@ function MessageCard({
             此留言已被刪除
           </div>
         </>
+      ) : msg.report_count >= 3 ? (
+        <>
+          <div
+            className="text-sm leading-relaxed"
+            style={{
+              color: 'var(--color-text-muted)',
+              background: 'rgba(255,77,106,0.05)',
+              border: '1px solid rgba(255,77,106,0.15)',
+              borderRadius: '0.5rem',
+              padding: '0.75rem 1rem',
+              fontStyle: 'italic',
+            }}
+          >
+            此留言因多次檢舉已隱藏
+          </div>
+        </>
       ) : (
             <>
             <div
@@ -367,8 +390,109 @@ function MessageCard({
               <span style={{ fontSize: '14px' }}>{liked ? '❤️' : '🤍'}</span>
               <span>{msg.like_count > 0 ? msg.like_count : ''}</span>
             </button>
+            {isLoggedIn && (
+              msg.reported_by_me ? (
+                <span
+                  className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs"
+                  style={{ color: 'var(--color-text-muted)', opacity: 0.5, border: 'none', cursor: 'default' }}
+                >
+                  已檢舉
+                </span>
+              ) : (
+                <button
+                  onClick={() => setShowReportDialog(true)}
+                  className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs transition-all hover:opacity-80"
+                  style={{
+                    background: 'transparent',
+                    color: 'var(--color-text-muted)',
+                    border: 'none',
+                    cursor: 'pointer',
+                  }}
+                  title="檢舉留言"
+                >
+                  🚩 檢舉
+                </button>
+              )
+            )}
           </div>
         </>
+      )}
+
+      {showReportDialog && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: 'rgba(0,0,0,0.6)' }}
+          onClick={() => { setShowReportDialog(false); setReportReason(''); }}
+        >
+          <div
+            className="w-full max-w-sm rounded-2xl p-5"
+            style={{
+              background: 'var(--color-bg-card)',
+              border: '1px solid var(--color-border)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                🚩 檢舉留言
+              </h4>
+              <button
+                onClick={() => { setShowReportDialog(false); setReportReason(''); }}
+                style={{ color: 'var(--color-text-muted)', background: 'none', border: 'none', cursor: 'pointer', fontSize: '18px' }}
+              >
+                ×
+              </button>
+            </div>
+            <p className="text-xs mb-3" style={{ color: 'var(--color-text-muted)' }}>
+              請填寫檢舉原因，我們會儘快審核。
+            </p>
+            <textarea
+              value={reportReason}
+              onChange={(e) => setReportReason(e.target.value)}
+              placeholder="檢舉原因..."
+              rows={3}
+              maxLength={500}
+              className="w-full px-3 py-2 rounded-lg text-sm outline-none resize-none mb-3"
+              style={{
+                background: 'var(--color-bg-surface)',
+                border: '1px solid var(--color-border)',
+                color: 'var(--color-text-primary)',
+              }}
+            />
+            <div className="flex items-center justify-end gap-2">
+              <button
+                onClick={() => { setShowReportDialog(false); setReportReason(''); }}
+                disabled={reportSubmitting}
+                className="px-3 py-1.5 rounded-lg text-xs transition-opacity"
+                style={{
+                  background: 'transparent',
+                  color: 'var(--color-text-muted)',
+                  border: '1px solid var(--color-border)',
+                }}
+              >
+                取消
+              </button>
+              <button
+                onClick={async () => {
+                  if (!reportReason.trim()) return;
+                  setReportSubmitting(true);
+                  onReport(msg.id, reportReason.trim());
+                  setShowReportDialog(false);
+                  setReportReason('');
+                  setReportSubmitting(false);
+                }}
+                disabled={reportSubmitting || !reportReason.trim()}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium text-white transition-opacity"
+                style={{
+                  background: '#E94560',
+                  opacity: reportSubmitting || !reportReason.trim() ? 0.6 : 1,
+                }}
+              >
+                {reportSubmitting ? '送出中...' : '送出檢舉'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
@@ -425,6 +549,30 @@ export default function MessageBoard() {
       setLoading(false);
     }
   }, [user]);
+
+  const handleReport = async (messageId: number, reason: string) => {
+    try {
+      const res = await fetch(`/api/messages/${messageId}/report`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === messageId
+              ? { ...m, report_count: m.report_count + 1, reported_by_me: true }
+              : m
+          )
+        );
+      } else {
+        alert(data.error || '檢舉失敗');
+      }
+    } catch {
+      alert('網路錯誤，請稍後再試');
+    }
+  };
 
   useEffect(() => {
     if (!authLoading) {
@@ -795,6 +943,7 @@ export default function MessageBoard() {
               onDelete={handleDelete}
               onEdit={handleEdit}
               onPinToggle={handlePinToggle}
+              onReport={handleReport}
             />
           ))}
         </div>
