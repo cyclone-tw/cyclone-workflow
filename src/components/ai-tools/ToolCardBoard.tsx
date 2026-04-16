@@ -6,6 +6,8 @@ import { useAuth } from '@/components/auth/useAuth';
 import { timeAgo } from '@/lib/time';
 import { ROLE_LEVEL } from '@/lib/auth';
 import { sanitizeMarkdown, sanitizeUrl, sanitizeImgSrc } from '@/lib/markdown';
+import ResourceComments from '@/components/ResourceComments';
+import ResourceComments from '@/components/ResourceComments';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -326,7 +328,7 @@ function DeleteConfirm({ tool, onConfirm, onCancel }: { tool: Tool; onConfirm: (
 
 // ─── Tool Card ────────────────────────────────────────────────────────────────
 
-function ToolCard({ tool, canEdit, loggedIn, onEdit, onDelete, onToggleFavorite }: { tool: Tool; canEdit: boolean; loggedIn: boolean; onEdit: () => void; onDelete: () => void; onToggleFavorite: () => void }) {
+function ToolCard({ tool, canEdit, loggedIn, user, onEdit, onDelete, onToggleFavorite }: { tool: Tool; canEdit: boolean; loggedIn: boolean; user: { id: string; name: string; avatar_url?: string | null; effectiveRole: string } | null; onEdit: () => void; onDelete: () => void; onToggleFavorite: () => void }) {
   const cfg = CATEGORY_CONFIG[tool.category] || CATEGORY_CONFIG.other;
   const [favBusy, setFavBusy] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -534,6 +536,16 @@ function ToolCard({ tool, canEdit, loggedIn, onEdit, onDelete, onToggleFavorite 
             </span>
           ))}
         </div>
+      )}
+
+      {/* Comments */}
+      {expanded && (
+        <ResourceComments
+          resourceType="ai-tool"
+          resourceId={String(tool.id)}
+          user={user}
+          color={cfg.color}
+        />
       )}
 
       {/* Footer */}
@@ -795,6 +807,7 @@ export default function ToolCardBoard() {
               tool={tool}
               canEdit={canEditMap[tool.id as number] || false}
               loggedIn={!!user}
+              user={user}
               onEdit={() => setEditingTool(tool)}
               onDelete={() => setDeletingTool(tool)}
               onToggleFavorite={() => toggleFavorite(tool)}

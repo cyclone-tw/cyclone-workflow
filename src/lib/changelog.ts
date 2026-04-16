@@ -10,26 +10,12 @@ export const CHANGELOG: ChangelogEntry[] = [
     date: '2026-04-16',
     changes: [
       'feat(#89): 知識庫 / AI 工具箱 Markdown 渲染支援 — 支援 GFM 語法（表格、刪除線等），所有內容經 XSS 防護過濾',
-    ],
-  },
-  {
-    version: '',
-    date: '2026-04-16',
-    changes: [
+      'feat(#90): 知識庫/AI工具箱留言回饋機制 — resource_comments 表、API、前端留言區',
+      'feat(#90): 收到 resource 留言時投稿者自動獲得 +2 積分',
+      'fix(#90): 修復 Dashboard 累計積分未正確顯示 points_ledger 總分問題',
       'fix(#88): AI 工具箱成員篩選下拉選單無內容 — 補上 fetchMembers useEffect',
     ],
   },
-  {
-    version: '',
-    date: '2026-04-15 18:45',
-  },
-  {
-    version: '',
-    date: '2026-04-15 18:05',
-    changes: [
-      'feat(#60): 許願樹 AI 工具箱關聯 — 認領者可投稿工具並綁定許願卡',
-      'feat(#60): 許願完成差異化積分 — 有 AI 工具投稿 +300，一般完成 +100',
-    ],
   },
   {
     version: '',

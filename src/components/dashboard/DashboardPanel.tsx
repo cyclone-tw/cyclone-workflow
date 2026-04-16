@@ -427,7 +427,7 @@ export default function DashboardPanel() {
               <span className="text-xs text-[var(--color-text-muted)] bg-[var(--color-bg-surface)] rounded-full px-2 py-0.5">累計</span>
             </div>
             <div className="text-2xl font-bold text-[var(--color-text-primary)] mb-1">
-              {stats?.totalPoints ?? 0}
+              {pointsData?.totalPoints ?? stats?.totalPoints ?? 0}
               <span className="text-[var(--color-text-muted)] text-base font-normal"> 分</span>
             </div>
             <div className="text-xs text-[var(--color-text-secondary)]">累計積分</div>
