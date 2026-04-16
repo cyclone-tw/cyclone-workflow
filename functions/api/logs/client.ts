@@ -41,29 +41,42 @@ function sanitize(raw: unknown): ClientLogEntry | null {
   };
 }
 
+function tooLarge(): Response {
+  return new Response(JSON.stringify({ ok: false, error: 'payload too large' }), {
+    status: 413,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
+function invalidEntry(): Response {
+  return new Response(JSON.stringify({ ok: false, error: 'invalid log entry' }), {
+    status: 400,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
 export const onRequestPost: PagesFunction<Env> = async (context) => {
   const { request } = context;
-  const contentLength = Number(request.headers.get('content-length') ?? '0');
-  if (contentLength > MAX_BODY_BYTES) {
-    return new Response(JSON.stringify({ ok: false, error: 'payload too large' }), {
-      status: 413,
-      headers: { 'Content-Type': 'application/json' },
-    });
+
+  // content-length 只是 client 可偽造的提示,拿來快速拒掉明顯太大的請求。
+  const declaredLength = Number(request.headers.get('content-length') ?? '0');
+  if (declaredLength > MAX_BODY_BYTES) return tooLarge();
+
+  // 權威檢查:實際讀 body,以實收 byte 數為準。
+  const bodyText = await request.text();
+  if (new TextEncoder().encode(bodyText).byteLength > MAX_BODY_BYTES) {
+    return tooLarge();
   }
 
-  let entry: ClientLogEntry | null;
+  let parsed: unknown;
   try {
-    entry = sanitize(await request.json());
+    parsed = JSON.parse(bodyText);
   } catch {
-    entry = null;
+    return invalidEntry();
   }
 
-  if (!entry) {
-    return new Response(JSON.stringify({ ok: false, error: 'invalid log entry' }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }
+  const entry = sanitize(parsed);
+  if (!entry) return invalidEntry();
 
   const ua = request.headers.get('user-agent') ?? '';
   const ip = request.headers.get('cf-connecting-ip') ?? '';
