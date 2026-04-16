@@ -175,14 +175,21 @@ export default function DashboardPanel() {
       if (data.ok) {
         setCheckedInToday(true);
         setToast('打卡成功！繼續保持！');
-        // Re-fetch stats from server to get accurate streak after checkin
+        // Re-fetch stats and points from server to get accurate data after checkin
         try {
-          const statsRes = await fetch('/api/checkin/stats');
+          const [statsRes, pointsRes] = await Promise.all([
+            fetch('/api/checkin/stats'),
+            fetch('/api/points/me?limit=5'),
+          ]);
           const statsData = await statsRes.json();
+          const pointsData = await pointsRes.json();
           if (statsData.ok && statsData.stats) {
             setStats(statsData.stats);
           } else {
             updateStatsFromCheckin(data);
+          }
+          if (pointsData.ok) {
+            setPointsData({ totalPoints: pointsData.totalPoints, records: pointsData.records });
           }
         } catch {
           updateStatsFromCheckin(data);
