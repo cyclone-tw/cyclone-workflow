@@ -17,6 +17,14 @@ export const CHANGELOG: ChangelogEntry[] = [
   },
   {
     version: '',
+    date: '2026-04-17',
+    changes: [
+      'chore(#98): LEFT JOIN 黃金規則 5 稽核 — 新增 scripts/audit-left-join.ts,掃 49 個 API endpoint 的 11 處 LEFT JOIN,0 處違規',
+      'docs(#98): issues/98-codebase-health/phase2-audit-report.md — 逐 query 標註 alias 狀態 + 工具限制說明',
+    ],
+  },
+  {
+    version: '',
     date: '2026-04-16',
     changes: [
       'feat(#89): 知識庫 / AI 工具箱 Markdown 渲染支援 — 支援 GFM 語法（表格、刪除線等），所有內容經 XSS 防護過濾',
