@@ -57,6 +57,22 @@ interface Announcement {
   updated_at: string;
 }
 
+interface AdminMessage {
+  id: number;
+  author: string;
+  author_id: string | null;
+  author_name: string | null;
+  content: string;
+  category: string;
+  tag: string;
+  pinned: number;
+  like_count: number;
+  created_at: string;
+  edited_at: string | null;
+  deleted_at: string | null;
+  deleted_by: string | null;
+}
+
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
@@ -168,6 +184,13 @@ export default function AdminPanel() {
   const [deletingAnnouncement, setDeletingAnnouncement] = useState<{ id: string; title: string; loading: boolean } | null>(null);
   const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
 
+  // Admin Messages
+  const [adminMessages, setAdminMessages] = useState<AdminMessage[]>([]);
+  const [messagesLoading, setMessagesLoading] = useState(false);
+  const [messagesOffset, setMessagesOffset] = useState(0);
+  const [messagesTotal, setMessagesTotal] = useState(0);
+  const [messageAction, setMessageAction] = useState<{ id: number; loading: boolean } | null>(null);
+
   const isAdmin = isRole('admin');
 
   const fetchData = useCallback(async () => {
@@ -193,12 +216,24 @@ export default function AdminPanel() {
       setUsers(usersData.users);
       if (analyticsData.ok) setAnalytics(analyticsData.analytics);
       if (announcementsData.ok) setAnnouncements(announcementsData.announcements || []);
+
+      // Fetch messages with current offset
+      const messagesRes = await fetch('/api/admin/messages', {
+        headers: { 'x-offset': String(messagesOffset) },
+      });
+      const messagesData = await messagesRes.json();
+      if (messagesData.ok) {
+        setAdminMessages((prev) =>
+          messagesOffset === 0 ? messagesData.messages : [...prev, ...messagesData.messages],
+        );
+        setMessagesTotal(messagesData.total);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : '載入失敗');
     } finally {
       setDataLoading(false);
     }
-  }, [includeArchived]);
+  }, [includeArchived, messagesOffset]);
 
   useEffect(() => {
     if (isAdmin) fetchData();
@@ -302,6 +337,89 @@ export default function AdminPanel() {
       setError(err instanceof Error ? err.message : '核可失敗');
     } finally {
       setUpdating(null);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Message mutations
+  // ---------------------------------------------------------------------------
+
+  async function handleDeleteMessage(id: number) {
+    setMessageAction({ id, loading: true });
+    try {
+      const res = await fetch(`/api/admin/messages/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ delete: true }),
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || '刪除失敗');
+      // Refresh messages from offset 0
+      setMessagesOffset(0);
+      const messagesRes = await fetch('/api/admin/messages', {
+        headers: { 'x-offset': '0' },
+      });
+      const messagesData = await messagesRes.json();
+      if (messagesData.ok) {
+        setAdminMessages(messagesData.messages);
+        setMessagesTotal(messagesData.total);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '刪除失敗');
+    } finally {
+      setMessageAction(null);
+    }
+  }
+
+  async function handleRestore(id: number) {
+    setMessageAction({ id, loading: true });
+    try {
+      const res = await fetch(`/api/admin/messages/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ restore: true }),
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || '復原失敗');
+      setMessagesOffset(0);
+      const messagesRes = await fetch('/api/admin/messages', {
+        headers: { 'x-offset': '0' },
+      });
+      const messagesData = await messagesRes.json();
+      if (messagesData.ok) {
+        setAdminMessages(messagesData.messages);
+        setMessagesTotal(messagesData.total);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '復原失敗');
+    } finally {
+      setMessageAction(null);
+    }
+  }
+
+  async function handleTogglePinned(id: number, pinned: number) {
+    setMessageAction({ id, loading: true });
+    try {
+      const res = await fetch(`/api/admin/messages/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pinned }),
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || '操作失敗');
+      setMessagesOffset(0);
+      const messagesRes = await fetch('/api/admin/messages', {
+        headers: { 'x-offset': '0' },
+      });
+      const messagesData = await messagesRes.json();
+      if (messagesData.ok) {
+        setAdminMessages(messagesData.messages);
+        setMessagesTotal(messagesData.total);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '操作失敗');
+    } finally {
+      setMessageAction(null);
     }
   }
 
@@ -889,6 +1007,135 @@ export default function AdminPanel() {
         <p className="text-xs mt-2" style={{ color: 'var(--color-text-muted)' }}>
           左側為較高等級。高等級角色自動擁有低等級的所有權限。
         </p>
+      </section>
+
+      {/* 討論區管理 */}
+      <section
+        className="rounded-xl p-5"
+        style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}
+      >
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+            討論區管理
+          </h3>
+          <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+            {adminMessages.length} / {messagesTotal} 則留言
+          </span>
+        </div>
+
+        {adminMessages.length === 0 && !messagesLoading ? (
+          <p className="text-sm text-center py-4" style={{ color: 'var(--color-text-muted)' }}>
+            尚無留言
+          </p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left" style={{ color: 'var(--color-text-muted)', borderBottom: '1px solid var(--color-border)' }}>
+                  <th className="pb-2 pr-3 font-medium">作者</th>
+                  <th className="pb-2 pr-3 font-medium">內容摘要</th>
+                  <th className="pb-2 pr-3 font-medium">分類</th>
+                  <th className="pb-2 pr-3 font-medium">時間</th>
+                  <th className="pb-2 pr-3 font-medium">狀態</th>
+                  <th className="pb-2 font-medium">操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                {adminMessages.map((msg) => {
+                  const isDeleted = !!msg.deleted_at;
+                  const isPinned = msg.pinned === 1;
+                  const isActing = messageAction?.id === msg.id;
+                  return (
+                    <tr
+                      key={msg.id}
+                      className="border-b"
+                      style={{ borderColor: 'var(--color-border)', opacity: isDeleted ? 0.6 : 1 }}
+                    >
+                      <td className="py-2 pr-3">
+                        <span className="text-xs">{msg.author_name || msg.author || '未知'}</span>
+                      </td>
+                      <td className="py-2 pr-3">
+                        <span className="text-xs truncate max-w-[200px] block">{msg.content}</span>
+                      </td>
+                      <td className="py-2 pr-3">
+                        <span className="text-xs">{msg.category || '-'}</span>
+                      </td>
+                      <td className="py-2 pr-3">
+                        <span className="text-xs whitespace-nowrap">
+                          {new Date(msg.created_at).toLocaleString('zh-TW', { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </td>
+                      <td className="py-2 pr-3">
+                        <div className="flex flex-wrap gap-1">
+                          {isPinned && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-yellow-500/20 text-yellow-500">
+                              置頂
+                            </span>
+                          )}
+                          {isDeleted ? (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-500/20 text-red-500">
+                              已刪除
+                            </span>
+                          ) : (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-green-500/20 text-green-500">
+                              正常
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-2">
+                        <div className="flex gap-1">
+                          {isDeleted ? (
+                            <button
+                              onClick={() => handleRestore(msg.id)}
+                              disabled={isActing}
+                              className="text-[10px] px-2 py-1 rounded text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 transition-colors"
+                            >
+                              {isActing ? '復原中...' : '復原'}
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleDeleteMessage(msg.id)}
+                              disabled={isActing}
+                              className="text-[10px] px-2 py-1 rounded text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 transition-colors"
+                            >
+                              {isActing ? '刪除中...' : '刪除'}
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleTogglePinned(msg.id, isPinned ? 0 : 1)}
+                            disabled={isActing}
+                            className="text-[10px] px-2 py-1 rounded text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                          >
+                            {isActing ? '...' : isPinned ? '取消置頂' : '置頂'}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {messagesLoading && (
+          <p className="text-sm text-center py-3" style={{ color: 'var(--color-text-muted)' }}>
+            載入中...
+          </p>
+        )}
+
+        {adminMessages.length < messagesTotal && !messagesLoading && (
+          <div className="text-center mt-3">
+            <button
+              onClick={() => setMessagesOffset((o) => o + 50)}
+              className="text-xs px-4 py-1.5 rounded-full border transition-colors hover:bg-[var(--color-bg-hover)]"
+              style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-secondary)' }}
+            >
+              載入更多 ({adminMessages.length} / {messagesTotal})
+            </button>
+          </div>
+        )}
       </section>
 
       {/* Add Member Modal */}
