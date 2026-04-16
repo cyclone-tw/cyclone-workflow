@@ -62,7 +62,6 @@ function formatTimeAgo(dateStr: string): string {
   return `${Math.floor(diff / 2592000)} 個月前`;
 }
 
-<<<<<<< HEAD
 const SAFE_COLOR_RE = /^#[0-9a-fA-F]{3,8}$/;
 function safeColor(c: string | undefined): string {
   if (!c || !SAFE_COLOR_RE.test(c)) return '#6B7280';

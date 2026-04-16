@@ -1,8 +1,13 @@
 ---
 import Layout from '@/layouts/Layout.astro';
 import MemberProfile from '@/components/team/MemberProfile';
+import { MEMBERS } from '@/lib/constants';
 
-export const prerender = false;
+export async function getStaticPaths() {
+  return MEMBERS.map((member) => ({
+    params: { id: member.id },
+  }));
+}
 
 const { id } = Astro.params;
 ---
