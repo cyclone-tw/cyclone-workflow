@@ -66,18 +66,79 @@ function extractSqlBlocks(source: string): Array<{ sql: string; startLine: numbe
   return blocks;
 }
 
+/**
+ * 判斷 SELECT 子句中是否含「裸 id」—— 即任何 `id` 詞元前面不是 `.` 的參照。
+ * 先拆掉 `AS name` 的命名子句(那個 name 只是欄位別名不是 column ref),
+ * 再用 negative lookbehind 找沒被 alias 前綴的 id。
+ *
+ * 會抓到的 pattern:
+ *   SELECT id, name FROM t              -> true  (裸 id)
+ *   SELECT u.id, id FROM u LEFT JOIN x  -> true  (混合 —— 裸 id 仍在)
+ *
+ * 不會誤判:
+ *   SELECT u.id, u.name                 -> false (全 alias)
+ *   SELECT u.id AS user_id              -> false (AS 命名不算 ref)
+ *   SELECT COUNT(*) AS id               -> false (命名為 id,不是欄位 id 的 ref)
+ */
+function hasBareId(selectPart: string): boolean {
+  const stripped = selectPart
+    .replace(/\bAS\s+\w+/gi, '')  // 去掉 AS alias 的命名子句
+    .replace(/--.*$/gm, '');       // 去掉 SQL 行註解
+  return /(?<![\w.])id\b/i.test(stripped);
+}
+
 function analyze(sql: string): { hasWhere: boolean; selectsUnaliasedId: boolean } {
   const hasWhere = /\bWHERE\b/i.test(sql);
-  // 簡化:檢查 SELECT 區段是否有「裸欄位 id」或「表名.id」且那個表名沒被 alias
-  //   - `SELECT id,` 或 `SELECT id FROM` -> 裸 id,需 review
-  //   - `SELECT main_table.id` -> 若 main_table 有被 alias 為 t,則視為違規
-  // 暫以 heuristic:只要出現 ` id,` 或 ` id\n` 或 ` id FROM` 就標記
-  const selectPart = sql.match(/SELECT([\s\S]*?)FROM/i)?.[1] ?? '';
-  const selectsUnaliasedId = /\bid\s*[,\s]/i.test(selectPart) && !/[A-Za-z_]\w*\.id/i.test(selectPart);
-  return { hasWhere, selectsUnaliasedId };
+  const selectPart = sql.match(/SELECT([\s\S]*?)\bFROM\b/i)?.[1] ?? '';
+  return { hasWhere, selectsUnaliasedId: hasBareId(selectPart) };
+}
+
+function selfTest(): void {
+  const cases: Array<{ name: string; sql: string; expectUnaliased: boolean }> = [
+    {
+      name: 'bare id in SELECT',
+      sql: 'SELECT id, name FROM users u LEFT JOIN orders o ON o.uid = u.id WHERE u.status = 1',
+      expectUnaliased: true,
+    },
+    {
+      name: 'mixed aliased + bare id',
+      sql: 'SELECT u.id, id FROM users u LEFT JOIN orders o ON o.uid = u.id WHERE u.status = 1',
+      expectUnaliased: true,
+    },
+    {
+      name: 'all aliased',
+      sql: 'SELECT u.id, u.name FROM users u LEFT JOIN orders o ON o.uid = u.id WHERE u.status = 1',
+      expectUnaliased: false,
+    },
+    {
+      name: 'AS id rename (not a ref)',
+      sql: 'SELECT COUNT(*) AS id FROM users u LEFT JOIN orders o ON o.uid = u.id',
+      expectUnaliased: false,
+    },
+    {
+      name: 'alias with id in name',
+      sql: 'SELECT wisher_id FROM wishes w LEFT JOIN users u ON u.id = w.wisher_id',
+      expectUnaliased: false,  // wisher_id 不是裸 id
+    },
+  ];
+  let pass = 0;
+  for (const c of cases) {
+    const { selectsUnaliasedId } = analyze(c.sql);
+    const ok = selectsUnaliasedId === c.expectUnaliased;
+    if (ok) pass++;
+    else {
+      console.error(`SELF-TEST FAIL: "${c.name}" — expected ${c.expectUnaliased}, got ${selectsUnaliasedId}`);
+    }
+  }
+  if (pass !== cases.length) {
+    console.error(`\nself-test: ${pass}/${cases.length} passed — 稽核邏輯有 bug,請先修`);
+    process.exit(1);
+  }
+  console.log(`self-test: ${pass}/${cases.length} ✓`);
 }
 
 function main(): void {
+  selfTest();
   const root = join(process.cwd(), 'functions/api');
   const files = walk(root);
   const findings: Finding[] = [];

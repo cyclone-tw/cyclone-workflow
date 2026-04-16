@@ -64,3 +64,16 @@ audit 用正則掃 SQL 字串,準確度有限:
 - `GROUP BY` 是否完整只在人工 review 階段確認
 
 這是為什麼 MED 被歸為「建議確認」而非直接判違規 —— 工具降低人眼掃描的負擔,不取代 review。
+
+## 自我檢測 (self-test)
+
+初版邏輯用「任何 id + 無任何 `alias.id`」當檢測條件,會**漏掉混合 alias + 裸 id 的 query**(例如 `SELECT u.id, id FROM ...`)。已改用 negative lookbehind 精確抓「前面不是 `.` 的 id」。
+
+腳本開頭會跑 5 個固定 fixtures:
+- 裸 id + LEFT JOIN + WHERE → 應判 HIGH
+- 混合 aliased + 裸 id → 應判 HIGH
+- 全 aliased → 應判 non-HIGH
+- `AS id` 命名(非欄位 ref) → 應判 non-HIGH
+- `wisher_id` 類內含 id 的複合欄位 → 應判 non-HIGH
+
+self-test 失敗則直接 exit 1,避免在邏輯錯誤的情況下產出「全綠」假報告。
