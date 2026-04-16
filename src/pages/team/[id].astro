@@ -1,0 +1,12 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import MemberProfile from '@/components/team/MemberProfile';
+
+export const prerender = false;
+
+const { id } = Astro.params;
+---
+
+<Layout title="成員空間" description="共學團成員的個人空間">
+  <MemberProfile client:load memberId={id!} />
+</Layout>

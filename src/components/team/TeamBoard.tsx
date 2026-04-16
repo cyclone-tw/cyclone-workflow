@@ -158,6 +158,19 @@ export default function TeamBoard() {
                     {member.bio}
                   </p>
                 )}
+
+                {/* View Profile Button */}
+                <a
+                  href={`/team/${member.id}`}
+                  className="mt-3 px-3 py-1.5 rounded-lg text-xs font-medium transition-all hover:opacity-80"
+                  style={{
+                    background: `${member.color}15`,
+                    color: member.color,
+                    border: `1px solid ${member.color}30`,
+                  }}
+                >
+                  查看空間 →
+                </a>
               </div>
             ))}
           </div>
