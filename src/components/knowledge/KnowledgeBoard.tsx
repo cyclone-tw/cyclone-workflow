@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
-import DOMPurify from 'dompurify';
 import { useAuth } from '@/components/auth/useAuth';
 import { timeAgo } from '@/lib/time';
 import { sanitizeMarkdown, sanitizeUrl, sanitizeImgSrc } from '@/lib/markdown';

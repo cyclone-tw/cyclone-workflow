@@ -430,27 +430,35 @@ function ToolCard({ tool, canEdit, loggedIn, onEdit, onDelete, onToggleFavorite 
           remarkPlugins={[remarkGfm]}
           rehypePlugins={[rehypeRaw]}
           components={{
-            code({ node: _node, className: _className, children, ...props }: any) {
-              const inline = !className;
-              return inline ? (
-                <code style={{ background: '#2a2a4a', color: '#b0b0d0', borderRadius: '4px', padding: '0.1em 0.4em', fontSize: '0.85em', fontFamily: 'monospace' }} {...props}>
-                  {children}
-                </code>
-              ) : (
+            code({ className, children, ...props }) {
+              const match = /language-(\w+)/.exec(className || '');
+              const isInline = !match && !String(children).includes('\n');
+              if (isInline) {
+                return (
+                  <code style={{ background: '#2a2a4a', color: '#b0b0d0', borderRadius: '4px', padding: '0.1em 0.4em', fontSize: '0.85em', fontFamily: 'monospace' }} {...props}>
+                    {children}
+                  </code>
+                );
+              }
+              return (
                 <code style={{ background: '#1e1e3a', color: '#90b0ff', borderRadius: '6px', padding: '0.8em 1em', display: 'block', overflowX: 'auto', fontSize: '0.85em', fontFamily: 'monospace', border: '1px solid #3a3a6a' }} {...props}>
                   {children}
                 </code>
               );
             },
-            a({ node: _node, href, children, ...props }: any) {
-              return sanitizeUrl(href) ? (
-                <a href={sanitizeUrl(href)} target="_blank" rel="noopener noreferrer" style={{ color: '#80a0ff', textDecoration: 'underline' }} {...props}>
+            a({ href, children, ...props }) {
+              const safe = sanitizeUrl(href);
+              if (!safe) return <span {...props}>{children}</span>;
+              return (
+                <a href={safe} target="_blank" rel="noopener noreferrer" style={{ color: '#80a0ff', textDecoration: 'underline' }} {...props}>
                   {children}
                 </a>
-              ) : null;
+              );
             },
-            img({ node: _node, src, alt, ...props }: any) {
-              return <img src={sanitizeImgSrc(src)} alt={alt || ''} style={{ maxWidth: '100%', borderRadius: '6px', marginTop: '0.5em' }} {...props} />;
+            img({ src, alt }) {
+              const safeSrc = sanitizeImgSrc(src);
+              if (!safeSrc) return null;
+              return <img src={safeSrc} alt={alt || ''} style={{ maxWidth: '100%', borderRadius: '6px', marginTop: '0.5em' }} />;
             },
           }}
         >
