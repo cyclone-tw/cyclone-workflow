@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '@/components/auth/useAuth';
 import { timeAgo } from '@/lib/time';
 import { ROLE_LEVEL } from '@/lib/auth';
@@ -162,6 +162,20 @@ function VoiceModal({
   const [category, setCategory] = useState(voice?.metadata?.category || '');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const savedRef = useRef(false);
+
+  const hasUnsaved = !isEdit
+    ? title.trim() || content.trim() || toolUrl.trim() || rating || priceModel.trim() || useCase.trim() || category
+    : title !== (voice?.title || '') || content !== (voice?.content || '')
+      || toolUrl !== (voice?.metadata?.tool_url || '') || rating !== (voice?.metadata?.rating || 0)
+      || priceModel !== (voice?.metadata?.price_model || '') || useCase !== (voice?.metadata?.use_case || '')
+      || category !== (voice?.metadata?.category || '');
+
+  const handleClose = () => {
+    if (savedRef.current) { onClose(); return; }
+    if (hasUnsaved && !confirm('有未儲存的內容，確定要關閉嗎？')) return;
+    onClose();
+  };
 
   const handleSubmit = async () => {
     const t = title.trim();
@@ -201,6 +215,7 @@ function VoiceModal({
         const data = await res.json();
         if (!data.ok) throw new Error(data.error || '發表失敗');
       }
+      savedRef.current = true;
       onSaved();
     } catch (err) {
       setError(err instanceof Error ? err.message : '操作失敗');
@@ -212,7 +227,8 @@ function VoiceModal({
   return (
     <div
       style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      onClick={(e) => { if (e.target === e.currentTarget) handleClose(); }}
+      onKeyDown={(e) => { if (e.key === 'Escape') handleClose(); }}
     >
       <div
         style={{
@@ -229,7 +245,7 @@ function VoiceModal({
           <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: '#F0F0FF', margin: 0 }}>
             {isEdit ? '編輯內容' : `發表${TYPE_CONFIG[type].label}`}
           </h3>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#9090B0', fontSize: '1.25rem', cursor: 'pointer', lineHeight: 1 }}>✕</button>
+          <button onClick={handleClose} style={{ background: 'none', border: 'none', color: '#9090B0', fontSize: '1.25rem', cursor: 'pointer', lineHeight: 1 }}>✕</button>
         </div>
 
         {!isEdit && (
@@ -374,7 +390,7 @@ function VoiceModal({
 
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             style={{ padding: '0.625rem 1rem', borderRadius: '0.75rem', border: '1px solid #2A2A4A', background: 'transparent', color: '#9090B0', cursor: 'pointer', fontSize: '0.875rem' }}
           >
             取消
