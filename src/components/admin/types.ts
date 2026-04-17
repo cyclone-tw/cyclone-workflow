@@ -47,6 +47,41 @@ export interface AdminReport {
   reporter_name: string | null;
 }
 
+export interface AdminUser {
+  id: string;
+  name: string;
+  email: string;
+  avatar_url: string | null;
+  discord_id: string | null;
+  status: 'active' | 'pending';
+  archived_at: string | null;
+  updated_at: string | null;
+  roles: string[];
+  display_name: string;
+  emoji: string;
+  color: string;
+  bio: string;
+}
+
+export interface RelatedCounts {
+  checkins: number;
+  wishes: number;
+  knowledge: number;
+  likes: number;
+  sessions: number;
+}
+
+export interface Announcement {
+  id: string;
+  title: string;
+  content: string;
+  pinned: boolean;
+  author_id: string;
+  author_name: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export const STAT_ITEMS: { key: keyof SiteStats; label: string; icon: string }[] = [
   { key: 'totalUsers', label: '總成員數', icon: '👥' },
   { key: 'totalCheckins', label: '打卡次數', icon: '✅' },
