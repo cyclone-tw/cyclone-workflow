@@ -7,11 +7,10 @@ import AdminMessages from './tabs/AdminMessages';
 import AdminReports from './tabs/AdminReports';
 import AdminUsers from './tabs/AdminUsers';
 import AdminPending from './tabs/AdminPending';
-import AddMemberForm from './forms/AddMemberForm';
-import EditMemberForm from './forms/EditMemberForm';
-import AnnouncementForm from './forms/AnnouncementForm';
+import AdminAnnouncements from './tabs/AdminAnnouncements';
+import AdminModals from './AdminModals';
 import type { SiteStats, Analytics, AdminMessage, AdminReport, AdminUser, RelatedCounts, Announcement } from './types';
-import { ROLE_BADGE_COLORS, ROLE_LABELS, ROLE_LEVEL_ORDER, Modal } from './shared';
+import { ROLE_LABELS, ROLE_LEVEL_ORDER } from './shared';
 
 // ---------------------------------------------------------------------------
 // Types(共享型別已搬到 ./types.ts)
@@ -41,9 +40,6 @@ export default function AdminPanel() {
   // Announcements
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [announcementLoading, setAnnouncementLoading] = useState(false);
-  const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
-  const [deletingAnnouncement, setDeletingAnnouncement] = useState<{ id: string; title: string; loading: boolean } | null>(null);
-  const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
 
   // Admin Messages
   const [adminMessages, setAdminMessages] = useState<AdminMessage[]>([]);
@@ -423,82 +419,23 @@ export default function AdminPanel() {
 
       <AdminAnalytics analytics={analytics} />
 
-      {/* Announcements Management */}
-      <section>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-            最新公告
-          </h2>
-          <button
-            onClick={() => { setEditingAnnouncement(null); setShowAnnouncementModal(true); }}
-            className="text-sm px-3 py-1.5 rounded-lg font-medium text-white transition-opacity hover:opacity-90"
-            style={{ background: 'var(--color-primary)' }}
-          >
-            + 新增公告
-          </button>
-        </div>
-        <div
-          className="rounded-xl overflow-hidden"
-          style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}
-        >
-          {announcementLoading ? (
-            <div className="px-4 py-8 text-center text-sm" style={{ color: 'var(--color-text-muted)' }}>
-              載入中...
-            </div>
-          ) : announcements.length === 0 ? (
-            <div className="px-4 py-8 text-center text-sm" style={{ color: 'var(--color-text-muted)' }}>
-              還沒有公告
-            </div>
-          ) : (
-            <div className="divide-y" style={{ borderColor: 'var(--color-border)' }}>
-              {announcements.map((a) => (
-                <div
-                  key={a.id}
-                  className="flex items-start gap-3 px-4 py-3"
-                  style={{ borderBottom: '1px solid var(--color-border)' }}
-                >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      {a.pinned && (
-                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full text-white" style={{ background: '#6C63FF' }}>
-                          📌 置頂
-                        </span>
-                      )}
-                      <span className="font-medium text-sm truncate" style={{ color: 'var(--color-text-primary)' }}>
-                        {a.title}
-                      </span>
-                    </div>
-                    <div className="text-xs mb-1" style={{ color: 'var(--color-text-muted)' }}>
-                      {a.author_name} · {new Date(a.created_at).toLocaleString('zh-TW')}
-                    </div>
-                    <div className="text-xs line-clamp-1" style={{ color: 'var(--color-text-secondary)' }}>
-                      {a.content}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1 shrink-0">
-                    <button
-                      onClick={() => { setEditingAnnouncement(a); setShowAnnouncementModal(true); }}
-                      className="p-2 rounded-lg text-xs transition-opacity hover:opacity-80"
-                      style={{ background: 'var(--color-bg-dark)', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border)' }}
-                      title="編輯"
-                    >
-                      ✏️
-                    </button>
-                    <button
-                      onClick={() => setDeletingAnnouncement({ id: a.id, title: a.title, loading: false })}
-                      className="p-2 rounded-lg text-xs transition-opacity hover:opacity-80"
-                      style={{ background: '#E9456020', color: '#E94560', border: '1px solid #E9456040' }}
-                      title="刪除"
-                    >
-                      🗑️
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
+      <AdminAnnouncements
+        announcements={announcements}
+        loading={announcementLoading}
+        onSave={async (body, existing) => {
+          const url = existing ? `/api/admin/announcements/${existing.id}` : '/api/admin/announcements';
+          const method = existing ? 'PUT' : 'POST';
+          const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+          const data = await res.json();
+          if (!data.ok) throw new Error(data.error || '儲存失敗');
+        }}
+        onDelete={async (id) => {
+          const res = await fetch(`/api/admin/announcements/${id}`, { method: 'DELETE' });
+          const data = await res.json();
+          if (!data.ok) throw new Error(data.error || '刪除失敗');
+        }}
+        onRefresh={fetchData}
+      />
 
       <AdminPending
         pendingUsers={pendingUsers}
@@ -542,216 +479,21 @@ export default function AdminPanel() {
       />
 
 
-      {/* Add Member Modal */}
-      {addOpen && (
-        <Modal title="新增成員" onClose={() => setAddOpen(false)}>
-          <AddMemberForm
-            onSubmit={async (body) => {
-              try {
-                await createMember(body);
-                setAddOpen(false);
-              } catch (err) {
-                setError(err instanceof Error ? err.message : '新增失敗');
-              }
-            }}
-            onCancel={() => setAddOpen(false)}
-          />
-        </Modal>
-      )}
-
-      {/* Edit Member Modal */}
-      {editing && (
-        <Modal title={`編輯：${editing.name}`} onClose={() => setEditing(null)}>
-          <EditMemberForm
-            user={editing}
-            onSubmit={async (body) => {
-              try {
-                await updateMember(editing.id, body);
-                setEditing(null);
-              } catch (err) {
-                setError(err instanceof Error ? err.message : '更新失敗');
-              }
-            }}
-            onCancel={() => setEditing(null)}
-          />
-        </Modal>
-      )}
-
-      {/* Archive Confirm Modal */}
-      {deleting && (
-        <Modal title={`封存：${deleting.user.name}`} onClose={() => setDeleting(null)}>
-          {deleting.loading ? (
-            <div className="py-4 text-center text-sm" style={{ color: 'var(--color-text-muted)' }}>
-              載入關聯資料...
-            </div>
-          ) : (
-            <>
-              <p className="text-sm mb-3" style={{ color: 'var(--color-text-secondary)' }}>
-                封存後該成員會從公開列表消失，session 也會被清除。可重新設為 active 恢復。
-              </p>
-              {deleting.relatedCounts && (
-                <div
-                  className="rounded-lg p-3 mb-4 text-xs space-y-1"
-                  style={{ background: 'var(--color-bg-dark)', border: '1px solid var(--color-border)', color: 'var(--color-text-muted)' }}
-                >
-                  <div>關聯資料（封存後仍保留但會被過濾）：</div>
-                  <div className="grid grid-cols-2 gap-1 mt-1">
-                    <span>打卡：{deleting.relatedCounts.checkins}</span>
-                    <span>願望：{deleting.relatedCounts.wishes}</span>
-                    <span>知識：{deleting.relatedCounts.knowledge}</span>
-                    <span>按讚：{deleting.relatedCounts.likes}</span>
-                    <span>Session：{deleting.relatedCounts.sessions}</span>
-                  </div>
-                </div>
-              )}
-              <div className="flex items-center justify-end gap-2">
-                <button
-                  onClick={() => setDeleting(null)}
-                  className="px-4 py-2 rounded-lg text-sm font-medium transition-opacity hover:opacity-90"
-                  style={{
-                    background: 'var(--color-bg-dark)',
-                    border: '1px solid var(--color-border)',
-                    color: 'var(--color-text-secondary)',
-                  }}
-                >
-                  取消
-                </button>
-                <button
-                  onClick={() => confirmArchive(deleting.user.id)}
-                  className="px-4 py-2 rounded-lg text-sm font-medium text-white transition-opacity hover:opacity-90"
-                  style={{ background: '#E94560' }}
-                >
-                  確認封存
-                </button>
-              </div>
-            </>
-          )}
-        </Modal>
-      )}
-
-      {/* Role Mutation Confirm Modal */}
-      {roleConfirm && (
-        <Modal
-          title={roleConfirm.action === 'add' ? '確認指派角色' : '確認移除角色'}
-          onClose={() => setRoleConfirm(null)}
-        >
-          <p className="text-sm mb-4" style={{ color: 'var(--color-text-secondary)' }}>
-            {roleConfirm.action === 'add' ? '將指派' : '將移除'}{' '}
-            <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-              {roleConfirm.user.name}
-            </span>{' '}
-            的{' '}
-            <span
-              className="inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full text-white"
-              style={{ backgroundColor: ROLE_BADGE_COLORS[roleConfirm.role] || '#9090B0' }}
-            >
-              {ROLE_LABELS[roleConfirm.role] || roleConfirm.role}
-            </span>{' '}
-            角色。
-          </p>
-          <div className="flex items-center justify-end gap-2">
-            <button
-              onClick={() => setRoleConfirm(null)}
-              className="px-4 py-2 rounded-lg text-sm font-medium transition-opacity hover:opacity-90"
-              style={{
-                background: 'var(--color-bg-dark)',
-                border: '1px solid var(--color-border)',
-                color: 'var(--color-text-secondary)',
-              }}
-            >
-              取消
-            </button>
-            <button
-              onClick={() => {
-                const { user: u, role, action } = roleConfirm;
-                setRoleConfirm(null);
-                mutateRole(u.id, role, action);
-              }}
-              className="px-4 py-2 rounded-lg text-sm font-medium text-white transition-opacity hover:opacity-90"
-              style={{ background: 'var(--color-primary)' }}
-            >
-              確認
-            </button>
-          </div>
-        </Modal>
-      )}
-
-      {/* Announcement Form Modal */}
-      {showAnnouncementModal && (
-        <Modal
-          title={editingAnnouncement ? '編輯公告' : '新增公告'}
-          onClose={() => { setShowAnnouncementModal(false); setEditingAnnouncement(null); }}
-        >
-          <AnnouncementForm
-            announcement={editingAnnouncement}
-            onSubmit={async (body) => {
-              const url = editingAnnouncement
-                ? `/api/admin/announcements/${editingAnnouncement.id}`
-                : '/api/admin/announcements';
-              const method = editingAnnouncement ? 'PUT' : 'POST';
-              const res = await fetch(url, {
-                method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body),
-              });
-              const data = await res.json();
-              if (!data.ok) throw new Error(data.error || '儲存失敗');
-              setShowAnnouncementModal(false);
-              setEditingAnnouncement(null);
-              fetchData();
-            }}
-            onCancel={() => { setShowAnnouncementModal(false); setEditingAnnouncement(null); }}
-          />
-        </Modal>
-      )}
-
-      {/* Announcement Delete Confirm Modal */}
-      {deletingAnnouncement && (
-        <Modal
-          title="確認刪除公告"
-          onClose={() => setDeletingAnnouncement(null)}
-        >
-          <p className="text-sm mb-4" style={{ color: 'var(--color-text-secondary)' }}>
-            確定要刪除公告「
-            <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-              {deletingAnnouncement.title}
-            </span>
-            」嗎？此操作無法撤銷。
-          </p>
-          <div className="flex items-center justify-end gap-2">
-            <button
-              onClick={() => setDeletingAnnouncement(null)}
-              className="px-4 py-2 rounded-lg text-sm font-medium transition-opacity hover:opacity-90"
-              style={{
-                background: 'var(--color-bg-dark)',
-                border: '1px solid var(--color-border)',
-                color: 'var(--color-text-secondary)',
-              }}
-            >
-              取消
-            </button>
-            <button
-              onClick={async () => {
-                setDeletingAnnouncement(prev => prev ? { ...prev, loading: true } : null);
-                try {
-                  const res = await fetch(`/api/admin/announcements/${deletingAnnouncement.id}`, { method: 'DELETE' });
-                  const data = await res.json();
-                  if (!data.ok) throw new Error(data.error || '刪除失敗');
-                  setDeletingAnnouncement(null);
-                  fetchData();
-                } catch (err) {
-                  alert(err instanceof Error ? err.message : '刪除失敗');
-                  setDeletingAnnouncement(null);
-                }
-              }}
-              className="px-4 py-2 rounded-lg text-sm font-medium text-white transition-opacity hover:opacity-90"
-              style={{ background: '#E94560' }}
-            >
-              確認刪除
-            </button>
-          </div>
-        </Modal>
-      )}
+      <AdminModals
+        addOpen={addOpen}
+        onCloseAdd={() => setAddOpen(false)}
+        onCreateMember={createMember}
+        onError={(msg) => setError(msg)}
+        editing={editing}
+        onCloseEdit={() => setEditing(null)}
+        onUpdateMember={updateMember}
+        deleting={deleting}
+        onCloseDelete={() => setDeleting(null)}
+        onConfirmArchive={(id) => confirmArchive(id)}
+        roleConfirm={roleConfirm}
+        onCloseRole={() => setRoleConfirm(null)}
+        onConfirmRole={(userId, role, action) => mutateRole(userId, role, action)}
+      />
     </div>
   );
 }
