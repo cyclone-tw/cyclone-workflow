@@ -165,8 +165,8 @@ export default function AdminUsers({
                         </div>
                       </td>
 
-                      <td className="px-4 py-3 text-right">
-                        <div className="flex items-center justify-end gap-2 flex-wrap">
+                      <td className="px-4 py-3 text-right min-w-0">
+                        <div className="flex items-center justify-end gap-1.5 flex-wrap max-w-[220px] ml-auto">
                           <select
                             className="text-xs px-2 py-1 rounded-lg
                               bg-[var(--color-bg-dark)] border border-[var(--color-border)]
