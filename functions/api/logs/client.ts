@@ -76,7 +76,7 @@ async function readBounded(request: Request, maxBytes: number): Promise<string |
       chunks.push(value);
     }
   } finally {
-    reader.releaseLock();
+    try { reader.releaseLock(); } catch {}
   }
   const buf = new Uint8Array(total);
   let offset = 0;
