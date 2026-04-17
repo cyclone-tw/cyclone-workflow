@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/components/auth/useAuth';
-import type { GroupRole } from '@/lib/constants';
 import AdminStats from './tabs/AdminStats';
 import AdminAnalytics from './tabs/AdminAnalytics';
 import AdminMessages from './tabs/AdminMessages';
@@ -10,7 +9,7 @@ import AdminPending from './tabs/AdminPending';
 import AdminAnnouncements from './tabs/AdminAnnouncements';
 import AdminModals from './AdminModals';
 import type { SiteStats, Analytics, AdminMessage, AdminReport, AdminUser, RelatedCounts, Announcement } from './types';
-import { ROLE_LABELS, ROLE_LEVEL_ORDER } from './shared';
+import { ROLE_LABELS } from './shared';
 
 // ---------------------------------------------------------------------------
 // Types(共享型別已搬到 ./types.ts)

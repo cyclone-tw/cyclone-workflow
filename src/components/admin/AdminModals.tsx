@@ -6,7 +6,7 @@ import type { AdminUser, RelatedCounts } from './types';
 interface Props {
   addOpen: boolean;
   onCloseAdd: () => void;
-  onCreateMember: (body: { name: string; email: string }) => Promise<void>;
+  onCreateMember: (body: { name: string; email: string; role: string; discord_id: string }) => Promise<void>;
   onError: (msg: string) => void;
 
   editing: AdminUser | null;
