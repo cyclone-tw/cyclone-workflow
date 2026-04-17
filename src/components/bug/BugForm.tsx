@@ -1,4 +1,10 @@
 import { useState } from 'react';
+import { apiFetch } from '@/lib/api';
+
+interface CreateIssueResponse {
+  ok: true;
+  id?: number;
+}
 
 type FormData = {
   nickname: string;
@@ -138,33 +144,26 @@ export default function BugForm() {
     setSubmitting(true);
     setSubmitError('');
 
-    try {
-      const res = await fetch('/api/issues', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: `[Bug] ${formData.bugPage} — ${formData.bugType}`,
-          description: buildDescription(),
-          author: formData.nickname.trim(),
-          priority: 'medium',
-          category: 'bug',
-        }),
-      });
+    const result = await apiFetch<CreateIssueResponse>('/api/issues', {
+      method: 'POST',
+      body: {
+        title: `[Bug] ${formData.bugPage} — ${formData.bugType}`,
+        description: buildDescription(),
+        author: formData.nickname.trim(),
+        priority: 'medium',
+        category: 'bug',
+      },
+      logLabel: 'bug-report:create',
+    });
 
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || '提交失敗');
-      }
-
-      const data = await res.json();
-      setIssueId(data.id || null);
+    if (result.ok) {
+      setIssueId(result.data.id ?? null);
       setSubmitted(true);
       showToast('Bug 回報已送出！');
-    } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : '提交失敗，請稍後再試');
-    } finally {
-      setSubmitting(false);
+    } else {
+      setSubmitError(result.error || '提交失敗，請稍後再試');
     }
+    setSubmitting(false);
   }
 
   function handleReset() {

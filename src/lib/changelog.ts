@@ -7,6 +7,16 @@ export interface ChangelogEntry {
 export const CHANGELOG: ChangelogEntry[] = [
   {
     version: '',
+    date: '2026-04-17',
+    changes: [
+      'refactor(#98): 新增 src/lib/api.ts 統一 apiFetch<T>() client — discriminated union 回傳、整合 logger、消除 fetch → json → data.ok → throw 四步樣板',
+      'refactor(#98): 新增 src/lib/logger.ts 分層 log(debug/info/warn/error)+ context 物件,client error 自動 POST 到 /api/logs/client',
+      'refactor(#98): 新增 functions/api/logs/client.ts 接收端,4KB body 上限 + 白名單 shape 驗證,倒進 Cloudflare Pages log stream',
+      'refactor(#98): Migrate AnnouncementBanner / BugForm 兩處 call site 當 POC,驗證 apiFetch 與現有 endpoint convention 相容',
+    ],
+  },
+  {
+    version: '',
     date: '2026-04-16',
     changes: [
       'feat(#89): 知識庫 / AI 工具箱 Markdown 渲染支援 — 支援 GFM 語法（表格、刪除線等），所有內容經 XSS 防護過濾',

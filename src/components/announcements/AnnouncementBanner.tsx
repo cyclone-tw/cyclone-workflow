@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { apiFetch } from '@/lib/api';
 
 interface Announcement {
   id: string;
@@ -9,6 +10,11 @@ interface Announcement {
   created_at: string;
 }
 
+interface AnnouncementsResponse {
+  ok: true;
+  announcements: Announcement[];
+}
+
 const MAX_VISIBLE = 3;
 
 export default function AnnouncementBanner() {
@@ -16,15 +22,12 @@ export default function AnnouncementBanner() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    fetch('/api/announcements')
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.ok && data.announcements?.length > 0) {
-          setAnnouncements(data.announcements.slice(0, MAX_VISIBLE));
-          setVisible(true);
-        }
-      })
-      .catch(() => {});
+    apiFetch<AnnouncementsResponse>('/api/announcements').then((result) => {
+      if (result.ok && result.data.announcements?.length > 0) {
+        setAnnouncements(result.data.announcements.slice(0, MAX_VISIBLE));
+        setVisible(true);
+      }
+    });
   }, []);
 
   if (!visible || announcements.length === 0) return null;
