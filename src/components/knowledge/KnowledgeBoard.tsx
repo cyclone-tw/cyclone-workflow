@@ -10,7 +10,7 @@ import ResourceComments from '@/components/ResourceComments';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type KnowledgeCategory = 'template' | 'best-practice' | 'qa' | 'other';
+type KnowledgeCategory = 'template' | 'best-practice' | 'qa' | 'concept' | 'other';
 
 interface Tag {
   id: string;
@@ -41,6 +41,7 @@ const CATEGORY_CONFIG: Record<KnowledgeCategory, { label: string; color: string 
   template: { label: '工作流模板', color: '#00F5A0' },
   'best-practice': { label: '最佳實踐', color: '#6C63FF' },
   qa: { label: '問答精華', color: '#00D9FF' },
+  concept: { label: '概念補充', color: '#FF9F43' },
   other: { label: '其他', color: '#9090B0' },
 };
 
@@ -254,15 +255,15 @@ function EntryModal({ entry, onClose, onSaved }: ModalProps) {
 
           {/* URL */}
           <div style={{ marginBottom: '0.75rem' }}>
-            <label style={labelStyle}>相關連結 <span style={{ color: '#9090B0', fontWeight: 400 }}>(選填)</span></label>
-            <input
-              type="url"
+            <label style={labelStyle}>相關連結 <span style={{ color: '#9090B0', fontWeight: 400 }}>(選填, 多個用換行分隔)</span></label>
+            <textarea
               placeholder="https://..."
+              rows={2}
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               onFocus={handleFocusIn}
               onBlur={handleFocusOut}
-              style={inputStyle}
+              style={{ ...inputStyle, resize: 'vertical' }}
             />
           </div>
 
@@ -622,6 +623,38 @@ function EntryCard({
         </div>
       )}
 
+      {/* URLs */}
+      {entry.url && (
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+          {entry.url.split('\n').filter(Boolean).map((urlStr, i) => {
+            const safe = sanitizeUrl(urlStr.trim());
+            if (!safe) return null;
+            try {
+              const u = new URL(safe);
+              return (
+                <a
+                  key={i}
+                  href={safe}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: '0.25rem',
+                    fontSize: '0.75rem', color: '#00D9FF',
+                    textDecoration: 'none', padding: '0.15rem 0.4rem',
+                    background: 'rgba(0,217,255,0.08)', borderRadius: '0.375rem',
+                    border: '1px solid rgba(0,217,255,0.2)',
+                  }}
+                >
+                  🔗 {u.hostname}
+                </a>
+              );
+            } catch {
+              return null;
+            }
+          })}
+        </div>
+      )}
+
       {/* Comments */}
       {expanded && (
         <ResourceComments
@@ -822,7 +855,7 @@ export default function KnowledgeBoard() {
   const isAdmin = user ? ['captain', 'tech', 'admin'].includes(user.effectiveRole) : false;
 
   // Group by category when showing all
-  const categoryOrder: KnowledgeCategory[] = ['template', 'best-practice', 'qa', 'other'];
+  const categoryOrder: KnowledgeCategory[] = ['template', 'best-practice', 'qa', 'concept', 'other'];
   const grouped = categoryFilter === 'all'
     ? categoryOrder.map((cat) => ({
         category: cat,
