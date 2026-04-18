@@ -9,6 +9,8 @@ export const CHANGELOG: ChangelogEntry[] = [
     version: '',
     date: '2026-04-19',
     changes: [
+      'feat(#120): Gemini AI 分析建議 — POST /api/admin/ai-insights + AdminAIInsights tab 元件',
+      'feat(#120): Admin Panel 整合 AI 建議按鈕，分析 GA4 數據生成改善建議',
       'fix(security): /api/members 成員列表補上 archived_at IS NULL 過濾，防止已封存帳號洩漏',
       'fix(security): /api/members/:id Try 1 補上 archived_at IS NULL，與 Try 2 一致',
       'fix: 移除 functions/api/members/[id].ts 未使用的 ROLE_LEVEL import',

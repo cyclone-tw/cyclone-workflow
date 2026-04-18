@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/components/auth/useAuth';
 import AdminStats from './tabs/AdminStats';
 import AdminAnalytics from './tabs/AdminAnalytics';
+import AdminAIInsights from './tabs/AdminAIInsights';
 import AdminMessages from './tabs/AdminMessages';
 import AdminReports from './tabs/AdminReports';
 import AdminUsers from './tabs/AdminUsers';
@@ -417,6 +418,8 @@ export default function AdminPanel() {
       <AdminStats stats={stats} />
 
       <AdminAnalytics analytics={analytics} />
+
+      <AdminAIInsights analytics={analytics} />
 
       <AdminAnnouncements
         announcements={announcements}
