@@ -7,6 +7,15 @@ export interface ChangelogEntry {
 export const CHANGELOG: ChangelogEntry[] = [
   {
     version: '',
+    date: '2026-04-18',
+    changes: [
+      'feat(#97): 討論區留言回覆串 — messages 表新增 parent_id 欄位、回覆 API（單層巢狀）、前端回覆按鈕 + inline form + 縮排顯示',
+      'feat(#97): 回覆留言支援按讚/編輯/刪除/檢舉，不支援置頂',
+      'refactor(#97): MessageCard / ReplyForm 抽出獨立元件，MessageBoard 954→290 行',
+    ],
+  },
+  {
+    version: '',
     date: '2026-04-17',
     changes: [
       'refactor(#98): 新增 src/lib/api.ts 統一 apiFetch<T>() client — discriminated union 回傳、整合 logger、消除 fetch → json → data.ok → throw 四步樣板',

@@ -294,6 +294,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       { sql: `ALTER TABLE messages ADD COLUMN deleted_at TEXT`, note: 'messages.deleted_at' },
       { sql: `ALTER TABLE messages ADD COLUMN deleted_by TEXT`, note: 'messages.deleted_by' },
       { sql: `ALTER TABLE knowledge_entries ADD COLUMN url TEXT DEFAULT ''`, note: 'knowledge_entries.url' },
+      { sql: `ALTER TABLE messages ADD COLUMN parent_id INTEGER DEFAULT NULL REFERENCES messages(id)`, note: 'messages.parent_id' },
     ];
 
     // --- Migrate legacy wish.claimer_id → wish_claimers ---
@@ -353,6 +354,11 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     // announcements index for pinned + created_at ordering
     try {
       await db.execute({ sql: `CREATE INDEX IF NOT EXISTS idx_announcements_pinned ON announcements(pinned DESC, created_at DESC)`, args: [] });
+    } catch { /* index already exists */ }
+
+    // messages parent_id index for reply threading
+    try {
+      await db.execute({ sql: `CREATE INDEX IF NOT EXISTS idx_messages_parent_id ON messages(parent_id)`, args: [] });
     } catch { /* index already exists */ }
 
     // --- Seed members (from constants) ---
