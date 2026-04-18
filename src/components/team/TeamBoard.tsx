@@ -1,4 +1,13 @@
 import { useState, useEffect } from 'react';
+import { MEMBERS } from '@/lib/constants';
+
+const MEMBER_SLUG_MAP = new Map<string, string>();
+MEMBERS.forEach((m) => MEMBER_SLUG_MAP.set(m.name.toLowerCase(), m.id));
+
+function getMemberSlug(displayName: string, name: string, id: string): string {
+  return MEMBER_SLUG_MAP.get((displayName || name).toLowerCase()) || id;
+}
+
 
 interface TeamMember {
   id: string;
@@ -30,7 +39,14 @@ export default function TeamBoard() {
       .then((r) => r.json())
       .then((data) => {
         if (data.ok) {
-          setMembers(data.members);
+          // Deduplicate: same person may have both legacy and OAuth accounts
+          const seen = new Set<string>();
+          const unique = (data.members as TeamMember[]).filter((m: TeamMember) => {
+            if (seen.has(m.name)) return false;
+            seen.add(m.name);
+            return true;
+          });
+          setMembers(unique);
         } else {
           setError(true);
         }
@@ -161,7 +177,7 @@ export default function TeamBoard() {
 
                 {/* View Profile Button */}
                 <a
-                  href={`/team/${member.id}`}
+                  href={`/team/${getMemberSlug(member.display_name, member.name, member.id)}`}
                   className="mt-3 px-3 py-1.5 rounded-lg text-xs font-medium transition-all hover:opacity-80"
                   style={{
                     background: `${member.color}15`,

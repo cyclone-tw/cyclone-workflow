@@ -22,18 +22,34 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
               GROUP_CONCAT(ur.role) AS roles
             FROM users u
             LEFT JOIN user_roles ur ON ur.user_id = u.id
-            WHERE u.id = ? AND u.status = 'active' AND u.archived_at IS NULL
+            WHERE u.id = ? AND u.status = 'active'
             GROUP BY u.id`,
       args: [id],
     });
 
-    if (!result.rows.length) {
+    // Fallback: try matching by name when ID is a MEMBERS constant slug (e.g. 'dar')
+    let rows = result.rows;
+    if (!rows.length) {
+      const byName = await db.execute({
+        sql: `SELECT u.id, u.name, u.discord_id, u.avatar_url, u.color,
+                u.display_name, u.emoji, u.bio,
+                GROUP_CONCAT(ur.role) AS roles
+              FROM users u
+              LEFT JOIN user_roles ur ON ur.user_id = u.id
+              WHERE LOWER(u.name) = LOWER(?) AND u.status = 'active'
+              GROUP BY u.id`,
+        args: [id],
+      });
+      rows = byName.rows;
+    }
+
+    if (!rows.length) {
       return new Response(JSON.stringify({ ok: false, error: '找不到該成員' }), {
         status: 404, headers: { 'Content-Type': 'application/json' },
       });
     }
 
-    const row = result.rows[0];
+    const row = rows[0];
     const roles = String(row.roles ?? '').split(',').filter(Boolean);
     const effectiveRole = roles.length > 0 ? getEffectiveRole(roles) : 'companion';
 

@@ -9,6 +9,9 @@ export const CHANGELOG: ChangelogEntry[] = [
     version: '',
     date: '2026-04-18',
     changes: [
+      'fix(#110): 成員空間 API 移除 archived_at 篩選 — /api/members/[id] 與 /api/members 不再排除 archived 成員，讓 legacy ID 的靜態頁面能正確載入',
+      'fix(#110): TeamBoard 成員去重 — 過濾同名重複帳號（legacy + OAuth），避免團隊頁顯示重複成員',
+      'fix(#110): 成員空間空狀態導引 — MemberProfile AI 工具投稿與知識庫貢獻區塊新增前往投稿頁面的連結按鈕',
       'fix(#106): 討論區發文/回覆/編輯輸入框改為自動隨內容高度擴展，移除固定 rows 限制',
       'fix(#106): 討論區留言顯示保留使用者換行，加入 remark-breaks 讓單一 \\n 渲染為 <br>',
       'fix(#112): AI 工具箱「新增工具」無法送出 — ToolModal 補上缺失的 githubUrl useState、POST/PATCH API 接收 github_url 並做 http/https 格式驗證、[id].ts 補上 github_url 欄位 migration',
