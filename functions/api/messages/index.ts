@@ -13,12 +13,11 @@ function getDb(env: Env) {
   });
 }
 
-// GET: Fetch all messages
+// GET: Fetch messages (top-level with nested replies)
 export const onRequestGet: PagesFunction<Env> = async (context) => {
   try {
     const db = getDb(context.env);
 
-    // 嘗試取得當前登入使用者（optional — 不強迫登入）
     let currentUserId: string | null = null;
     try {
       const { requireAuth } = await import('../../../src/lib/auth.ts');
@@ -28,7 +27,37 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       // 未登入，繼續以訪客身份
     }
 
+    // Top-level messages with reply_count
     const result = await db.execute({
+      sql: `SELECT m.*,
+                   COALESCE(lc.like_count, 0) as like_count,
+                   COALESCE(mr.report_count, 0) AS report_count,
+                   COALESCE(rc.reply_count, 0) AS reply_count
+            FROM messages m
+            LEFT JOIN (
+              SELECT message_id, COUNT(*) as like_count
+              FROM discussion_likes
+              GROUP BY message_id
+            ) lc ON lc.message_id = m.id
+            LEFT JOIN (
+              SELECT message_id, COUNT(*) AS report_count
+              FROM message_reports
+              WHERE status = 'pending'
+              GROUP BY message_id
+            ) mr ON mr.message_id = m.id
+            LEFT JOIN (
+              SELECT parent_id, COUNT(*) AS reply_count
+              FROM messages
+              WHERE parent_id IS NOT NULL AND deleted_at IS NULL
+              GROUP BY parent_id
+            ) rc ON rc.parent_id = m.id
+            WHERE m.deleted_at IS NULL AND m.parent_id IS NULL
+            ORDER BY m.pinned DESC, m.created_at DESC LIMIT 100`,
+      args: [],
+    });
+
+    // All replies (parent_id IS NOT NULL)
+    const repliesResult = await db.execute({
       sql: `SELECT m.*,
                    COALESCE(lc.like_count, 0) as like_count,
                    COALESCE(mr.report_count, 0) AS report_count
@@ -44,12 +73,12 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
               WHERE status = 'pending'
               GROUP BY message_id
             ) mr ON mr.message_id = m.id
-            WHERE m.deleted_at IS NULL
-            ORDER BY m.pinned DESC, m.created_at DESC LIMIT 100`,
+            WHERE m.deleted_at IS NULL AND m.parent_id IS NOT NULL
+            ORDER BY m.created_at ASC`,
       args: [],
     });
 
-    // 如果已登入，撈出該使用者的檢舉記錄
+    // User's report records
     let reportedByMe: Set<number> = new Set();
     if (currentUserId) {
       const reports = await db.execute({
@@ -61,9 +90,22 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       }
     }
 
+    // Group replies by parent_id
+    const repliesByParent = new Map<number, any[]>();
+    for (const row of repliesResult.rows) {
+      const pid = row.parent_id as number;
+      if (!repliesByParent.has(pid)) repliesByParent.set(pid, []);
+      repliesByParent.get(pid)!.push({
+        ...row,
+        reported_by_me: reportedByMe.has(row.id as number),
+      });
+    }
+
     const messages = result.rows.map((row) => ({
       ...row,
       reported_by_me: reportedByMe.has(row.id as number),
+      reply_count: Number(row.reply_count ?? 0),
+      replies: repliesByParent.get(row.id as number) ?? [],
     }));
 
     return new Response(JSON.stringify({ ok: true, messages }), {
@@ -81,15 +123,16 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   }
 };
 
-// POST: Create a new message (requires login)
+// POST: Create a new message or reply (requires login)
 export const onRequestPost: PagesFunction<Env> = async (context) => {
   try {
     const user = await requireAuth(context.request, context.env);
 
-    const { content, tag, category } = await context.request.json() as {
+    const { content, tag, category, parent_id } = await context.request.json() as {
       content?: string;
       tag?: string;
       category?: string;
+      parent_id?: number | null;
     };
 
     const author = user.name;
@@ -110,9 +153,32 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
     const db = getDb(context.env);
 
+    // Validate parent_id if provided (reply)
+    if (parent_id) {
+      const parent = await db.execute({
+        sql: 'SELECT id, parent_id FROM messages WHERE id = ? AND deleted_at IS NULL',
+        args: [parent_id],
+      });
+      if (parent.rows.length === 0) {
+        return new Response(JSON.stringify({ ok: false, error: '找不到要回覆的留言' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      if (parent.rows[0].parent_id !== null) {
+        return new Response(JSON.stringify({ ok: false, error: '只能回覆頂層留言' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
+    const effectiveTag = parent_id ? '' : (tag?.trim() || '');
+    const effectiveCategory = parent_id ? '' : (category || '閒聊');
+
     await db.execute({
-      sql: `INSERT INTO messages (author, author_id, content, tag, category) VALUES (?, ?, ?, ?, ?)`,
-      args: [author.trim(), user.id, content.trim(), tag?.trim() || '', category || '閒聊'],
+      sql: `INSERT INTO messages (author, author_id, content, tag, category, parent_id) VALUES (?, ?, ?, ?, ?, ?)`,
+      args: [author.trim(), user.id, content.trim(), effectiveTag, effectiveCategory, parent_id ?? null],
     });
 
     return new Response(JSON.stringify({ ok: true }), {

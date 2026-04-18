@@ -25,7 +25,7 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
     const db = getDb(context.env);
 
     const existing = await db.execute({
-      sql: 'SELECT author_id FROM messages WHERE id = ?',
+      sql: 'SELECT author_id, parent_id FROM messages WHERE id = ?',
       args: [id],
     });
 
@@ -77,6 +77,13 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
           headers: { 'Content-Type': 'application/json' },
         });
       }
+    }
+
+    if (wantsPinned && existing.rows[0].parent_id !== null) {
+      return new Response(JSON.stringify({ ok: false, error: '回覆留言無法置頂' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
 
     if (wantsPinned && !isAdminOrAbove(user)) {
