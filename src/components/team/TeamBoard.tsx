@@ -1,4 +1,13 @@
 import { useState, useEffect } from 'react';
+import { MEMBERS } from '@/lib/constants';
+
+const MEMBER_SLUG_MAP = new Map<string, string>();
+MEMBERS.forEach((m) => MEMBER_SLUG_MAP.set(m.name.toLowerCase(), m.id));
+
+function getMemberSlug(displayName: string, name: string, id: string): string {
+  return MEMBER_SLUG_MAP.get((displayName || name).toLowerCase()) || id;
+}
+
 
 interface TeamMember {
   id: string;
@@ -168,7 +177,7 @@ export default function TeamBoard() {
 
                 {/* View Profile Button */}
                 <a
-                  href={`/team/${member.id}`}
+                  href={`/team/${getMemberSlug(member.display_name, member.name, member.id)}`}
                   className="mt-3 px-3 py-1.5 rounded-lg text-xs font-medium transition-all hover:opacity-80"
                   style={{
                     background: `${member.color}15`,

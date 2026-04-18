@@ -23,7 +23,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
               GROUP_CONCAT(ur.role) AS roles
             FROM users u
             LEFT JOIN user_roles ur ON ur.user_id = u.id
-            WHERE u.id = ? AND u.status = 'active' AND u.archived_at IS NULL
+            WHERE u.id = ? AND u.status = 'active'
             GROUP BY u.id`,
       args: [id],
     });
@@ -36,7 +36,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
                 u2.display_name, u2.emoji, u2.bio,
                 GROUP_CONCAT(ur.role) AS roles
               FROM users u1
-              JOIN users u2 ON u2.name = u1.name
+              JOIN users u2 ON LOWER(u2.name) = LOWER(u1.name)
                            AND u2.status = 'active'
                            AND u2.archived_at IS NULL
               LEFT JOIN user_roles ur ON ur.user_id = u2.id
@@ -52,7 +52,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       });
     }
 
-    const row = result.rows[0];
+    const row = rows[0];
     const roles = String(row.roles ?? '').split(',').filter(Boolean);
     const effectiveRole = roles.length > 0 ? getEffectiveRole(roles) : 'companion';
 
