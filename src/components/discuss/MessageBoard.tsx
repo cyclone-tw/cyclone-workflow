@@ -18,6 +18,7 @@ export default function MessageBoard() {
   const [likedIds, setLikedIds] = useState<Set<number>>(new Set());
   const [likeLoadingIds, setLikeLoadingIds] = useState<Set<number>>(new Set());
   const formRef = useRef<HTMLFormElement>(null);
+  const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
   const { user, loading: authLoading, login } = useAuth();
 
   // Flatten all messages (top-level + nested replies) for like checking
@@ -178,6 +179,7 @@ export default function MessageBoard() {
       const data = await res.json();
       if (data.ok) {
         setContent('');
+        if (contentTextareaRef.current) contentTextareaRef.current.style.height = '72px';
         setSuccess(true);
         setTimeout(() => setSuccess(false), 3000);
         fetchMessages();
@@ -292,9 +294,21 @@ export default function MessageBoard() {
               {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
-          <textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="說點什麼... 可以討論功能建議、許願樹改版、成果分享等 *" required rows={3} maxLength={2000}
-            className="w-full px-3 py-2 rounded-lg text-sm outline-none resize-y"
-            style={{ background: 'var(--color-bg-surface)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)' }} />
+          <textarea
+            ref={contentTextareaRef}
+            value={content}
+            onChange={(e: ChangeEvent<HTMLTextAreaElement>) => {
+              setContent(e.target.value);
+              e.target.style.height = 'auto';
+              e.target.style.height = `${e.target.scrollHeight}px`;
+            }}
+            placeholder="說點什麼... 可以討論功能建議、許願樹改版、成果分享等 *"
+            required
+            rows={3}
+            maxLength={2000}
+            className="w-full px-3 py-2 rounded-lg text-sm outline-none overflow-hidden"
+            style={{ background: 'var(--color-bg-surface)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)', minHeight: '72px', resize: 'none' }}
+          />
           <div className="flex items-center justify-between">
             <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{content.length}/2000</span>
             <div className="flex items-center gap-3">
