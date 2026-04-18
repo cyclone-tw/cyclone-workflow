@@ -16,16 +16,35 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     const id = context.params.id as string;
     const db = getDb(context.env);
 
-    const result = await db.execute({
+    // Try 1: direct ID match (OAuth accounts, non-archived)
+    let result = await db.execute({
       sql: `SELECT u.id, u.name, u.discord_id, u.avatar_url, u.color,
               u.display_name, u.emoji, u.bio,
               GROUP_CONCAT(ur.role) AS roles
             FROM users u
             LEFT JOIN user_roles ur ON ur.user_id = u.id
-            WHERE u.id = ? AND u.status = 'active'
+            WHERE u.id = ? AND u.status = 'active' AND u.archived_at IS NULL
             GROUP BY u.id`,
       args: [id],
     });
+
+    // Try 2: the ID may be a legacy archived account (e.g. 'dar', 'benben').
+    // Look up the active OAuth account with the same name.
+    if (!result.rows.length) {
+      result = await db.execute({
+        sql: `SELECT u2.id, u2.name, u2.discord_id, u2.avatar_url, u2.color,
+                u2.display_name, u2.emoji, u2.bio,
+                GROUP_CONCAT(ur.role) AS roles
+              FROM users u1
+              JOIN users u2 ON u2.name = u1.name
+                           AND u2.status = 'active'
+                           AND u2.archived_at IS NULL
+              LEFT JOIN user_roles ur ON ur.user_id = u2.id
+              WHERE u1.id = ? AND u1.status = 'active'
+              GROUP BY u2.id`,
+        args: [id],
+      });
+    }
 
     if (!result.rows.length) {
       return new Response(JSON.stringify({ ok: false, error: '找不到該成員' }), {

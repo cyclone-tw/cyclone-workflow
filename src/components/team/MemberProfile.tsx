@@ -78,19 +78,28 @@ export default function MemberProfile({ memberId }: { memberId: string }) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [memberRes, toolsRes, knowledgeRes] = await Promise.all([
-          fetch(`/api/members/${encodeURIComponent(memberId)}`),
-          fetch(`/api/ai-tools?contributor_id=${encodeURIComponent(memberId)}`),
-          fetch(`/api/knowledge?contributor_id=${encodeURIComponent(memberId)}`),
+        // Step 1: resolve member (legacy slug may map to OAuth account)
+        const memberRes = await fetch(`/api/members/${encodeURIComponent(memberId)}`);
+        const memberData = await memberRes.json();
+
+        if (!memberData.ok || !memberData.member) {
+          setError(true);
+          setLoading(false);
+          return;
+        }
+
+        const resolvedMember: Member = memberData.member;
+        setMember(resolvedMember);
+
+        // Step 2: fetch contributions using the resolved (OAuth) ID
+        const [toolsRes, knowledgeRes] = await Promise.all([
+          fetch(`/api/ai-tools?contributor_id=${encodeURIComponent(resolvedMember.id)}`),
+          fetch(`/api/knowledge?contributor_id=${encodeURIComponent(resolvedMember.id)}`),
         ]);
 
-        const memberData = await memberRes.json();
         const toolsData = await toolsRes.json();
         const knowledgeData = await knowledgeRes.json();
 
-        if (memberData.ok && memberData.member) {
-          setMember(memberData.member);
-        }
         if (toolsData.ok) setAiTools(toolsData.tools || []);
         if (knowledgeData.ok) setKnowledge(knowledgeData.entries || []);
       } catch {
