@@ -121,17 +121,24 @@ vi.mock('@libsql/client/web', () => ({
         return { rows: [], columns: [] };
       }
 
-      // SELECT single message by id (for DELETE verification)
+      // SELECT single message by id (with deleted_at filter)
       if (sql.includes('SELECT') && sql.includes('FROM messages WHERE id')) {
         const id = args[0];
-        const row = tables.messages.find((m) => String(m.id) === String(id));
+        let row = tables.messages.find((m) => String(m.id) === String(id));
+        if (row && sql.includes('deleted_at IS NULL') && row.deleted_at) row = undefined;
         return { rows: row ? [row] : [], columns: [] };
       }
 
-      // SELECT messages (list)
+      // SELECT messages (list) — filter deleted when SQL says so
       if (sql.includes('FROM messages')) {
-        const rows = [...tables.messages].reverse(); // newest first
-        return { rows, columns: [] };
+        let rows = [...tables.messages];
+        if (sql.includes('deleted_at IS NULL')) {
+          rows = rows.filter((m) => !m.deleted_at);
+        }
+        if (sql.includes('parent_id IS NULL')) {
+          rows = rows.filter((m) => !m.parent_id);
+        }
+        return { rows: rows.reverse(), columns: [] };
       }
 
       // INSERT messages
