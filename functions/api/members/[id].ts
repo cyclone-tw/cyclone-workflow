@@ -1,5 +1,5 @@
 import { createClient } from '@libsql/client/web';
-import { ROLE_LEVEL, getEffectiveRole } from '../../../src/lib/auth.ts';
+import { getEffectiveRole } from '../../../src/lib/auth.ts';
 
 interface Env {
   TURSO_DATABASE_URL: string;

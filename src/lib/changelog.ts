@@ -7,6 +7,14 @@ export interface ChangelogEntry {
 export const CHANGELOG: ChangelogEntry[] = [
   {
     version: '',
+    date: '2026-04-19',
+    changes: [
+      'fix(security): /api/members 成員列表補上 archived_at IS NULL 過濾，防止已封存帳號洩漏',
+      'fix: 移除 functions/api/members/[id].ts 未使用的 ROLE_LEVEL import',
+    ],
+  },
+  {
+    version: '',
     date: '2026-04-18',
     changes: [
       'fix(#110): 成員空間 API 移除 archived_at 篩選 — /api/members/[id] 與 /api/members 不再排除 archived 成員，讓 legacy ID 的靜態頁面能正確載入',
