@@ -4,7 +4,8 @@ import { resolve } from 'path';
 
 const BASE = resolve(__dirname, '..');
 
-describe('Members API — archived 成員安全回歸測試', () => {
+// ─── Stop gate: source code 靜態檢查（永遠執行） ───
+describe('Members API — archived 成員安全回歸測試 (stop gate)', () => {
   const indexPath = resolve(BASE, 'functions/api/members/index.ts');
   const idPath = resolve(BASE, 'functions/api/members/[id].ts');
 
@@ -20,7 +21,6 @@ describe('Members API — archived 成員安全回歸測試', () => {
   });
 
   it('/api/members/:id Try 1 應包含 archived_at IS NULL', () => {
-    // Count occurrences — Try 1 query should have archived_at IS NULL
     const matches = idSrc.match(/archived_at IS NULL/g);
     expect(matches).not.toBeNull();
     expect(matches!.length).toBeGreaterThanOrEqual(2); // Try 1 + Try 2
@@ -31,11 +31,12 @@ describe('Members API — archived 成員安全回歸測試', () => {
   });
 });
 
-const BASE_URL = process.env.E2E_BASE_URL || 'https://cyclone.tw';
+// ─── 線上驗證（需 API_BASE_URL，否則 skip） ───
+const onlineUrl = process.env.API_BASE_URL;
 
-describe('Members API — 線上驗證', () => {
+describe.skipIf(!onlineUrl)(`Members API — 線上驗證 (${onlineUrl || 'skip'})`, () => {
   it('/api/members 回傳 ok=true 且 members 為陣列', async () => {
-    const res = await fetch(`${BASE_URL}/api/members`);
+    const res = await fetch(`${onlineUrl}/api/members`);
     const data = await res.json() as { ok: boolean; members: Array<{ id: string; name: string }> };
     expect(data.ok).toBe(true);
     expect(Array.isArray(data.members)).toBe(true);
@@ -46,14 +47,14 @@ describe('Members API — 線上驗證', () => {
   });
 
   it('/api/members/dar 回傳 ok=true', async () => {
-    const res = await fetch(`${BASE_URL}/api/members/dar`);
+    const res = await fetch(`${onlineUrl}/api/members/dar`);
     const data = await res.json() as { ok: boolean; member: { name: string } };
     expect(data.ok).toBe(true);
     expect(data.member.name).toBeTruthy();
   });
 
   it('/api/members/nonexistent-id 回傳 404', async () => {
-    const res = await fetch(`${BASE_URL}/api/members/zzz-nonexistent-999`);
+    const res = await fetch(`${onlineUrl}/api/members/zzz-nonexistent-999`);
     const data = await res.json() as { ok: boolean };
     expect(data.ok).toBe(false);
     expect(res.status).toBe(404);
