@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import remarkBreaks from 'remark-breaks';
 import rehypeRaw from 'rehype-raw';
 import { sanitizeUrl, sanitizeImgSrc, sanitizeMarkdown } from '../../lib/markdown';
 import { ROLE_LEVEL } from '@/lib/auth';
@@ -73,6 +74,15 @@ export default function MessageCard({
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(msg.content);
   const [editSaving, setEditSaving] = useState(false);
+  const editTextareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (isEditing && editTextareaRef.current) {
+      const el = editTextareaRef.current;
+      el.style.height = 'auto';
+      el.style.height = `${el.scrollHeight}px`;
+    }
+  }, [isEditing]);
   const [pinLoading, setPinLoading] = useState(false);
   const [showReportDialog, setShowReportDialog] = useState(false);
   const [reportReason, setReportReason] = useState('');
@@ -188,13 +198,18 @@ export default function MessageCard({
         {isEditing ? (
           <div className="space-y-2">
             <textarea
+              ref={editTextareaRef}
               value={editContent}
-              onChange={(e) => setEditContent(e.target.value)}
+              onChange={(e) => {
+                setEditContent(e.target.value);
+                e.target.style.height = 'auto';
+                e.target.style.height = `${e.target.scrollHeight}px`;
+              }}
               disabled={editSaving}
               rows={3}
               maxLength={2000}
-              className="w-full px-3 py-2 rounded-lg text-sm outline-none resize-y"
-              style={{ background: 'var(--color-bg-surface)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)' }}
+              className="w-full px-3 py-2 rounded-lg text-sm outline-none overflow-hidden"
+              style={{ background: 'var(--color-bg-surface)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)', minHeight: '72px', resize: 'none' }}
             />
             <div className="flex items-center justify-between">
               <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{editContent.length}/2000</span>
@@ -224,7 +239,7 @@ export default function MessageCard({
           <>
             <div className="text-sm leading-relaxed break-words prose prose-sm max-w-none" style={{ color: 'var(--color-text-secondary)', overflowWrap: 'anywhere' }}>
               <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
+                remarkPlugins={[remarkGfm, remarkBreaks]}
                 rehypePlugins={[rehypeRaw]}
                 components={{
                   code({ className, children, ...props }) {

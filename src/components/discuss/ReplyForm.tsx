@@ -25,15 +25,21 @@ export default function ReplyForm({ parentId, onReply, onCancel, authorName }: R
     <div className="mt-2 space-y-2">
       <textarea
         value={content}
-        onChange={(e) => setContent(e.target.value)}
+        onChange={(e) => {
+          setContent(e.target.value);
+          e.target.style.height = 'auto';
+          e.target.style.height = `${e.target.scrollHeight}px`;
+        }}
         placeholder={`以 ${authorName} 回覆...`}
         rows={2}
         maxLength={2000}
-        className="w-full px-3 py-2 rounded-lg text-sm outline-none resize-y"
+        className="w-full px-3 py-2 rounded-lg text-sm outline-none overflow-hidden"
         style={{
           background: 'var(--color-bg-surface)',
           border: '1px solid var(--color-border)',
           color: 'var(--color-text-primary)',
+          minHeight: '52px',
+          resize: 'none',
         }}
       />
       <div className="flex items-center justify-between">
