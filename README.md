@@ -10,14 +10,14 @@
 
 ## 📸 概覽
 
-| 功能 | 說明 |
-|------|------|
-| 🏠 **Cyclone 管家** | Letta 長期記憶 AI 管家，記住你的每次對話 |
-| 🔒 **QA 知識集** | AES-GCM 加密的密碼保護問答 |
-| 📋 **Issues** | GitHub-style 問題追蹤，對應 Changelog 版本 |
-| 💬 **討論區** | 公開留言板，支援分類篩選 |
-| 🌳 **許願樹** | 互助機制 + 積分系統 |
-| 📊 **儀表板** | 個人進度追蹤 |
+| 功能                | 說明                                       |
+| ------------------- | ------------------------------------------ |
+| 🏠 **Cyclone 管家** | Letta 長期記憶 AI 管家，記住你的每次對話   |
+| 🔒 **QA 知識集**    | AES-GCM 加密的密碼保護問答                 |
+| 📋 **Issues**       | GitHub-style 問題追蹤，對應 Changelog 版本 |
+| 💬 **討論區**       | 公開留言板，支援分類篩選                   |
+| 🌳 **許願樹**       | 互助機制 + 積分系統                        |
+| 📊 **儀表板**       | 個人進度追蹤                               |
 
 ---
 
@@ -147,6 +147,7 @@ bun run deploy
 **push 到 `main` 分支就會自動部署到 Cloudflare Pages**，不需要手動觸發。
 
 流程：
+
 1. push 到 `main` → GitHub Actions 自動執行 `Cloudflare Pages Deploy` workflow
 2. 自動執行 `bun install` → `bun run build` → 部署到 Cloudflare Pages
 3. 部署成功後自動更新 `src/lib/version.ts` 版本號並 commit
@@ -222,31 +223,31 @@ cyclone-workflow/
 
 ## 📋 API Endpoints
 
-| Method | Endpoint | 說明 |
-|--------|----------|------|
-| `POST` | `/api/agent/chat` | 管家對話（Letta + 存 DB） |
-| `GET` | `/api/agent/history` | 對話歷史（分頁 + 搜尋） |
-| `POST` | `/api/db/init` | 初始化 DB schema |
-| `GET` | `/api/messages` | 讀取討論留言 |
-| `POST` | `/api/messages` | 發表留言 |
-| `GET` | `/api/issues` | Issue 列表 |
-| `POST` | `/api/issues` | 建立 Issue |
-| `GET` | `/api/issues/:id` | Issue 詳情 + 留言 |
-| `PATCH` | `/api/issues/:id` | 更新 Issue 狀態 |
-| `POST` | `/api/issues/:id` | 新增 Issue 留言 |
+| Method  | Endpoint             | 說明                      |
+| ------- | -------------------- | ------------------------- |
+| `POST`  | `/api/agent/chat`    | 管家對話（Letta + 存 DB） |
+| `GET`   | `/api/agent/history` | 對話歷史（分頁 + 搜尋）   |
+| `POST`  | `/api/db/init`       | 初始化 DB schema          |
+| `GET`   | `/api/messages`      | 讀取討論留言              |
+| `POST`  | `/api/messages`      | 發表留言                  |
+| `GET`   | `/api/issues`        | Issue 列表                |
+| `POST`  | `/api/issues`        | 建立 Issue                |
+| `GET`   | `/api/issues/:id`    | Issue 詳情 + 留言         |
+| `PATCH` | `/api/issues/:id`    | 更新 Issue 狀態           |
+| `POST`  | `/api/issues/:id`    | 新增 Issue 留言           |
 
 ---
 
 ## 👥 共學團成員
 
-| 暱稱 | Tag | 角色 |
-|------|-----|------|
-| 🌀 Cyclone | #2707 | 隊長 / 原PO |
-| 🧪 βenben | #0010 | Z.ai |
-| ⚡ Dar | #3808 | 技術開發 |
-| 🎯 Benson | #2808 | 企劃設計 |
-| 🦋 Tiffanyhou | #2623 | 成員 |
-| ☀️ 早安 | #1329 | 成員 |
+| 暱稱          | Tag   | 角色        |
+| ------------- | ----- | ----------- |
+| 🌀 Cyclone    | #2707 | 隊長 / 原PO |
+| 🧪 βenben     | #0010 | Z.ai        |
+| ⚡ Dar        | #3808 | 技術開發    |
+| 🎯 Benson     | #2808 | 企劃設計    |
+| 🦋 Tiffanyhou | #2623 | 成員        |
+| ☀️ 早安       | #1329 | 成員        |
 
 ---
 
@@ -322,21 +323,21 @@ flowchart LR
 
 ## Pages (13 total)
 
-| Page | Path | Description |
-|------|------|-------------|
-| Home | `/` | Landing with hero, features, timeline |
-| Dashboard | `/dashboard` | Personal progress tracking |
-| Team | `/team` | 6 members, project exchange |
-| Knowledge | `/knowledge` | Workflow templates, best practices |
-| QA | `/qa` | AES-GCM encrypted Q&A |
-| Agent | `/agent` | AI butler chat with long-term memory |
-| Wishlist | `/wishlist` | Mutual help + point system |
-| Discuss | `/discuss` | Public message board |
-| Issues | `/issue` | GitHub-style issue tracker |
-| Readme | `/readme` | Usage guide + learning resources |
-| Bug Report | `/bug` | Bug report form (clipboard copy) |
-| Changelog | `/changelog` | Version history |
-| Sitemap | `/sitemap` | Site architecture (Mermaid) |
+| Page       | Path         | Description                           |
+| ---------- | ------------ | ------------------------------------- |
+| Home       | `/`          | Landing with hero, features, timeline |
+| Dashboard  | `/dashboard` | Personal progress tracking            |
+| Team       | `/team`      | 6 members, project exchange           |
+| Knowledge  | `/knowledge` | Workflow templates, best practices    |
+| QA         | `/qa`        | AES-GCM encrypted Q&A                 |
+| Agent      | `/agent`     | AI butler chat with long-term memory  |
+| Wishlist   | `/wishlist`  | Mutual help + point system            |
+| Discuss    | `/discuss`   | Public message board                  |
+| Issues     | `/issue`     | GitHub-style issue tracker            |
+| Readme     | `/readme`    | Usage guide + learning resources      |
+| Bug Report | `/bug`       | Bug report form (clipboard copy)      |
+| Changelog  | `/changelog` | Version history                       |
+| Sitemap    | `/sitemap`   | Site architecture (Mermaid)           |
 
 ## Quick Start
 
@@ -375,4 +376,6 @@ wrangler pages deploy dist --project-name=cyclone-26
 
 ---
 
-*Built by dar #3808 — v20260407.10*
+_Built by dar #3808 — v20260407.10_
+
+yen.cf@tmnewa.com.tw
