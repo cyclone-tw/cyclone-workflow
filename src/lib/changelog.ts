@@ -11,6 +11,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     changes: [
       'fix(#106): 討論區發文/回覆/編輯輸入框改為自動隨內容高度擴展，移除固定 rows 限制',
       'fix(#106): 討論區留言顯示保留使用者換行，加入 remark-breaks 讓單一 \\n 渲染為 <br>',
+      'fix(#112): AI 工具箱「新增工具」無法送出 — ToolModal 補上缺失的 githubUrl useState、POST/PATCH API 接收 github_url 並做 http/https 格式驗證、[id].ts 補上 github_url 欄位 migration',
       'feat(#97): 討論區留言回覆串 — messages 表新增 parent_id 欄位、回覆 API（單層巢狀）、前端回覆按鈕 + inline form + 縮排顯示',
       'feat(#97): 回覆留言支援按讚/編輯/刪除/檢舉，不支援置頂',
       'refactor(#97): MessageCard / ReplyForm 抽出獨立元件，MessageBoard 954→290 行',
