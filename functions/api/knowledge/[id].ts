@@ -101,17 +101,28 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
       });
     }
 
-    const { title, content, category, icon } = body;
+    const { title, content, category, icon, url: entryUrl } = body;
     const sets: string[] = [];
     const args: string[] = [];
 
     if (title !== undefined) { sets.push('title = ?'); args.push(title.trim()); }
     if (content !== undefined) { sets.push('content = ?'); args.push(content.trim()); }
     if (category !== undefined) {
-      const validCategories = ['template', 'best-practice', 'qa', 'other'];
+      const validCategories = ['template', 'best-practice', 'qa', 'concept', 'other'];
       if (validCategories.includes(category)) { sets.push('category = ?'); args.push(category); }
     }
     if (icon !== undefined) { sets.push('icon = ?'); args.push(icon.trim()); }
+    if (entryUrl !== undefined) {
+      const trimmedUrl = entryUrl.trim();
+      const urlLines = trimmedUrl.split('\n');
+      for (const line of urlLines) {
+        const trimmed = line.trim();
+        if (trimmed && !trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
+          return new Response(JSON.stringify({ ok: false, error: '所有連結必須以 http:// 或 https:// 開頭' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+        }
+      }
+      sets.push('url = ?'); args.push(trimmedUrl);
+    }
 
     if (sets.length === 0) {
       return new Response(JSON.stringify({ ok: false, error: '沒有提供更新欄位' }), {

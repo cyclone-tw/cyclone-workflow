@@ -173,6 +173,9 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       }
     }
 
+    const VALID_AI_TOOL_CATEGORIES = ['agent', 'llm', 'productivity', 'dev', 'other'];
+    const finalCategory = VALID_AI_TOOL_CATEGORIES.includes(category) ? category : 'other';
+
     const result = await db.execute({
       sql: `INSERT INTO ai_tools (name, description, url, category, author, author_tag, contributor_id, wish_id, github_url)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id`,
@@ -180,7 +183,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         name.trim(),
         description.trim(),
         trimmedUrl,
-        category || 'other',
+        finalCategory,
         (author || user.name).trim(),
         author_tag?.trim() || '',
         user.id,
