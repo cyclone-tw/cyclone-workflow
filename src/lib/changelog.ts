@@ -9,6 +9,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     version: '',
     date: '2026-04-18',
     changes: [
+      'fix(#112): AI 工具箱「新增工具」無法送出 — ToolModal 補上缺失的 githubUrl useState、POST/PATCH API 接收 github_url 並做 http/https 格式驗證、[id].ts 補上 github_url 欄位 migration',
       'feat(#97): 討論區留言回覆串 — messages 表新增 parent_id 欄位、回覆 API（單層巢狀）、前端回覆按鈕 + inline form + 縮排顯示',
       'feat(#97): 回覆留言支援按讚/編輯/刪除/檢舉，不支援置頂',
       'refactor(#97): MessageCard / ReplyForm 抽出獨立元件，MessageBoard 954→290 行',

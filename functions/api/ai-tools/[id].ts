@@ -28,6 +28,9 @@ async function ensureMigration(db: ReturnType<typeof createClient>) {
   try {
     await db.execute({ sql: `ALTER TABLE ai_tools ADD COLUMN contributor_id TEXT DEFAULT ''`, args: [] });
   } catch { /* column already exists */ }
+  try {
+    await db.execute({ sql: `ALTER TABLE ai_tools ADD COLUMN github_url TEXT DEFAULT ''`, args: [] });
+  } catch { /* column already exists */ }
 }
 
 function isAdminOrAbove(user: { effectiveRole: string }): boolean {
@@ -63,7 +66,7 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
     const user = await requireAuth(context.request, context.env);
     const id = context.params.id;
     const body = await context.request.json() as Record<string, string>;
-    const { name, description, url, category } = body;
+    const { name, description, url, category, github_url } = body;
 
     const db = getDb(context.env);
     await db.execute({ sql: INIT_SQL, args: [] });
@@ -89,8 +92,25 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
 
     if (name !== undefined) { sets.push('name = ?'); args.push(name.trim()); }
     if (description !== undefined) { sets.push('description = ?'); args.push(description.trim()); }
-    if (url !== undefined) { sets.push('url = ?'); args.push(url.trim()); }
+    if (url !== undefined) {
+      const trimmedUrl = url.trim();
+      if (trimmedUrl && !trimmedUrl.startsWith('http://') && !trimmedUrl.startsWith('https://')) {
+        return new Response(JSON.stringify({ error: '連結必須以 http:// 或 https:// 開頭' }), {
+          status: 400, headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      sets.push('url = ?'); args.push(trimmedUrl);
+    }
     if (category !== undefined) { sets.push('category = ?'); args.push(category); }
+    if (github_url !== undefined) {
+      const trimmedGithubUrl = github_url.trim();
+      if (trimmedGithubUrl && !trimmedGithubUrl.startsWith('http://') && !trimmedGithubUrl.startsWith('https://')) {
+        return new Response(JSON.stringify({ error: 'GitHub 連結必須以 http:// 或 https:// 開頭' }), {
+          status: 400, headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      sets.push('github_url = ?'); args.push(trimmedGithubUrl);
+    }
 
     if (sets.length === 0) {
       return new Response(JSON.stringify({ error: '沒有提供更新欄位' }), {

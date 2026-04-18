@@ -133,7 +133,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
 export const onRequestPost: PagesFunction<Env> = async (context) => {
   try {
     const user = await requireAuth(context.request, context.env);
-    const { name, description, url, category, author, author_tag, wish_id } = await context.request.json() as Record<string, string>;
+    const { name, description, url, category, author, author_tag, wish_id, github_url } = await context.request.json() as Record<string, string>;
 
     if (!name?.trim() || !description?.trim() || !url?.trim()) {
       return new Response(JSON.stringify({ error: '請填寫工具名稱、簡介和連結' }), {
@@ -145,6 +145,13 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     const trimmedUrl = url.trim();
     if (!trimmedUrl.startsWith('http://') && !trimmedUrl.startsWith('https://')) {
       return new Response(JSON.stringify({ error: '連結必須以 http:// 或 https:// 開頭' }), {
+        status: 400, headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    const trimmedGithubUrl = github_url?.trim() || '';
+    if (trimmedGithubUrl && !trimmedGithubUrl.startsWith('http://') && !trimmedGithubUrl.startsWith('https://')) {
+      return new Response(JSON.stringify({ error: 'GitHub 連結必須以 http:// 或 https:// 開頭' }), {
         status: 400, headers: { 'Content-Type': 'application/json' },
       });
     }
@@ -167,8 +174,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     }
 
     const result = await db.execute({
-      sql: `INSERT INTO ai_tools (name, description, url, category, author, author_tag, contributor_id, wish_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id`,
+      sql: `INSERT INTO ai_tools (name, description, url, category, author, author_tag, contributor_id, wish_id, github_url)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id`,
       args: [
         name.trim(),
         description.trim(),
@@ -178,6 +185,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         author_tag?.trim() || '',
         user.id,
         wish_id?.trim() || '',
+        trimmedGithubUrl,
       ],
     });
 
