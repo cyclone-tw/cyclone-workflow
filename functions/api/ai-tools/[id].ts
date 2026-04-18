@@ -101,7 +101,11 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
       }
       sets.push('url = ?'); args.push(trimmedUrl);
     }
-    if (category !== undefined) { sets.push('category = ?'); args.push(category); }
+    if (category !== undefined) {
+      const VALID_AI_TOOL_CATEGORIES = ['agent', 'llm', 'productivity', 'dev', 'other'];
+      const finalCategory = VALID_AI_TOOL_CATEGORIES.includes(category) ? category : 'other';
+      sets.push('category = ?'); args.push(finalCategory);
+    }
     if (github_url !== undefined) {
       const trimmedGithubUrl = github_url.trim();
       if (trimmedGithubUrl && !trimmedGithubUrl.startsWith('http://') && !trimmedGithubUrl.startsWith('https://')) {

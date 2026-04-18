@@ -140,7 +140,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
           id TEXT PRIMARY KEY,
           title TEXT NOT NULL,
           content TEXT NOT NULL,
-          category TEXT DEFAULT 'template' CHECK(category IN ('template', 'best-practice', 'qa', 'other')),
+          category TEXT DEFAULT 'template' CHECK(category IN ('template', 'best-practice', 'qa', 'concept', 'other')),
           icon TEXT DEFAULT '📘',
           contributor_id TEXT NOT NULL REFERENCES users(id),
           upvotes INTEGER DEFAULT 0,

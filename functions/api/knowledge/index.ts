@@ -142,6 +142,18 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     const validCategories = ['template', 'best-practice', 'qa', 'concept', 'other'];
     const finalCategory = validCategories.includes(category) ? category : 'other';
 
+    const trimmedUrl = url?.trim() || '';
+    const urlLines = trimmedUrl.split('\n');
+    for (const line of urlLines) {
+      const trimmed = line.trim();
+      if (trimmed && !trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
+        return new Response(JSON.stringify({ ok: false, error: '所有連結必須以 http:// 或 https:// 開頭' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
     const db = getDb(context.env);
     const id = crypto.randomUUID();
     const now = new Date().toISOString();
@@ -149,7 +161,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     await db.execute({
       sql: `INSERT INTO knowledge_entries (id, title, content, category, icon, contributor_id, upvotes, created_at, updated_at, url)
             VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, ?)`,
-      args: [id, title.trim(), content.trim(), finalCategory, icon?.trim() || '📘', user.id, now, now, url?.trim() || ''],
+      args: [id, title.trim(), content.trim(), finalCategory, icon?.trim() || '📘', user.id, now, now, trimmedUrl],
     });
 
     return new Response(JSON.stringify({ ok: true, id }), {
@@ -184,12 +196,21 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
     const validCategories = ['template', 'best-practice', 'qa', 'concept', 'other'];
     const finalCategory = validCategories.includes(category) ? category : 'other';
 
+    const trimmedUrl = entryUrl?.trim() || '';
+    const urlLines = trimmedUrl.split('\n');
+    for (const line of urlLines) {
+      const trimmed = line.trim();
+      if (trimmed && !trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
+        return new Response(JSON.stringify({ ok: false, error: '所有連結必須以 http:// 或 https:// 開頭' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+      }
+    }
+
     const db = getDb(context.env);
     const now = new Date().toISOString();
 
     await db.execute({
       sql: `UPDATE knowledge_entries SET title=?, content=?, category=?, icon=?, updated_at=?, url=? WHERE id=? AND contributor_id=?`,
-      args: [title.trim(), content.trim(), finalCategory, icon?.trim() || '📘', now, entryUrl?.trim() || '', id, user.id],
+      args: [title.trim(), content.trim(), finalCategory, icon?.trim() || '📘', now, trimmedUrl, id, user.id],
     });
 
     return new Response(JSON.stringify({ ok: true }), { headers: { 'Content-Type': 'application/json' } });
