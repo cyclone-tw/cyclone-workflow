@@ -10,7 +10,7 @@
     "bump:version": "bun scripts/bump-version.ts",
     "test": "vitest run",
     "test:ci": "API_BASE_URL=https://cyclone.tw vitest run",
-    "deploy": "astro build && wrangler pages deploy dist",
+    "deploy": "vitest run tests/api-members-security.test.ts && astro build && wrangler pages deploy dist",
     "test:e2e": "playwright test",
     "test:e2e:local": "E2E_BASE_URL=http://localhost:4321 playwright test",
     "test:e2e:lt": "playwright test",
