@@ -4,24 +4,23 @@ import MemberProfile from '@/components/team/MemberProfile';
 import { MEMBERS } from '@/lib/constants';
 
 export async function getStaticPaths() {
-  // Try to fetch live member IDs from API so OAuth UUID routes are generated too.
-  // If the API is unreachable during build, fall back to legacy MEMBERS constants.
+  // Always generate legacy slug routes (these are what TeamBoard links use).
+  const slugIds = MEMBERS.map((m) => m.id);
+
+  // Also try to fetch live member IDs so OAuth UUID routes exist too.
   try {
     const res = await fetch('https://cyclone.tw/api/members');
     const data = await res.json();
     if (data.ok && Array.isArray(data.members)) {
       const apiIds = data.members.map((m: { id: string }) => m.id);
-      // Deduplicate while preserving order
-      const unique = [...new Set(apiIds)];
-      return unique.map((id) => ({ params: { id } }));
+      const all = [...new Set([...slugIds, ...apiIds])];
+      return all.map((id) => ({ params: { id } }));
     }
   } catch {
-    /* API unavailable during build — fallback below */
+    /* API unreachable during build — slugs are enough */
   }
 
-  return MEMBERS.map((member) => ({
-    params: { id: member.id },
-  }));
+  return slugIds.map((id) => ({ params: { id } }));
 }
 
 const { id } = Astro.params;
