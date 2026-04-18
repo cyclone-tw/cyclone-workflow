@@ -96,7 +96,19 @@ vi.mock('@libsql/client/web', () => ({
         return { rows: [], columns: [] };
       }
 
-      // DELETE messages — check BEFORE SELECT (DELETE SQL also contains "FROM messages WHERE id")
+      // Soft delete messages — UPDATE SET deleted_at (not DELETE FROM)
+      if (sql.includes('UPDATE messages SET deleted_at')) {
+        const deletedBy = args[0];
+        const id = args[1];
+        const msg = tables.messages.find((m) => String(m.id) === String(id));
+        if (msg) {
+          msg.deleted_at = new Date().toISOString();
+          msg.deleted_by = deletedBy;
+        }
+        return { rows: [], columns: [] };
+      }
+
+      // Legacy hard delete (if any remaining codepath)
       if (sql.includes('DELETE FROM messages WHERE id')) {
         const id = args[0];
         const idx = tables.messages.findIndex((m) => String(m.id) === String(id));

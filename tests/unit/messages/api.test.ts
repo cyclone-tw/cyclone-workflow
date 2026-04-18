@@ -140,8 +140,9 @@ describe('Messages API', () => {
       const data = await res.json();
       expect(data.ok).toBe(true);
 
-      // 確認真的被刪除了
-      expect(tables.messages.length).toBe(0);
+      // 確認被軟刪除了
+      expect(tables.messages[0].deleted_at).toBeTruthy();
+      expect(tables.messages[0].deleted_by).toBe('member-1');
     });
 
     it('管理員可刪除他人的留言', async () => {
