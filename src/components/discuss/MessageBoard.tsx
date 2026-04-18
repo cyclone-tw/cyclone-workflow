@@ -297,7 +297,7 @@ export default function MessageBoard() {
           <textarea
             ref={contentTextareaRef}
             value={content}
-            onChange={(e: ChangeEvent<HTMLTextAreaElement>) => {
+            onChange={(e) => {
               setContent(e.target.value);
               e.target.style.height = 'auto';
               e.target.style.height = `${e.target.scrollHeight}px`;
