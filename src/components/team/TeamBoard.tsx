@@ -30,7 +30,14 @@ export default function TeamBoard() {
       .then((r) => r.json())
       .then((data) => {
         if (data.ok) {
-          setMembers(data.members);
+          // Deduplicate: same person may have both legacy and OAuth accounts
+          const seen = new Set<string>();
+          const unique = (data.members as TeamMember[]).filter((m: TeamMember) => {
+            if (seen.has(m.name)) return false;
+            seen.add(m.name);
+            return true;
+          });
+          setMembers(unique);
         } else {
           setError(true);
         }

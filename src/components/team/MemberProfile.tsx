@@ -175,7 +175,18 @@ export default function MemberProfile({ memberId }: { memberId: string }) {
         </div>
         {aiTools.length === 0 ? (
           <div className="glass rounded-xl p-6 text-center text-[var(--color-text-muted)]">
-            尚無 AI 工具投稿
+            <p className="mb-3">尚無 AI 工具投稿</p>
+            <a
+              href="/ai-tools"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all hover:opacity-80"
+              style={{
+                background: 'rgba(108, 99, 255, 0.15)',
+                color: '#8B83FF',
+                border: '1px solid rgba(108, 99, 255, 0.3)',
+              }}
+            >
+              🤖 前往 AI 工具箱投稿
+            </a>
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2">
@@ -213,7 +224,18 @@ export default function MemberProfile({ memberId }: { memberId: string }) {
         </div>
         {knowledge.length === 0 ? (
           <div className="glass rounded-xl p-6 text-center text-[var(--color-text-muted)]">
-            尚無知識庫貢獻
+            <p className="mb-3">尚無知識庫貢獻</p>
+            <a
+              href="/knowledge"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all hover:opacity-80"
+              style={{
+                background: 'rgba(0, 245, 160, 0.15)',
+                color: '#00F5A0',
+                border: '1px solid rgba(0, 245, 160, 0.3)',
+              }}
+            >
+              📚 前往知識庫投稿
+            </a>
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2">
