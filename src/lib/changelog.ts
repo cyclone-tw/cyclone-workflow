@@ -10,6 +10,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     date: '2026-04-19',
     changes: [
       'fix(security): /api/members 成員列表補上 archived_at IS NULL 過濾，防止已封存帳號洩漏',
+      'fix(security): /api/members/:id Try 1 補上 archived_at IS NULL，與 Try 2 一致',
       'fix: 移除 functions/api/members/[id].ts 未使用的 ROLE_LEVEL import',
     ],
   },
