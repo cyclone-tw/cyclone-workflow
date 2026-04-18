@@ -52,7 +52,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       });
     }
 
-    const row = rows[0];
+    const row = result.rows[0];
     const roles = String(row.roles ?? '').split(',').filter(Boolean);
     const effectiveRole = roles.length > 0 ? getEffectiveRole(roles) : 'companion';
 
