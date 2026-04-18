@@ -64,7 +64,7 @@ export default function MessageCard({
   onReport: (messageId: number, reason: string) => void;
   replies: Message[];
   replyCount: number;
-  onReply: (parentId: number, content: string) => void;
+  onReply: (parentId: number, content: string) => Promise<void>;
   isReply?: boolean;
 }) {
   const color = CATEGORY_COLORS[msg.category] || 'var(--color-primary)';
@@ -340,7 +340,7 @@ export default function MessageCard({
         <div className="ml-6 mt-1">
           <ReplyForm
             parentId={msg.id}
-            onReply={(pid, content) => { onReply(pid, content); setShowReplyForm(false); }}
+            onReply={async (pid, content) => { await onReply(pid, content); setShowReplyForm(false); }}
             onCancel={() => setShowReplyForm(false)}
             authorName={currentUser?.name ?? ''}
           />

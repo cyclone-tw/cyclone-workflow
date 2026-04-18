@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 interface ReplyFormProps {
   parentId: number;
-  onReply: (parentId: number, content: string) => void;
+  onReply: (parentId: number, content: string) => Promise<void>;
   onCancel: () => void;
   authorName: string;
 }
@@ -14,8 +14,11 @@ export default function ReplyForm({ parentId, onReply, onCancel, authorName }: R
   const handleSubmit = async () => {
     if (!content.trim()) return;
     setSubmitting(true);
-    onReply(parentId, content.trim());
-    setSubmitting(false);
+    try {
+      await onReply(parentId, content.trim());
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (

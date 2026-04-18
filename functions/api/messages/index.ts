@@ -56,27 +56,31 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       args: [],
     });
 
-    // All replies (parent_id IS NOT NULL)
-    const repliesResult = await db.execute({
-      sql: `SELECT m.*,
-                   COALESCE(lc.like_count, 0) as like_count,
-                   COALESCE(mr.report_count, 0) AS report_count
-            FROM messages m
-            LEFT JOIN (
-              SELECT message_id, COUNT(*) as like_count
-              FROM discussion_likes
-              GROUP BY message_id
-            ) lc ON lc.message_id = m.id
-            LEFT JOIN (
-              SELECT message_id, COUNT(*) AS report_count
-              FROM message_reports
-              WHERE status = 'pending'
-              GROUP BY message_id
-            ) mr ON mr.message_id = m.id
-            WHERE m.deleted_at IS NULL AND m.parent_id IS NOT NULL
-            ORDER BY m.created_at ASC`,
-      args: [],
-    });
+    // All replies (parent_id IS NOT NULL) — only for current top-level messages
+    const topLevelIds = result.rows.map((row) => row.id as number);
+    const repliesResult = topLevelIds.length > 0
+      ? await db.execute({
+          sql: `SELECT m.*,
+                       COALESCE(lc.like_count, 0) as like_count,
+                       COALESCE(mr.report_count, 0) AS report_count
+                FROM messages m
+                LEFT JOIN (
+                  SELECT message_id, COUNT(*) as like_count
+                  FROM discussion_likes
+                  GROUP BY message_id
+                ) lc ON lc.message_id = m.id
+                LEFT JOIN (
+                  SELECT message_id, COUNT(*) AS report_count
+                  FROM message_reports
+                  WHERE status = 'pending'
+                  GROUP BY message_id
+                ) mr ON mr.message_id = m.id
+                WHERE m.deleted_at IS NULL
+                  AND m.parent_id IN (${topLevelIds.map(() => '?').join(', ')})
+                ORDER BY m.created_at ASC`,
+          args: topLevelIds,
+        })
+      : { rows: [] as any[] };
 
     // User's report records
     let reportedByMe: Set<number> = new Set();
@@ -154,7 +158,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     const db = getDb(context.env);
 
     // Validate parent_id if provided (reply)
-    if (parent_id) {
+    if (parent_id != null && parent_id !== undefined) {
       const parent = await db.execute({
         sql: 'SELECT id, parent_id FROM messages WHERE id = ? AND deleted_at IS NULL',
         args: [parent_id],
@@ -173,12 +177,12 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       }
     }
 
-    const effectiveTag = parent_id ? '' : (tag?.trim() || '');
-    const effectiveCategory = parent_id ? '' : (category || '閒聊');
+    const effectiveTag = parent_id != null ? '' : (tag?.trim() || '');
+    const effectiveCategory = parent_id != null ? '' : (category || '閒聊');
 
     await db.execute({
       sql: `INSERT INTO messages (author, author_id, content, tag, category, parent_id) VALUES (?, ?, ?, ?, ?, ?)`,
-      args: [author.trim(), user.id, content.trim(), effectiveTag, effectiveCategory, parent_id ?? null],
+      args: [author.trim(), user.id, content.trim(), effectiveTag, effectiveCategory, parent_id != null ? parent_id : null],
     });
 
     return new Response(JSON.stringify({ ok: true }), {
