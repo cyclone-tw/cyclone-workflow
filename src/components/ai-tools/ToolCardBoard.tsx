@@ -103,6 +103,7 @@ function ToolModal({ tool, onClose, onSaved }: ModalProps) {
   const [name, setName] = useState(tool?.name ?? '');
   const [description, setDescription] = useState(tool?.description ?? '');
   const [url, setUrl] = useState(tool?.url ?? '');
+  const [githubUrl, setGithubUrl] = useState(tool?.github_url ?? '');
   const [category, setCategory] = useState<ToolCategory>(tool?.category ?? 'other');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -113,8 +114,19 @@ function ToolModal({ tool, onClose, onSaved }: ModalProps) {
     if (!name.trim()) errs.name = '請填寫工具名稱';
     if (!description.trim()) errs.description = '請填寫簡介';
     if (!url.trim()) errs.url = '請填寫連結';
+    if (githubUrl.trim() && !/^https?:\/\//.test(githubUrl.trim())) {
+      errs.githubUrl = 'GitHub 連結必須以 http:// 或 https:// 開頭';
+    }
     setErrors(errs);
     if (Object.keys(errs).length > 0) return;
+
+    const payload = {
+      name: name.trim(),
+      description: description.trim(),
+      url: url.trim(),
+      github_url: githubUrl.trim(),
+      category,
+    };
 
     setSubmitting(true);
     try {
@@ -122,7 +134,7 @@ function ToolModal({ tool, onClose, onSaved }: ModalProps) {
         const res = await fetch(`/api/ai-tools/${tool!.id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: name.trim(), description: description.trim(), url: url.trim(), category }),
+          body: JSON.stringify(payload),
         });
         if (!res.ok) {
           const data = await res.json();
@@ -132,7 +144,7 @@ function ToolModal({ tool, onClose, onSaved }: ModalProps) {
         const res = await fetch('/api/ai-tools', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: name.trim(), description: description.trim(), url: url.trim(), category }),
+          body: JSON.stringify(payload),
         });
         if (!res.ok) {
           const data = await res.json();
@@ -206,7 +218,8 @@ function ToolModal({ tool, onClose, onSaved }: ModalProps) {
             <label style={labelStyle}>GitHub Repo <span style={{ color: '#9090B0', fontWeight: 400 }}>(選填)</span></label>
             <input type="url" placeholder="https://github.com/..." value={githubUrl}
               onChange={e => setGithubUrl(e.target.value)} onFocus={handleFocusIn} onBlur={handleFocusOut}
-              style={inputStyle} />
+              style={{ ...inputStyle, borderColor: errors.githubUrl ? '#E94560' : '#2A2A4A' }} />
+            {errors.githubUrl && <p style={{ color: '#E94560', fontSize: '0.75rem', marginTop: '0.2rem' }}>{errors.githubUrl}</p>}
           </div>
 
           {/* Description */}
