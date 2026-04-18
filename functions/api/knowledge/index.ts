@@ -139,7 +139,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       });
     }
 
-    const validCategories = ['template', 'best-practice', 'qa', 'other'];
+    const validCategories = ['template', 'best-practice', 'qa', 'concept', 'other'];
     const finalCategory = validCategories.includes(category) ? category : 'other';
 
     const db = getDb(context.env);
@@ -181,7 +181,7 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
       return new Response(JSON.stringify({ ok: false, error: '請填寫標題和內容' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
-    const validCategories = ['template', 'best-practice', 'qa', 'other'];
+    const validCategories = ['template', 'best-practice', 'qa', 'concept', 'other'];
     const finalCategory = validCategories.includes(category) ? category : 'other';
 
     const db = getDb(context.env);
