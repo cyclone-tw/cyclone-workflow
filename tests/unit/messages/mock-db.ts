@@ -136,7 +136,7 @@ vi.mock('@libsql/client/web', () => ({
           rows = rows.filter((m) => !m.deleted_at);
         }
         if (sql.includes('parent_id IS NULL')) {
-          rows = rows.filter((m) => !m.parent_id);
+          rows = rows.filter((m) => m.parent_id === null || m.parent_id === undefined);
         }
         return { rows: rows.reverse(), columns: [] };
       }
@@ -150,8 +150,11 @@ vi.mock('@libsql/client/web', () => ({
           content: args[2] as string,
           tag: args[3] as string,
           category: args[4] as string,
+          parent_id: (args[5] as string | number | null) ?? null,
           created_at: new Date().toISOString(),
           like_count: 0,
+          deleted_at: null,
+          deleted_by: null,
         };
         tables.messages.push(msg);
         return { rows: [], columns: [] };

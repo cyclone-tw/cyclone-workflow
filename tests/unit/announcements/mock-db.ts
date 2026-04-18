@@ -1,6 +1,13 @@
 // Vitest mock setup — import this BEFORE any API module
 import { vi } from 'vitest';
 
+// Monotonic clock — always >= Date.now() + 1, never goes backwards
+let _clockMs = 0;
+function tickISO(): string {
+  _clockMs = Math.max(_clockMs + 1, Date.now() + 1);
+  return new Date(_clockMs).toISOString();
+}
+
 // ---------------------------------------------------------------------------
 // In-memory DB state
 // ---------------------------------------------------------------------------
@@ -165,7 +172,7 @@ vi.mock('@libsql/client/web', () => {
               (tables.announcements[idx] as Record<string, unknown>)[key] = args[i];
             });
             // Always update updated_at since the SET includes it
-            tables.announcements[idx].updated_at = new Date().toISOString();
+            tables.announcements[idx].updated_at = tickISO();
           }
           return { rows: [], columns: [] };
         }
