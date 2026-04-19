@@ -635,7 +635,7 @@ function DetailView({ issueId, onBack }: DetailViewProps) {
           <h3 style={{ color: '#9090B0', fontWeight: 600, fontSize: '0.8rem', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '1rem' }}>
             新增留言
             <span className="ml-2 text-xs font-normal" style={{ color: '#9090B0' }}>
-              以 {user.name} 發表
+              以 {user.display_name || user.name} 發表
             </span>
           </h3>
           <form onSubmit={handleAddComment}>

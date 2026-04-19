@@ -32,11 +32,9 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       id: r.id,
       content: r.content,
       created_at: r.created_at,
-      author: {
-        id: r.author_id,
-        name: r.author_name,
-        avatarUrl: r.author_avatar,
-      },
+      author_id: r.author_id,
+      author_name: r.author_name,
+      author_avatar: r.author_avatar,
     }));
 
     return new Response(JSON.stringify({ ok: true, comments }), {

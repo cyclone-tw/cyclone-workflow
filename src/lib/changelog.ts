@@ -9,6 +9,9 @@ export const CHANGELOG: ChangelogEntry[] = [
     version: '',
     date: '2026-04-19',
     changes: [
+      'fix(#122): 許願樹留言 API 回傳格式修正 — 從巢狀 author 物件改為扁平 author_name/author_avatar，防止頁面 crash',
+      'fix(#121): OAuth callback 不再覆寫 name 欄位，保留使用者自訂暱稱',
+      'fix(#121): Navbar、留言區、投稿區等元件統一使用 display_name || name 顯示使用者名稱',
       'feat(#120): Gemini AI 分析建議 — POST /api/admin/ai-insights + AdminAIInsights tab 元件',
       'feat(#120): Admin Panel 整合 AI 建議按鈕，分析 GA4 數據生成改善建議',
       'fix(security): /api/members 成員列表補上 archived_at IS NULL 過濾，防止已封存帳號洩漏',

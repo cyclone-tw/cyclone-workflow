@@ -283,7 +283,7 @@ export default function MessageBoard() {
         <form ref={formRef} onSubmit={handleSubmit} className="rounded-xl p-5 space-y-4" style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}>
           <h3 className="text-base font-semibold" style={{ color: 'var(--color-text-primary)' }}>
             ✍️ 發表留言
-            <span className="ml-2 text-xs font-normal" style={{ color: 'var(--color-text-muted)' }}>以 {user.name} 發表</span>
+            <span className="ml-2 text-xs font-normal" style={{ color: 'var(--color-text-muted)' }}>以 {user.display_name || user.name} 發表</span>
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <input type="text" value={tag} onChange={(e) => setTag(e.target.value)} placeholder="Discord Tag (選填)"

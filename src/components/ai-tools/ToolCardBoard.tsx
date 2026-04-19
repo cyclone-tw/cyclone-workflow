@@ -233,7 +233,7 @@ function ToolModal({ tool, onClose, onSaved }: ModalProps) {
 
           {!isEdit && user && (
             <p style={{ fontSize: '0.8rem', color: '#606080', marginBottom: '0.75rem' }}>
-              投稿者：{user.name}
+              投稿者：{user.display_name || user.name}
             </p>
           )}
 
