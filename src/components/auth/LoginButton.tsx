@@ -91,7 +91,7 @@ export default function LoginButton() {
         {user.avatar_url ? (
           <img
             src={user.avatar_url}
-            alt={user.name}
+            alt={user.display_name || user.name}
             className="w-7 h-7 rounded-full object-cover ring-2 ring-[var(--color-border)]"
           />
         ) : (
@@ -99,11 +99,11 @@ export default function LoginButton() {
             className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white"
             style={{ backgroundColor: roleColor }}
           >
-            {getInitials(user.name)}
+            {getInitials(user.display_name || user.name)}
           </div>
         )}
         <span className="hidden sm:inline text-sm font-medium text-[var(--color-text-secondary)] max-w-[80px] truncate">
-          {user.name}
+          {user.display_name || user.name}
         </span>
         <svg
           className={`w-3 h-3 text-[var(--color-text-muted)] transition-transform ${menuOpen ? 'rotate-180' : ''}`}
@@ -121,7 +121,7 @@ export default function LoginButton() {
           {/* User info */}
           <div className="px-4 py-3 border-b border-[var(--color-border)]">
             <p className="text-sm font-semibold text-[var(--color-text-primary)] truncate">
-              {user.name}
+              {user.display_name || user.name}
             </p>
             <p className="text-xs text-[var(--color-text-muted)] truncate mt-0.5">
               {user.email}

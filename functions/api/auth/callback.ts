@@ -116,8 +116,8 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       userId = existingUser.rows[0].id as string;
       isPending = (existingUser.rows[0].status as string) === 'pending';
       await db.execute({
-        sql: `UPDATE users SET name = ?, avatar_url = ?, updated_at = datetime('now') WHERE id = ?`,
-        args: [googleUser.name, googleUser.picture, userId],
+        sql: `UPDATE users SET avatar_url = ?, updated_at = datetime('now') WHERE id = ?`,
+        args: [googleUser.picture, userId],
       });
     } else {
       // No email match — try to claim a seed user with matching name and empty email

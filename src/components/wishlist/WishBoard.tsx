@@ -958,7 +958,7 @@ function WishCard({ wish, user, onRefresh, onDelete }: { wish: Wish; user: Retur
 
             {user && (
               <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-                <Avatar name={user.name} avatarUrl={user.avatar_url} size={28} />
+                <Avatar name={user.display_name || user.name} avatarUrl={user.avatar_url} size={28} />
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
                   <textarea
                     value={commentContent}

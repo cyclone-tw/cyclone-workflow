@@ -14,6 +14,7 @@ interface Comment {
 interface User {
   id: string;
   name: string;
+  display_name?: string;
   avatar_url?: string | null;
   effectiveRole: string;
 }
@@ -210,7 +211,7 @@ export default function ResourceComments({ resourceType, resourceId, user, color
 
           {user && (
             <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-              <Avatar name={user.name} avatarUrl={user.avatar_url ?? null} size={28} />
+              <Avatar name={user.display_name || user.name} avatarUrl={user.avatar_url ?? null} size={28} />
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
                 <textarea
                   value={content}
