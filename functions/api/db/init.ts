@@ -260,6 +260,19 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         args: [],
       },
       {
+        sql: `CREATE TABLE IF NOT EXISTS resource_urls (
+          id TEXT PRIMARY KEY,
+          resource_id TEXT NOT NULL,
+          resource_type TEXT NOT NULL CHECK(resource_type IN ('knowledge', 'ai-tool')),
+          url TEXT NOT NULL,
+          label TEXT DEFAULT '',
+          sort_order INTEGER DEFAULT 0,
+          created_at TEXT DEFAULT (datetime('now')),
+          UNIQUE(resource_id, resource_type, url)
+        )`,
+        args: [],
+      },
+      {
         sql: `CREATE TABLE IF NOT EXISTS message_reports (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           message_id INTEGER NOT NULL REFERENCES messages(id),
@@ -360,6 +373,22 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     try {
       await db.execute({ sql: `CREATE INDEX IF NOT EXISTS idx_messages_parent_id ON messages(parent_id)`, args: [] });
     } catch { /* index already exists */ }
+
+    // resource_urls index for resource lookup
+    try {
+      await db.execute({ sql: `CREATE INDEX IF NOT EXISTS idx_resource_urls_resource ON resource_urls(resource_id, resource_type)`, args: [] });
+    } catch { /* index already exists */ }
+
+    // Seed default tags for knowledge base
+    const defaultTags = [
+      ['concept', '概念補充', 'knowledge', '#FFA500'],
+    ] as const;
+    for (const [id, name, category, color] of defaultTags) {
+      await db.execute({
+        sql: `INSERT OR IGNORE INTO tags (id, name, category, color) VALUES (?, ?, ?, ?)`,
+        args: [id, name, category, color],
+      });
+    }
 
     // --- Seed members (from constants) ---
     // Each entry: [id, name, groupRole, tag]
