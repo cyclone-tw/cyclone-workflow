@@ -220,6 +220,42 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
       });
     }
 
+    // ── Unclaim action ───────────────────────────────────────────────────
+    if (body.action === 'unclaim') {
+      const existingClaim = await db.execute({
+        sql: `SELECT id FROM wish_claimers WHERE wish_id = ? AND user_id = ? AND status = 'claimed'`,
+        args: [id, user.id],
+      });
+      if (existingClaim.rows.length === 0) {
+        return new Response(JSON.stringify({ ok: false, error: '你沒有認領此許願' }), {
+          status: 400, headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      await db.execute({
+        sql: `DELETE FROM wish_claimers WHERE wish_id = ? AND user_id = ?`,
+        args: [id, user.id],
+      });
+
+      // If no claimers remain, revert wish status to pending
+      const remaining = await db.execute({
+        sql: `SELECT COUNT(*) AS cnt FROM wish_claimers WHERE wish_id = ?`,
+        args: [id],
+      });
+      if (Number(remaining.rows[0]?.cnt ?? 0) === 0 && wish.status === 'claimed') {
+        await db.execute({
+          sql: `UPDATE wishes SET status = 'pending', updated_at = datetime('now') WHERE id = ?`,
+          args: [id],
+        });
+        await ensureWishHistoryMigration(db);
+        await recordStatusChange(db, id, 'claimed', 'pending', user.id);
+      }
+
+      return new Response(JSON.stringify({ ok: true }), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     // ── Complete action ──────────────────────────────────────────────────
     if (body.action === 'complete') {
       const wishRow = wish;

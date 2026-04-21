@@ -514,11 +514,11 @@ export default function DashboardPanel() {
               >
                 <div className="flex items-center gap-3">
                   <span className="text-lg">
-                    {r.action === 'checkin' ? '🔥' : r.action === 'knowledge' ? '📚' : r.action === 'ai-tool' ? '🛠️' : r.action === 'wish' ? '✨' : r.action === 'claim' ? '🎯' : r.action === 'complete' ? '🏆' : '⭐'}
+                    {r.action === 'checkin' ? '🔥' : r.action === 'knowledge' ? '📚' : r.action === 'ai-tool' ? '🛠️' : r.action === 'wish' ? '✨' : r.action === 'claim' ? '🎯' : r.action === 'complete' ? '🏆' : r.action === 'wish_completed' ? '🏆' : r.action === 'wish_completed_ai_tool' ? '🛠️' : '⭐'}
                   </span>
                   <div>
                     <div className="text-sm font-medium text-[var(--color-text-primary)]">
-                      {r.action === 'checkin' ? '每日打卡' : r.action === 'knowledge' ? '知識投稿' : r.action === 'ai-tool' ? 'AI 工具投稿' : r.action === 'wish' ? '許願' : r.action === 'claim' ? '認領任務' : r.action === 'complete' ? '完成任務' : r.action}
+                      {r.action === 'checkin' ? '每日打卡' : r.action === 'knowledge' ? '知識投稿' : r.action === 'ai-tool' ? 'AI 工具投稿' : r.action === 'wish' ? '許願' : r.action === 'claim' ? '認領任務' : r.action === 'complete' ? '完成任務' : r.action === 'wish_completed' ? '完成許願' : r.action === 'wish_completed_ai_tool' ? '完成許願（AI工具）' : r.action}
                     </div>
                     <div className="text-xs text-[var(--color-text-muted)]">
                       {new Date(r.createdAt).toLocaleString('zh-TW')}
