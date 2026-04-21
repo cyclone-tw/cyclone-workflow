@@ -9,6 +9,13 @@ export const CHANGELOG: ChangelogEntry[] = [
     version: '',
     date: '2026-04-21',
     changes: [
+      'feat(#89): 知識庫 Markdown 渲染 — 複用討論區 ReactMarkdown + sanitize 方案',
+    ],
+  },
+  {
+    version: '',
+    date: '2026-04-21',
+    changes: [
       'feat(#109): 知識庫多網址支援 — resource_urls 表、表單動態增減連結、卡片顯示連結列表',
       'feat(#109): 知識庫標籤多選篩選 — pill 按鈕多選 + 後端 tags 參數',
       'feat(#109): 新增「概念補充」tag seed',

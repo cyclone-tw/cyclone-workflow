@@ -1,6 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkBreaks from 'remark-breaks';
+import rehypeRaw from 'rehype-raw';
 import { useAuth } from '@/components/auth/useAuth';
 import { timeAgo } from '@/lib/time';
+import { sanitizeMarkdown, sanitizeUrl, sanitizeImgSrc } from '@/lib/markdown';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -538,8 +543,10 @@ function EntryCard({
       </h3>
 
       {/* Content */}
+      {entry.content.trim() ? (
+      <>
       <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>
-        <p
+        <div
           ref={contentRef}
           id={`knowledge-content-${entry.id}`}
           style={{
@@ -548,8 +555,33 @@ function EntryCard({
             ...(expanded ? {} : { maxHeight: '4.8em', overflow: 'hidden' }),
           }}
         >
-          {entry.content}
-        </p>
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm, remarkBreaks]}
+            rehypePlugins={[rehypeRaw]}
+            components={{
+              code({ className, children, ...props }) {
+                const langMatch = /language-(\w+)/.test(className || '');
+                const isInline = !langMatch && !String(children).includes('\n');
+                return isInline
+                  ? <code className="px-1.5 py-0.5 rounded text-xs font-mono" style={{ background: 'rgba(255,255,255,0.08)', color: 'var(--color-neon-green)' }} {...props}>{children}</code>
+                  : <code className="block p-3 rounded-lg text-xs font-mono overflow-x-auto" style={{ background: 'rgba(255,255,255,0.06)', color: 'var(--color-neon-blue)' }} {...props}>{children}</code>;
+              },
+              a({ href, children, ...props }) {
+                if (!href) return <span {...props}>{children}</span>;
+                const safe = sanitizeUrl(href);
+                if (!safe) return <span {...props}>{children}</span>;
+                return <a href={safe} target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80" style={{ color: 'var(--color-neon-blue)' }}>{children}</a>;
+              },
+              img({ src, alt }) {
+                const safeSrc = sanitizeImgSrc(src);
+                if (!safeSrc) return null;
+                return <img src={safeSrc} alt={alt || ''} loading="lazy" style={{ maxWidth: '100%', height: 'auto', borderRadius: '0.5rem' }} />;
+              },
+            }}
+          >
+            {sanitizeMarkdown(entry.content)}
+          </ReactMarkdown>
+        </div>
         {(!expanded && isOverflowing) && (
           <div
             style={{
@@ -574,6 +606,8 @@ function EntryCard({
           {expanded ? '收納 ↑' : '展開更多 ↓'}
         </button>
       )}
+      </>
+      ) : null}
 
       {/* Tags */}
       {entry.tags.length > 0 && (
