@@ -543,6 +543,8 @@ function EntryCard({
       </h3>
 
       {/* Content */}
+      {entry.content.trim() ? (
+      <>
       <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>
         <div
           ref={contentRef}
@@ -604,6 +606,8 @@ function EntryCard({
           {expanded ? '收納 ↑' : '展開更多 ↓'}
         </button>
       )}
+      </>
+      ) : null}
 
       {/* Tags */}
       {entry.tags.length > 0 && (
