@@ -232,7 +232,22 @@ export default function BugForm() {
     );
   }
 
-  if (!authLoading && !user) {
+  if (authLoading) {
+    return (
+      <div
+        className="rounded-xl p-8 text-center"
+        style={{
+          background: 'var(--color-glass-bg)',
+          backdropFilter: 'blur(12px)',
+          border: '1px solid var(--color-border)',
+        }}
+      >
+        <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>載入中…</p>
+      </div>
+    );
+  }
+
+  if (!user) {
     return (
       <div
         className="rounded-xl p-8 flex flex-col items-center gap-4 text-center"

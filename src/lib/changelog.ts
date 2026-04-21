@@ -21,13 +21,6 @@ export const CHANGELOG: ChangelogEntry[] = [
     ],
   },
   {
-    version: '',
-    date: '2026-04-15 00:20',
-    changes: [
-      'fix(#70): Issue 頁面留言權限控制 — 未登入隱藏輸入框、後端 requireAuth 驗證',
-    ],
-  },
-  {
     version: 'v20260414.1451',
     date: '2026-04-14 23:55',
     changes: [
