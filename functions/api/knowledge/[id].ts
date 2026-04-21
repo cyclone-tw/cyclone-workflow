@@ -52,11 +52,22 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       args: [id],
     });
 
+    // Fetch resource_urls
+    let urls: { id: string; url: string; label: string }[] = [];
+    try {
+      const urlResult = await db.execute({
+        sql: `SELECT id, url, label FROM resource_urls WHERE resource_type = 'knowledge' AND resource_id = ? ORDER BY sort_order`,
+        args: [id],
+      });
+      urls = urlResult.rows.map((r) => ({ id: r.id as string, url: r.url as string, label: (r.label as string) || '' }));
+    } catch { /* resource_urls table may not exist yet */ }
+
     const entry = {
       ...row,
       contributor_name: row.contributor_name,
       contributor_avatar: row.contributor_avatar,
       tags: tagResult.rows.map((t) => ({ id: t.id, name: t.name, color: t.color })),
+      urls,
     };
 
     return new Response(JSON.stringify({ ok: true, entry }), {
@@ -77,8 +88,9 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
   try {
     const user = await requireAuth(context.request, context.env);
     const id = context.params.id as string;
-    const body = (await context.request.json()) as Record<string, string>;
+    const body = (await context.request.json()) as Record<string, unknown>;
     const db = getDb(context.env);
+    const urls = Array.isArray(body.urls) ? body.urls as { url: string; label?: string }[] : [];
 
     // Check ownership or admin+
     const existing = await db.execute({
@@ -101,7 +113,7 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
       });
     }
 
-    const { title, content, category, icon, url: entryUrl } = body;
+    const { title, content, category, icon, url: entryUrl } = body as Record<string, string>;
     const sets: string[] = [];
     const args: string[] = [];
 
@@ -139,6 +151,25 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
       sql: `UPDATE knowledge_entries SET ${sets.join(', ')} WHERE id = ?`,
       args,
     });
+
+    // Update resource_urls: always delete old, then insert new
+    if (Array.isArray(body.urls)) {
+      await db.execute({ sql: `DELETE FROM resource_urls WHERE resource_id = ? AND resource_type = 'knowledge'`, args: [id] });
+      for (let i = 0; i < urls.length; i++) {
+        const u = urls[i];
+        const uUrl = (u.url || '').trim();
+        if (!uUrl) continue;
+        if (!uUrl.startsWith('http://') && !uUrl.startsWith('https://')) {
+          return new Response(JSON.stringify({ ok: false, error: '所有連結必須以 http:// 或 https:// 開頭' }), {
+            status: 400, headers: { 'Content-Type': 'application/json' },
+          });
+        }
+        await db.execute({
+          sql: `INSERT INTO resource_urls (id, resource_id, resource_type, url, label, sort_order) VALUES (?, ?, 'knowledge', ?, ?, ?)`,
+          args: [crypto.randomUUID(), id, uUrl, (u.label || '').trim(), i],
+        });
+      }
+    }
 
     return new Response(JSON.stringify({ ok: true }), {
       headers: { 'Content-Type': 'application/json' },
@@ -182,11 +213,17 @@ export const onRequestDelete: PagesFunction<Env> = async (context) => {
       });
     }
 
-    // Delete resource_tags first, then the entry
+    // Delete resource_tags and resource_urls first, then the entry
     await db.execute({
       sql: `DELETE FROM resource_tags WHERE resource_id = ? AND resource_type = 'knowledge'`,
       args: [id],
     });
+    try {
+      await db.execute({
+        sql: `DELETE FROM resource_urls WHERE resource_id = ? AND resource_type = 'knowledge'`,
+        args: [id],
+      });
+    } catch { /* resource_urls table may not exist yet */ }
     await db.execute({
       sql: 'DELETE FROM knowledge_entries WHERE id = ?',
       args: [id],
