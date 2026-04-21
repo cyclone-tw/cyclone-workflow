@@ -30,6 +30,7 @@ interface KnowledgeEntry {
   created_at: string;
   updated_at: string;
   tags: Tag[];
+  urls: { id: string; url: string; label: string }[];
   is_favorited?: boolean;
 }
 
@@ -95,6 +96,9 @@ function EntryModal({ entry, onClose, onSaved }: ModalProps) {
   const [showIconPicker, setShowIconPicker] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [urls, setUrls] = useState<{ url: string; label: string }[]>(
+    entry?.urls?.map((u) => ({ url: u.url, label: u.label })) || [{ url: '', label: '' }],
+  );
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -110,7 +114,7 @@ function EntryModal({ entry, onClose, onSaved }: ModalProps) {
         const res = await fetch(`/api/knowledge/${entry!.id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title: title.trim(), content: content.trim(), category, icon }),
+          body: JSON.stringify({ title: title.trim(), content: content.trim(), category, icon, urls: urls.filter((u) => u.url.trim()) }),
         });
         if (!res.ok) {
           const data = await res.json();
@@ -120,7 +124,7 @@ function EntryModal({ entry, onClose, onSaved }: ModalProps) {
         const res = await fetch('/api/knowledge', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title: title.trim(), content: content.trim(), category, icon }),
+          body: JSON.stringify({ title: title.trim(), content: content.trim(), category, icon, urls: urls.filter((u) => u.url.trim()) }),
         });
         if (!res.ok) {
           const data = await res.json();
@@ -247,6 +251,57 @@ function EntryModal({ entry, onClose, onSaved }: ModalProps) {
               style={{ ...inputStyle, resize: 'vertical', borderColor: errors.content ? '#E94560' : '#2A2A4A' }}
             />
             {errors.content && <p style={{ color: '#E94560', fontSize: '0.75rem', marginTop: '0.2rem' }}>{errors.content}</p>}
+          </div>
+
+          {/* URLs */}
+          <div style={{ marginBottom: '1rem' }}>
+            <label style={labelStyle}>相關連結</label>
+            {urls.map((u, i) => (
+              <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
+                <input
+                  type="url"
+                  placeholder="https://..."
+                  value={u.url}
+                  onChange={(e) => {
+                    const next = [...urls];
+                    next[i] = { ...next[i], url: e.target.value };
+                    setUrls(next);
+                  }}
+                  onFocus={handleFocusIn}
+                  onBlur={handleFocusOut}
+                  style={{ ...inputStyle, flex: 2, marginBottom: 0 }}
+                />
+                <input
+                  type="text"
+                  placeholder="連結名稱（選填）"
+                  value={u.label}
+                  onChange={(e) => {
+                    const next = [...urls];
+                    next[i] = { ...next[i], label: e.target.value };
+                    setUrls(next);
+                  }}
+                  onFocus={handleFocusIn}
+                  onBlur={handleFocusOut}
+                  style={{ ...inputStyle, flex: 1, marginBottom: 0 }}
+                />
+                {urls.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => setUrls(urls.filter((_, idx) => idx !== i))}
+                    style={{ background: 'none', border: 'none', color: '#E94560', cursor: 'pointer', fontSize: '1rem', padding: '0 4px' }}
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={() => setUrls([...urls, { url: '', label: '' }])}
+              style={{ background: 'none', border: '1px dashed #2A2A4A', borderRadius: '0.375rem', color: '#9090B0', fontSize: '0.8rem', cursor: 'pointer', padding: '0.35rem 0.75rem', width: '100%' }}
+            >
+              + 新增連結
+            </button>
           </div>
 
           {errors.submit && (
@@ -568,6 +623,30 @@ function EntryCard({
         </div>
       )}
 
+      {/* Resource URLs */}
+      {entry.urls.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 2 }}>
+          {entry.urls.map((u) => (
+            <a
+              key={u.id}
+              href={u.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                fontSize: '0.75rem',
+                color: '#00D9FF',
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 4,
+              }}
+            >
+              🔗 {u.label || u.url}
+            </a>
+          ))}
+        </div>
+      )}
+
       {/* Footer */}
       <div
         style={{
@@ -670,7 +749,7 @@ export default function KnowledgeBoard() {
   const [loadError, setLoadError] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState<KnowledgeCategory | 'all'>('all');
   const [contributorFilter, setContributorFilter] = useState<string>('');
-  const [tagFilter, setTagFilter] = useState<string>('');
+  const [tagFilter, setTagFilter] = useState<string[]>([]);
   const [availableTags, setAvailableTags] = useState<Tag[]>([]);
   const [members, setMembers] = useState<{ id: string; name: string; avatar: string }[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -684,7 +763,7 @@ export default function KnowledgeBoard() {
       const params = new URLSearchParams();
       if (categoryFilter !== 'all') params.set('category', categoryFilter);
       if (contributorFilter) params.set('contributor_id', contributorFilter);
-      if (tagFilter) params.set('tag', tagFilter);
+      if (tagFilter.length > 0) params.set('tags', tagFilter.join(','));
       const res = await fetch(`/api/knowledge?${params}`);
       if (!res.ok) throw new Error('載入失敗');
       const data = await res.json();
@@ -857,27 +936,44 @@ export default function KnowledgeBoard() {
             </option>
           ))}
         </select>
-        <select
-          value={tagFilter}
-          onChange={(e) => setTagFilter(e.target.value)}
-          style={{
-            ...inputStyle,
-            width: 'auto',
-            minWidth: 140,
-            maxWidth: 200,
-            fontSize: '0.8rem',
-            padding: '0.4rem 0.75rem',
-            cursor: 'pointer',
-            marginLeft: '0.5rem',
-          }}
-        >
-          <option value="">全部標籤</option>
-          {availableTags.map((t) => (
-            <option key={t.id} value={t.name} style={{ background: '#12122A' }}>
-              {t.name}
-            </option>
-          ))}
-        </select>
+        {availableTags.length > 0 && (
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginLeft: '0.5rem' }}>
+            {availableTags.map((t) => {
+              const active = tagFilter.includes(t.name);
+              return (
+                <button
+                  key={t.id}
+                  onClick={() => setTagFilter(active ? tagFilter.filter((n) => n !== t.name) : [...tagFilter, t.name])}
+                  style={{
+                    padding: '0.35rem 0.75rem',
+                    borderRadius: '999px',
+                    border: active ? `1px solid ${t.color}` : '1px solid #2A2A4A',
+                    background: active ? `${t.color}20` : 'transparent',
+                    color: active ? t.color : '#9090B0',
+                    cursor: 'pointer',
+                    fontSize: '0.8rem',
+                    fontWeight: 500,
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  {t.name}
+                </button>
+              );
+            })}
+            {tagFilter.length > 0 && (
+              <button
+                onClick={() => setTagFilter([])}
+                style={{
+                  padding: '0.35rem 0.5rem', borderRadius: '999px', border: 'none',
+                  background: 'rgba(233,69,96,0.1)', color: '#E94560',
+                  cursor: 'pointer', fontSize: '0.75rem',
+                }}
+              >
+                清除
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Content */}

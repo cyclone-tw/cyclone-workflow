@@ -25,6 +25,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     const url = new URL(context.request.url);
     const category = url.searchParams.get('category');
     const tag = url.searchParams.get('tag');
+    const tags = url.searchParams.get('tags'); // comma-separated for multi-select
     const contributor_id = url.searchParams.get('contributor_id');
 
     let sql = `
@@ -54,6 +55,17 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       conditions.push('t.name = ?');
       args.push(tag);
     }
+    // Multi-tag filter: entry must have ALL specified tags
+    if (tags) {
+      const tagList = tags.split(',').map((t) => t.trim()).filter(Boolean);
+      tagList.forEach((tagName, i) => {
+        const alias = `rt${i}`;
+        sql += ` JOIN resource_tags ${alias} ON ${alias}.resource_id = ke.id AND ${alias}.resource_type = 'knowledge'
+                 JOIN tags t_${alias} ON t_${alias}.id = ${alias}.tag_id `;
+        conditions.push(`t_${alias}.name = ?`);
+        args.push(tagName);
+      });
+    }
 
     if (conditions.length) sql += ' WHERE ' + conditions.join(' AND ');
     sql += ' ORDER BY ke.created_at DESC LIMIT 200';
@@ -75,6 +87,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       created_at: row.created_at,
       updated_at: row.updated_at,
       tags: [] as { id: string; name: string; color: string }[],
+      urls: [] as { id: string; url: string; label: string }[],
     }));
 
     if (entries.length > 0) {
@@ -95,6 +108,20 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
           entry.tags.push({ id: tr.tag_id as string, name: tr.name as string, color: tr.color as string });
         }
       }
+
+      // Fetch resource_urls for all entries
+      try {
+        const urlResult = await db.execute({
+          sql: `SELECT id, resource_id, url, label, sort_order FROM resource_urls WHERE resource_type = 'knowledge' AND resource_id IN (${placeholders}) ORDER BY sort_order`,
+          args: ids,
+        });
+        for (const ur of urlResult.rows) {
+          const entry = entries.find((e) => e.id === ur.resource_id);
+          if (entry) {
+            entry.urls.push({ id: ur.id as string, url: ur.url as string, label: (ur.label as string) || '' });
+          }
+        }
+      } catch { /* resource_urls table may not exist yet */ }
     }
 
     // Attach is_favorited for logged-in users
@@ -129,8 +156,9 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   try {
     const user = await requireAuth(context.request, context.env);
 
-    const body = (await context.request.json()) as Record<string, string>;
-    const { title, content, category, icon, url } = body;
+    const body = (await context.request.json()) as Record<string, unknown>;
+    const { title, content, category, icon, url } = body as Record<string, string>;
+    const urls = Array.isArray(body.urls) ? body.urls as { url: string; label?: string }[] : [];
 
     if (!title?.trim() || !content?.trim()) {
       return new Response(JSON.stringify({ ok: false, error: '請填寫標題和內容' }), {
@@ -164,6 +192,22 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       args: [id, title.trim(), content.trim(), finalCategory, icon?.trim() || '📘', user.id, now, now, trimmedUrl],
     });
 
+    // Insert resource_urls
+    for (let i = 0; i < urls.length; i++) {
+      const u = urls[i];
+      const uUrl = (u.url || '').trim();
+      if (!uUrl) continue;
+      if (!uUrl.startsWith('http://') && !uUrl.startsWith('https://')) {
+        return new Response(JSON.stringify({ ok: false, error: '所有連結必須以 http:// 或 https:// 開頭' }), {
+          status: 400, headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      await db.execute({
+        sql: `INSERT INTO resource_urls (id, resource_id, resource_type, url, label, sort_order) VALUES (?, ?, 'knowledge', ?, ?, ?)`,
+        args: [crypto.randomUUID(), id, uUrl, (u.label || '').trim(), i],
+      });
+    }
+
     return new Response(JSON.stringify({ ok: true, id }), {
       headers: { 'Content-Type': 'application/json' },
     });
@@ -186,8 +230,9 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
     const id = url.pathname.split('/').filter(Boolean).pop();
     if (!id) return new Response(JSON.stringify({ ok: false, error: '缺少 ID' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
 
-    const body = (await context.request.json()) as Record<string, string>;
-    const { title, content, category, icon, url: entryUrl } = body;
+    const body = (await context.request.json()) as Record<string, unknown>;
+    const { title, content, category, icon, url: entryUrl } = body as Record<string, string>;
+    const urls = Array.isArray(body.urls) ? body.urls as { url: string; label?: string }[] : [];
 
     if (!title?.trim() || !content?.trim()) {
       return new Response(JSON.stringify({ ok: false, error: '請填寫標題和內容' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
@@ -212,6 +257,23 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
       sql: `UPDATE knowledge_entries SET title=?, content=?, category=?, icon=?, updated_at=?, url=? WHERE id=? AND contributor_id=?`,
       args: [title.trim(), content.trim(), finalCategory, icon?.trim() || '📘', now, trimmedUrl, id, user.id],
     });
+
+    // Update resource_urls: delete old + insert new (even if empty, to clear all)
+    await db.execute({ sql: `DELETE FROM resource_urls WHERE resource_id = ? AND resource_type = 'knowledge'`, args: [id] });
+    for (let i = 0; i < urls.length; i++) {
+        const u = urls[i];
+        const uUrl = (u.url || '').trim();
+        if (!uUrl) continue;
+        if (!uUrl.startsWith('http://') && !uUrl.startsWith('https://')) {
+          return new Response(JSON.stringify({ ok: false, error: '所有連結必須以 http:// 或 https:// 開頭' }), {
+            status: 400, headers: { 'Content-Type': 'application/json' },
+          });
+        }
+        await db.execute({
+          sql: `INSERT INTO resource_urls (id, resource_id, resource_type, url, label, sort_order) VALUES (?, ?, 'knowledge', ?, ?, ?)`,
+          args: [crypto.randomUUID(), id, uUrl, (u.label || '').trim(), i],
+        });
+      }
 
     return new Response(JSON.stringify({ ok: true }), { headers: { 'Content-Type': 'application/json' } });
   } catch (err: unknown) {
