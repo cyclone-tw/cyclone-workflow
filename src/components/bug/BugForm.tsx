@@ -1,13 +1,7 @@
 import { useState } from 'react';
-import { apiFetch } from '@/lib/api';
-
-interface CreateIssueResponse {
-  ok: true;
-  id?: number;
-}
+import { useAuth } from '@/components/auth/useAuth';
 
 type FormData = {
-  nickname: string;
   bugType: string;
   bugPage: string;
   description: string;
@@ -16,7 +10,6 @@ type FormData = {
 };
 
 const initialFormData: FormData = {
-  nickname: '',
   bugType: '',
   bugPage: '',
   description: '',
@@ -86,6 +79,7 @@ export default function BugForm() {
   const [submitting, setSubmitting] = useState(false);
   const [issueId, setIssueId] = useState<number | null>(null);
   const [submitError, setSubmitError] = useState('');
+  const { user, loading: authLoading, login } = useAuth();
 
   const inputStyle: React.CSSProperties = {
     width: '100%',
@@ -113,7 +107,6 @@ export default function BugForm() {
 
   function validate(): boolean {
     const newErrors: Partial<FormData> = {};
-    if (!formData.nickname.trim()) newErrors.nickname = '請填寫回報者暱稱';
     if (!formData.bugType) newErrors.bugType = '請選擇問題類型';
     if (!formData.bugPage) newErrors.bugPage = '請選擇問題頁面';
     if (!formData.description.trim()) newErrors.description = '請描述你遇到的問題';
@@ -144,26 +137,32 @@ export default function BugForm() {
     setSubmitting(true);
     setSubmitError('');
 
-    const result = await apiFetch<CreateIssueResponse>('/api/issues', {
-      method: 'POST',
-      body: {
-        title: `[Bug] ${formData.bugPage} — ${formData.bugType}`,
-        description: buildDescription(),
-        author: formData.nickname.trim(),
-        priority: 'medium',
-        category: 'bug',
-      },
-      logLabel: 'bug-report:create',
-    });
+    try {
+      const res = await fetch('/api/issues', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: `[Bug] ${formData.bugPage} — ${formData.bugType}`,
+          description: buildDescription(),
+          priority: 'medium',
+          category: 'bug',
+        }),
+      });
 
-    if (result.ok) {
-      setIssueId(result.data.id ?? null);
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || '提交失敗');
+      }
+
+      const data = await res.json();
+      setIssueId(data.id || null);
       setSubmitted(true);
       showToast('Bug 回報已送出！');
-    } else {
-      setSubmitError(result.error || '提交失敗，請稍後再試');
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : '提交失敗，請稍後再試');
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitting(false);
   }
 
   function handleReset() {
@@ -233,6 +232,49 @@ export default function BugForm() {
     );
   }
 
+  if (authLoading) {
+    return (
+      <div
+        className="rounded-xl p-8 text-center"
+        style={{
+          background: 'var(--color-glass-bg)',
+          backdropFilter: 'blur(12px)',
+          border: '1px solid var(--color-border)',
+        }}
+      >
+        <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>載入中…</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div
+        className="rounded-xl p-8 flex flex-col items-center gap-4 text-center"
+        style={{
+          background: 'var(--color-glass-bg)',
+          backdropFilter: 'blur(12px)',
+          border: '1px solid var(--color-border)',
+        }}
+      >
+        <p className="text-3xl">🐛</p>
+        <p className="text-base font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+          登入後即可回報 Bug
+        </p>
+        <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+          已有帳號的隊員才能提交 Bug 回報
+        </p>
+        <button
+          onClick={login}
+          className="px-6 py-2.5 rounded-lg text-sm font-medium transition-opacity hover:opacity-80"
+          style={{ background: 'var(--color-primary)', color: '#fff' }}
+        >
+          🔐 登入
+        </button>
+      </div>
+    );
+  }
+
   return (
     <>
       <form
@@ -245,27 +287,17 @@ export default function BugForm() {
           padding: '2rem',
         }}
       >
-        {/* 回報者暱稱 */}
-        <div style={fieldStyle}>
-          <label style={labelStyle}>
-            回報者暱稱 <span style={{ color: 'var(--color-accent)' }}>*</span>
-          </label>
-          <input
-            type="text"
-            placeholder="請輸入你的暱稱"
-            value={formData.nickname}
-            onChange={(e) => setFormData({ ...formData, nickname: e.target.value })}
-            onFocus={handleFocus}
-            onBlur={handleBlur}
-            style={{
-              ...inputStyle,
-              borderColor: errors.nickname ? 'var(--color-accent)' : 'var(--color-border)',
-            }}
-          />
-          {errors.nickname && (
-            <p style={{ color: 'var(--color-accent)', fontSize: '0.8rem', marginTop: '0.25rem' }}>{errors.nickname}</p>
+        <h3
+          className="text-base font-semibold mb-5"
+          style={{ color: 'var(--color-text-primary)' }}
+        >
+          🐛 回報 Bug
+          {user && (
+            <span className="ml-2 text-xs font-normal" style={{ color: 'var(--color-text-muted)' }}>
+              以 {user.display_name || user.name} 發表
+            </span>
           )}
-        </div>
+        </h3>
 
         {/* 問題類型 */}
         <div style={fieldStyle}>

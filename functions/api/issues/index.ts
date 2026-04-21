@@ -1,4 +1,5 @@
 import { createClient } from '@libsql/client/web';
+import { requireAuth } from '../../../src/lib/auth.ts';
 
 interface Env {
   TURSO_DATABASE_URL: string;
@@ -73,10 +74,11 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
   try {
-    const { title, description, author, author_tag, priority, category } = await context.request.json() as Record<string, string>;
+    const user = await requireAuth(context.request, context.env);
+    const { title, description, priority, category } = await context.request.json() as Record<string, string>;
 
-    if (!title?.trim() || !description?.trim() || !author?.trim()) {
-      return new Response(JSON.stringify({ error: '請填寫標題、描述和暱稱' }), {
+    if (!title?.trim() || !description?.trim()) {
+      return new Response(JSON.stringify({ error: '請填寫標題和描述' }), {
         status: 400, headers: { 'Content-Type': 'application/json' },
       });
     }
@@ -90,8 +92,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       args: [
         title.trim(),
         description.trim(),
-        author.trim(),
-        author_tag?.trim() || '',
+        user.name,
+        user.discord_id || '',
         priority || 'medium',
         category || 'bug',
       ],
@@ -101,6 +103,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (err: unknown) {
+    if (err instanceof Response) return err;
     const msg = err instanceof Error ? err.message : 'Unknown error';
     return new Response(JSON.stringify({ ok: false, error: msg }), {
       status: 500, headers: { 'Content-Type': 'application/json' },

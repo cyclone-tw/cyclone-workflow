@@ -1,16 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import rehypeRaw from 'rehype-raw';
 import { useAuth } from '@/components/auth/useAuth';
 import { timeAgo } from '@/lib/time';
-import { sanitizeMarkdown, sanitizeUrl, sanitizeImgSrc } from '@/lib/markdown';
-import ResourceComments from '@/components/ResourceComments';
-
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type KnowledgeCategory = 'template' | 'best-practice' | 'qa' | 'concept' | 'other';
+type KnowledgeCategory = 'template' | 'best-practice' | 'qa' | 'other';
 
 interface Tag {
   id: string;
@@ -32,7 +26,6 @@ interface KnowledgeEntry {
   updated_at: string;
   tags: Tag[];
   is_favorited?: boolean;
-  url?: string;
 }
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
@@ -41,7 +34,6 @@ const CATEGORY_CONFIG: Record<KnowledgeCategory, { label: string; color: string 
   template: { label: '工作流模板', color: '#00F5A0' },
   'best-practice': { label: '最佳實踐', color: '#6C63FF' },
   qa: { label: '問答精華', color: '#00D9FF' },
-  concept: { label: '概念補充', color: '#FF9F43' },
   other: { label: '其他', color: '#9090B0' },
 };
 
@@ -93,7 +85,6 @@ function EntryModal({ entry, onClose, onSaved }: ModalProps) {
   const isEdit = !!entry;
   const [title, setTitle] = useState(entry?.title ?? '');
   const [content, setContent] = useState(entry?.content ?? '');
-  const [url, setUrl] = useState(entry?.url ?? '');
   const [category, setCategory] = useState<KnowledgeCategory>(entry?.category ?? 'template');
   const [icon, setIcon] = useState(entry?.icon ?? '📘');
   const [showIconPicker, setShowIconPicker] = useState(false);
@@ -114,7 +105,7 @@ function EntryModal({ entry, onClose, onSaved }: ModalProps) {
         const res = await fetch(`/api/knowledge/${entry!.id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title: title.trim(), content: content.trim(), category, icon, url: url.trim() }),
+          body: JSON.stringify({ title: title.trim(), content: content.trim(), category, icon }),
         });
         if (!res.ok) {
           const data = await res.json();
@@ -124,7 +115,7 @@ function EntryModal({ entry, onClose, onSaved }: ModalProps) {
         const res = await fetch('/api/knowledge', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title: title.trim(), content: content.trim(), category, icon, url: url.trim() }),
+          body: JSON.stringify({ title: title.trim(), content: content.trim(), category, icon }),
         });
         if (!res.ok) {
           const data = await res.json();
@@ -253,20 +244,6 @@ function EntryModal({ entry, onClose, onSaved }: ModalProps) {
             {errors.content && <p style={{ color: '#E94560', fontSize: '0.75rem', marginTop: '0.2rem' }}>{errors.content}</p>}
           </div>
 
-          {/* URL */}
-          <div style={{ marginBottom: '0.75rem' }}>
-            <label style={labelStyle}>相關連結 <span style={{ color: '#9090B0', fontWeight: 400 }}>(選填, 多個用換行分隔)</span></label>
-            <textarea
-              placeholder="https://..."
-              rows={2}
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              onFocus={handleFocusIn}
-              onBlur={handleFocusOut}
-              style={{ ...inputStyle, resize: 'vertical' }}
-            />
-          </div>
-
           {errors.submit && (
             <p style={{ color: '#E94560', fontSize: '0.8rem', marginBottom: '0.75rem' }}>{errors.submit}</p>
           )}
@@ -389,7 +366,6 @@ function EntryCard({
   entry,
   canEdit,
   loggedIn,
-  user,
   onEdit,
   onDelete,
   onToggleFavorite,
@@ -397,7 +373,6 @@ function EntryCard({
   entry: KnowledgeEntry;
   canEdit: boolean;
   loggedIn: boolean;
-  user: { id: string; name: string; avatar_url?: string | null; effectiveRole: string } | null;
   onEdit: () => void;
   onDelete: () => void;
   onToggleFavorite: () => void;
@@ -509,77 +484,17 @@ function EntryCard({
 
       {/* Content */}
       <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>
-        <div
-          ref={contentRef as React.RefObject<HTMLDivElement>}
+        <p
+          ref={contentRef}
           id={`knowledge-content-${entry.id}`}
-          className="text-sm leading-relaxed break-words prose prose-sm max-w-none"
           style={{
-            color: '#9090B0',
-            overflowWrap: 'anywhere',
+            color: '#9090B0', fontSize: '0.85rem', lineHeight: 1.6, margin: 0,
+            overflowWrap: 'anywhere', wordBreak: 'break-word',
             ...(expanded ? {} : { maxHeight: '4.8em', overflow: 'hidden' }),
           }}
         >
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
-            rehypePlugins={[rehypeRaw]}
-            components={{
-              code({ className, children, ...props }) {
-                const match = /language-(\w+)/.exec(className || '');
-                const isInline = !match && !String(children).includes('\n');
-                if (isInline) {
-                  return (
-                    <code
-                      className="px-1.5 py-0.5 rounded text-xs font-mono"
-                      style={{ background: 'rgba(255,255,255,0.08)', color: 'var(--color-neon-green)' }}
-                      {...props}
-                    >
-                      {children}
-                    </code>
-                  );
-                }
-                return (
-                  <code
-                    className="block p-3 rounded-lg text-xs font-mono overflow-x-auto"
-                    style={{ background: 'rgba(255,255,255,0.06)', color: 'var(--color-neon-blue)' }}
-                    {...props}
-                  >
-                    {children}
-                  </code>
-                );
-              },
-              a({ href, children, ...props }) {
-                if (!href) return <span {...props}>{children}</span>;
-                const safe = sanitizeUrl(href);
-                if (!safe) return <span {...props}>{children}</span>;
-                return (
-                  <a
-                    href={safe}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline hover:opacity-80"
-                    style={{ color: 'var(--color-neon-blue)' }}
-                  >
-                    {children}
-                  </a>
-                );
-              },
-              img({ src, alt, ...props }) {
-                const safeSrc = sanitizeImgSrc(src);
-                if (!safeSrc) return null;
-                return (
-                  <img
-                    src={safeSrc}
-                    alt={alt || ''}
-                    loading="lazy"
-                    style={{ maxWidth: '100%', height: 'auto', borderRadius: '0.5rem' }}
-                  />
-                );
-              },
-            }}
-          >
-            {sanitizeMarkdown(entry.content)}
-          </ReactMarkdown>
-        </div>
+          {entry.content}
+        </p>
         {(!expanded && isOverflowing) && (
           <div
             style={{
@@ -623,48 +538,6 @@ function EntryCard({
         </div>
       )}
 
-      {/* URLs */}
-      {entry.url && (
-        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-          {entry.url.split('\n').filter(Boolean).map((urlStr, i) => {
-            const safe = sanitizeUrl(urlStr.trim());
-            if (!safe) return null;
-            try {
-              const u = new URL(safe);
-              return (
-                <a
-                  key={i}
-                  href={safe}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    display: 'inline-flex', alignItems: 'center', gap: '0.25rem',
-                    fontSize: '0.75rem', color: '#00D9FF',
-                    textDecoration: 'none', padding: '0.15rem 0.4rem',
-                    background: 'rgba(0,217,255,0.08)', borderRadius: '0.375rem',
-                    border: '1px solid rgba(0,217,255,0.2)',
-                  }}
-                >
-                  🔗 {u.hostname}
-                </a>
-              );
-            } catch {
-              return null;
-            }
-          })}
-        </div>
-      )}
-
-      {/* Comments */}
-      {expanded && (
-        <ResourceComments
-          resourceType="knowledge"
-          resourceId={entry.id}
-          user={user}
-          color={cfg.color}
-        />
-      )}
-
       {/* Footer */}
       <div
         style={{
@@ -698,7 +571,6 @@ function CategorySection({
   entries,
   canEditMap,
   loggedIn,
-  user,
   onEdit,
   onDelete,
   onToggleFavorite,
@@ -707,7 +579,6 @@ function CategorySection({
   entries: KnowledgeEntry[];
   canEditMap: Record<string, boolean>;
   loggedIn: boolean;
-  user: { id: string; name: string; avatar_url?: string | null; effectiveRole: string } | null;
   onEdit: (entry: KnowledgeEntry) => void;
   onDelete: (entry: KnowledgeEntry) => void;
   onToggleFavorite: (entry: KnowledgeEntry) => void;
@@ -750,7 +621,6 @@ function CategorySection({
             entry={entry}
             canEdit={canEditMap[entry.id] || false}
             loggedIn={loggedIn}
-            user={user}
             onEdit={() => onEdit(entry)}
             onDelete={() => onDelete(entry)}
             onToggleFavorite={() => onToggleFavorite(entry)}
@@ -855,7 +725,7 @@ export default function KnowledgeBoard() {
   const isAdmin = user ? ['captain', 'tech', 'admin'].includes(user.effectiveRole) : false;
 
   // Group by category when showing all
-  const categoryOrder: KnowledgeCategory[] = ['template', 'best-practice', 'qa', 'concept', 'other'];
+  const categoryOrder: KnowledgeCategory[] = ['template', 'best-practice', 'qa', 'other'];
   const grouped = categoryFilter === 'all'
     ? categoryOrder.map((cat) => ({
         category: cat,
@@ -1029,7 +899,6 @@ export default function KnowledgeBoard() {
               entries={items}
               canEditMap={canEditMap}
               loggedIn={!!user}
-              user={user}
               onEdit={(entry) => setEditingEntry(entry)}
               onDelete={(entry) => setDeletingEntry(entry)}
               onToggleFavorite={(entry) => toggleFavorite(entry)}

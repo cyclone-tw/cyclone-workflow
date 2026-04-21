@@ -7,6 +7,14 @@ export interface ChangelogEntry {
 export const CHANGELOG: ChangelogEntry[] = [
   {
     version: '',
+    date: '2026-04-21',
+    changes: [
+      'fix(#70): Issue 建立/留言/Bug 回報表單權限控制 — 訪客顯示登入按鈕、後端 requireAuth、自動帶入登入者名稱',
+      'fix(#88): AI 工具箱╳知識庫成員篩選下拉 — 還原動態 API fetch，移除過時的 static MEMBERS constant',
+    ],
+  },
+  {
+    version: '',
     date: '2026-04-19',
     changes: [
       'fix(#122): 許願樹留言 API 回傳格式修正 — 從巢狀 author 物件改為扁平 author_name/author_avatar，防止頁面 crash',
@@ -91,13 +99,6 @@ export const CHANGELOG: ChangelogEntry[] = [
     date: '2026-04-15 00:15',
     changes: [
       'fix(#69): 公告系統前台修正 — 移除 X 按鈕、顯示 3 則公告、支援換行、字體放大',
-    ],
-  },
-  {
-    version: '',
-    date: '2026-04-15 00:20',
-    changes: [
-      'fix(#70): Issue 頁面留言權限控制 — 未登入隱藏輸入框、後端 requireAuth 驗證',
     ],
   },
   {
