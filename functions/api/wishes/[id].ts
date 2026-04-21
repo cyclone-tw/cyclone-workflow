@@ -242,13 +242,14 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
         sql: `SELECT COUNT(*) AS cnt FROM wish_claimers WHERE wish_id = ?`,
         args: [id],
       });
-      if (Number(remaining.rows[0]?.cnt ?? 0) === 0 && wish.status === 'claimed') {
+      if (Number(remaining.rows[0]?.cnt ?? 0) === 0 && (wish.status === 'claimed' || wish.status === 'in-progress')) {
+        const oldStatus = wish.status as string;
         await db.execute({
           sql: `UPDATE wishes SET status = 'pending', updated_at = datetime('now') WHERE id = ?`,
           args: [id],
         });
         await ensureWishHistoryMigration(db);
-        await recordStatusChange(db, id, 'claimed', 'pending', user.id);
+        await recordStatusChange(db, id, oldStatus, 'pending', user.id);
       }
 
       return new Response(JSON.stringify({ ok: true }), {
