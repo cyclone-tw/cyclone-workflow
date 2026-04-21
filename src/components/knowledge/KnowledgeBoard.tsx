@@ -3,6 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkBreaks from 'remark-breaks';
 import rehypeRaw from 'rehype-raw';
+import ResourceComments from '@/components/ResourceComments';
 import { useAuth } from '@/components/auth/useAuth';
 import { timeAgo } from '@/lib/time';
 import { sanitizeMarkdown, sanitizeUrl, sanitizeImgSrc } from '@/lib/markdown';
@@ -426,6 +427,7 @@ function EntryCard({
   entry,
   canEdit,
   loggedIn,
+  user,
   onEdit,
   onDelete,
   onToggleFavorite,
@@ -433,6 +435,7 @@ function EntryCard({
   entry: KnowledgeEntry;
   canEdit: boolean;
   loggedIn: boolean;
+  user: { id: string; name: string; display_name?: string; avatar_url?: string | null; effectiveRole: string } | null;
   onEdit: () => void;
   onDelete: () => void;
   onToggleFavorite: () => void;
@@ -651,6 +654,14 @@ function EntryCard({
         </div>
       )}
 
+      {/* Comments */}
+      <ResourceComments
+        resourceType="knowledge"
+        resourceId={entry.id}
+        user={user}
+        color={cfg.color}
+      />
+
       {/* Footer */}
       <div
         style={{
@@ -684,6 +695,7 @@ function CategorySection({
   entries,
   canEditMap,
   loggedIn,
+  user,
   onEdit,
   onDelete,
   onToggleFavorite,
@@ -692,6 +704,7 @@ function CategorySection({
   entries: KnowledgeEntry[];
   canEditMap: Record<string, boolean>;
   loggedIn: boolean;
+  user: { id: string; name: string; display_name?: string; avatar_url?: string | null; effectiveRole: string } | null;
   onEdit: (entry: KnowledgeEntry) => void;
   onDelete: (entry: KnowledgeEntry) => void;
   onToggleFavorite: (entry: KnowledgeEntry) => void;
@@ -734,6 +747,7 @@ function CategorySection({
             entry={entry}
             canEdit={canEditMap[entry.id] || false}
             loggedIn={loggedIn}
+            user={user}
             onEdit={() => onEdit(entry)}
             onDelete={() => onDelete(entry)}
             onToggleFavorite={() => onToggleFavorite(entry)}
@@ -1029,6 +1043,7 @@ export default function KnowledgeBoard() {
               entries={items}
               canEditMap={canEditMap}
               loggedIn={!!user}
+              user={user}
               onEdit={(entry) => setEditingEntry(entry)}
               onDelete={(entry) => setDeletingEntry(entry)}
               onToggleFavorite={(entry) => toggleFavorite(entry)}

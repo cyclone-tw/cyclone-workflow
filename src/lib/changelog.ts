@@ -9,6 +9,13 @@ export const CHANGELOG: ChangelogEntry[] = [
     version: '',
     date: '2026-04-21',
     changes: [
+      'feat(#90): 知識庫留言回饋 — 整合 ResourceComments 元件，支援留言/刪除/積分 +2',
+    ],
+  },
+  {
+    version: '',
+    date: '2026-04-21',
+    changes: [
       'feat(#89): 知識庫 Markdown 渲染 — 複用討論區 ReactMarkdown + sanitize 方案',
     ],
   },
