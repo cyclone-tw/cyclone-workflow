@@ -9,6 +9,16 @@ export const CHANGELOG: ChangelogEntry[] = [
     version: '',
     date: '2026-04-21',
     changes: [
+      'fix(#60): 多人認領 — 認領按鈕條件修正，claimed 狀態也可認領',
+      'fix(#60): 取消認領 — 後端 unclaim action + 前端取消按鈕',
+      'fix(#60): 積分榜總分 — total_points 改從 points_ledger 計算，含所有積分來源',
+      'fix(#60): 積分紀錄中文 — wish_completed 顯示「完成許願」',
+    ],
+  },
+  {
+    version: '',
+    date: '2026-04-21',
+    changes: [
       'feat(#90): 知識庫留言回饋 — 整合 ResourceComments 元件，支援留言/刪除/積分 +2',
     ],
   },

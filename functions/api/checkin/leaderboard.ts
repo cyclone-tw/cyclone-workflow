@@ -19,14 +19,15 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     const result = await db.execute({
       sql: `
         SELECT
-          c.user_id,
+          u.id AS user_id,
           u.name AS user_name,
           u.avatar_url,
-          SUM(c.points) AS total_points,
-          COUNT(c.id) AS total_checkins
-        FROM checkins c
-        JOIN users u ON u.id = c.user_id AND u.archived_at IS NULL AND u.status = 'active'
-        GROUP BY c.user_id
+          COALESCE(pl.total, 0) AS total_points,
+          COALESCE(cc.cnt, 0) AS total_checkins
+        FROM users u
+        INNER JOIN (SELECT user_id, SUM(points) AS total FROM points_ledger GROUP BY user_id) pl ON pl.user_id = u.id
+        LEFT JOIN (SELECT user_id, COUNT(*) AS cnt FROM checkins GROUP BY user_id) cc ON cc.user_id = u.id
+        WHERE u.archived_at IS NULL AND u.status = 'active'
         ORDER BY total_points DESC
       `,
       args: [],

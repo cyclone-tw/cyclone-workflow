@@ -811,7 +811,7 @@ function WishCard({ wish, user, onRefresh, onDelete }: { wish: Wish; user: Retur
       {/* Action buttons */}
       {user && !isCompleted && (
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          {wish.status === 'pending' && !isWisher && !isClaimer && (
+          {(wish.status === 'pending' || wish.status === 'claimed') && !isWisher && !isClaimer && (
             <button
               onClick={() => handleAction('claim')}
               disabled={actionLoading}
@@ -842,6 +842,25 @@ function WishCard({ wish, user, onRefresh, onDelete }: { wish: Wish; user: Retur
               }}
             >
               {actionLoading ? '處理中...' : '🔨 開始實作'}
+            </button>
+          )}
+          {(wish.status === 'claimed' || wish.status === 'in-progress') && isClaimer && (
+            <button
+              onClick={() => handleAction('unclaim')}
+              disabled={actionLoading}
+              style={{
+                fontSize: '0.8rem',
+                padding: '0.4rem 0.875rem',
+                borderRadius: '0.75rem',
+                border: '1px solid rgba(255,100,100,0.4)',
+                background: 'rgba(255,100,100,0.1)',
+                color: '#ff8888',
+                cursor: 'pointer',
+                fontWeight: 600,
+                opacity: actionLoading ? 0.6 : 1,
+              }}
+            >
+              {actionLoading ? '處理中...' : '↩️ 取消認領'}
             </button>
           )}
           {(wish.status === 'in-progress' || wish.status === 'claimed') && activeClaimers.length > 0 && (isWisher || isAdminUser) && (
