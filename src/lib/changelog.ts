@@ -9,6 +9,13 @@ export const CHANGELOG: ChangelogEntry[] = [
     version: '',
     date: '2026-04-21',
     changes: [
+      'feat(#89): 知識庫 Markdown 渲染 — 複用討論區 ReactMarkdown + sanitize 方案',
+    ],
+  },
+  {
+    version: '',
+    date: '2026-04-21',
+    changes: [
       'fix(#70): Issue 建立/留言/Bug 回報表單權限控制 — 訪客顯示登入按鈕、後端 requireAuth、自動帶入登入者名稱',
       'fix(#88): AI 工具箱╳知識庫成員篩選下拉 — 還原動態 API fetch，移除過時的 static MEMBERS constant',
     ],
