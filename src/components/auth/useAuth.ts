@@ -4,6 +4,7 @@ import type { GroupRole } from '@/lib/constants';
 export interface AuthUser {
   id: string;
   name: string;
+  display_name?: string;
   email: string;
   avatar_url: string | null;
   roles: GroupRole[];

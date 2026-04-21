@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { timeAgo } from '@/lib/time';
-import { useAuth } from '@/components/auth/useAuth';
+import { useAuth, type AuthUser } from '@/components/auth/useAuth';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -212,13 +212,12 @@ function StatusBadge({ status }: { status: IssueStatus }) {
 interface CreateFormProps {
   onCreated: () => void;
   onCancel: () => void;
+  user: AuthUser;
 }
 
-function CreateIssueForm({ onCreated, onCancel }: CreateFormProps) {
+function CreateIssueForm({ onCreated, onCancel, user }: CreateFormProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [author, setAuthor] = useState('');
-  const [authorTag, setAuthorTag] = useState('');
   const [priority, setPriority] = useState<IssuePriority>('medium');
   const [category, setCategory] = useState<IssueCategory>('bug');
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -229,7 +228,6 @@ function CreateIssueForm({ onCreated, onCancel }: CreateFormProps) {
     const newErrors: Record<string, string> = {};
     if (!title.trim()) newErrors.title = '請填寫標題';
     if (!description.trim()) newErrors.description = '請填寫描述';
-    if (!author.trim()) newErrors.author = '請填寫名稱';
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
 
@@ -238,7 +236,7 @@ function CreateIssueForm({ onCreated, onCancel }: CreateFormProps) {
       const res = await fetch('/api/issues', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, description, author, author_tag: authorTag, priority, category }),
+        body: JSON.stringify({ title, description, priority, category }),
       });
       if (!res.ok) throw new Error('建立失敗');
       onCreated();
@@ -263,37 +261,10 @@ function CreateIssueForm({ onCreated, onCancel }: CreateFormProps) {
     >
       <h3 style={{ color: '#F0F0FF', fontWeight: 700, fontSize: '1rem', marginBottom: '1.25rem' }}>
         建立新 Issue
+        <span className="ml-2 text-xs font-normal" style={{ color: '#9090B0' }}>
+          以 {user.display_name || user.name} 發表
+        </span>
       </h3>
-
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-        {/* Author */}
-        <div>
-          <label style={labelStyle}>姓名 <span style={{ color: '#E94560' }}>*</span></label>
-          <input
-            type="text"
-            placeholder="你的名稱"
-            value={author}
-            onChange={e => setAuthor(e.target.value)}
-            onFocus={handleFocusIn}
-            onBlur={handleFocusOut}
-            style={{ ...inputStyle, borderColor: errors.author ? '#E94560' : '#2A2A4A' }}
-          />
-          {errors.author && <p style={{ color: '#E94560', fontSize: '0.75rem', marginTop: '0.2rem' }}>{errors.author}</p>}
-        </div>
-        {/* Author tag */}
-        <div>
-          <label style={labelStyle}>Discord Tag（選填）</label>
-          <input
-            type="text"
-            placeholder="@username"
-            value={authorTag}
-            onChange={e => setAuthorTag(e.target.value)}
-            onFocus={handleFocusIn}
-            onBlur={handleFocusOut}
-            style={inputStyle}
-          />
-        </div>
-      </div>
 
       {/* Title */}
       <div style={{ marginBottom: '1rem' }}>
@@ -988,6 +959,7 @@ export default function IssueBoard() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [selectedIssueId, setSelectedIssueId] = useState<number | null>(null);
   const [sourceTab, setSourceTab] = useState<SourceTab>('local');
+  const { user, loading: authLoading, login } = useAuth();
 
   async function fetchIssues() {
     setLoading(true);
@@ -1086,32 +1058,57 @@ export default function IssueBoard() {
               <span style={{ margin: '0 0.5rem', color: '#2A2A4A' }}>·</span>
               <span>{closedCount} 個 closed</span>
             </div>
-            <button
-              onClick={() => setShowCreateForm(v => !v)}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                padding: '0.6rem 1.25rem',
-                background: showCreateForm ? 'rgba(108,99,255,0.15)' : 'linear-gradient(135deg, #6C63FF, #E94560)',
-                border: showCreateForm ? '1px solid rgba(108,99,255,0.4)' : 'none',
-                borderRadius: '0.5rem',
-                color: '#F0F0FF',
-                fontSize: '0.875rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'opacity 0.2s, transform 0.2s',
-              }}
-              onMouseEnter={e => e.currentTarget.style.opacity = '0.9'}
-              onMouseLeave={e => e.currentTarget.style.opacity = '1'}
-            >
-              {showCreateForm ? '✕ 關閉' : '+ 新增 Issue'}
-            </button>
+            {!authLoading && !user ? (
+              <button
+                onClick={login}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  padding: '0.6rem 1.25rem',
+                  background: 'linear-gradient(135deg, #6C63FF, #E94560)',
+                  border: 'none',
+                  borderRadius: '0.5rem',
+                  color: '#F0F0FF',
+                  fontSize: '0.875rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'opacity 0.2s, transform 0.2s',
+                }}
+                onMouseEnter={e => e.currentTarget.style.opacity = '0.9'}
+                onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+              >
+                🔐 登入
+              </button>
+            ) : !authLoading && user ? (
+              <button
+                onClick={() => setShowCreateForm(v => !v)}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  padding: '0.6rem 1.25rem',
+                  background: showCreateForm ? 'rgba(108,99,255,0.15)' : 'linear-gradient(135deg, #6C63FF, #E94560)',
+                  border: showCreateForm ? '1px solid rgba(108,99,255,0.4)' : 'none',
+                  borderRadius: '0.5rem',
+                  color: '#F0F0FF',
+                  fontSize: '0.875rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'opacity 0.2s, transform 0.2s',
+                }}
+                onMouseEnter={e => e.currentTarget.style.opacity = '0.9'}
+                onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+              >
+                {showCreateForm ? '✕ 關閉' : '+ 新增 Issue'}
+              </button>
+            ) : null}
           </div>
 
           {/* Create form (collapsible) */}
-          {showCreateForm && (
+          {showCreateForm && user && (
             <CreateIssueForm
+              user={user}
               onCreated={() => {
                 setShowCreateForm(false);
                 fetchIssues();

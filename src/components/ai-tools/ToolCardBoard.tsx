@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@/components/auth/useAuth';
 import { timeAgo } from '@/lib/time';
-import { MEMBERS } from '@/lib/constants';
 import { ROLE_LEVEL } from '@/lib/auth';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -529,6 +528,7 @@ export default function ToolCardBoard() {
   const [contributorFilter, setContributorFilter] = useState<string>('');
   const [tagFilter, setTagFilter] = useState<string>('');
   const [availableTags, setAvailableTags] = useState<Tag[]>([]);
+  const [members, setMembers] = useState<{ id: string; name: string; avatar: string }[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingTool, setEditingTool] = useState<Tool | null>(null);
   const [deletingTool, setDeletingTool] = useState<Tool | null>(null);
@@ -565,6 +565,17 @@ export default function ToolCardBoard() {
   }
 
   useEffect(() => { fetchTags(); }, []);
+
+  useEffect(() => {
+    async function fetchMembers() {
+      try {
+        const res = await fetch('/api/members');
+        const data = await res.json();
+        if (data.ok) setMembers(data.members);
+      } catch { /* silent */ }
+    }
+    fetchMembers();
+  }, []);
 
   async function toggleFavorite(tool: Tool) {
     try {
@@ -666,7 +677,7 @@ export default function ToolCardBoard() {
           }}
         >
           <option value="">全部成員</option>
-          {MEMBERS.map((m) => (
+          {members.map((m) => (
             <option key={m.id} value={m.id} style={{ background: '#12122A' }}>
               {m.avatar} {m.name}
             </option>

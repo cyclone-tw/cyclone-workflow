@@ -7,6 +7,14 @@ export interface ChangelogEntry {
 export const CHANGELOG: ChangelogEntry[] = [
   {
     version: '',
+    date: '2026-04-20',
+    changes: [
+      'fix(#70): Issue 建立表單權限控制 — 訪客顯示登入按鈕、後端 POST /api/issues 新增 requireAuth、自動帶入登入者名稱',
+      'fix(#88): AI 工具箱╳知識庫成員╳標籤篩選下拉 — 還原動態 API fetch，移除過時的 static MEMBERS constant',
+    ],
+  },
+  {
+    version: '',
     date: '2026-04-15 00:15',
     changes: [
       'fix(#69): 公告系統前台修正 — 移除 X 按鈕、顯示 3 則公告、支援換行、字體放大',
