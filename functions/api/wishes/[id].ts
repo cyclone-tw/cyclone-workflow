@@ -222,6 +222,11 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
 
     // ── Unclaim action ───────────────────────────────────────────────────
     if (body.action === 'unclaim') {
+      if (wish.status === 'completed') {
+        return new Response(JSON.stringify({ ok: false, error: '已完成的許願無法取消認領' }), {
+          status: 400, headers: { 'Content-Type': 'application/json' },
+        });
+      }
       const existingClaim = await db.execute({
         sql: `SELECT id FROM wish_claimers WHERE wish_id = ? AND user_id = ? AND status = 'claimed'`,
         args: [id, user.id],
