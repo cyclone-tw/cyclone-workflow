@@ -489,7 +489,7 @@ function EntryCard({
 
       {/* Content */}
       <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>
-        <p
+        <div
           ref={contentRef}
           id={`knowledge-content-${entry.id}`}
           style={{
@@ -524,7 +524,7 @@ function EntryCard({
           >
             {sanitizeMarkdown(entry.content)}
           </ReactMarkdown>
-        </p>
+        </div>
         {(!expanded && isOverflowing) && (
           <div
             style={{
