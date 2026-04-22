@@ -92,9 +92,15 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       args: [commentId, id, user.id, content.trim()],
     });
 
-    // Award +2 points to contributor (skip if commenting on own post)
+    // Award +2 points to contributor only on the user's first comment per resource
+    const prior = await db.execute({
+      sql: `SELECT COUNT(*) AS cnt FROM resource_comments WHERE resource_id = ? AND user_id = ? AND resource_type = 'ai-tool'`,
+      args: [id, user.id],
+    });
+    const isFirstComment = Number(prior.rows[0]?.cnt) <= 1;
+
     const contributorId = toolResult.rows[0].contributor_id as string;
-    if (contributorId && contributorId !== user.id) {
+    if (isFirstComment && contributorId && contributorId !== user.id) {
       const ledgerId = crypto.randomUUID();
       await db.execute({
         sql: `INSERT INTO points_ledger (id, user_id, action, points, ref_type, ref_id) VALUES (?, ?, ?, ?, 'resource_comment', ?)`,
