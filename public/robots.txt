@@ -15,4 +15,4 @@ Allow: /
 # Content Signals
 Content-Signal: ai-train=no, search=yes, ai-input=no
 
-Sitemap: https://cyclone.tw/sitemap.xml
+Sitemap: https://cyclone.tw/sitemap-index.xml
