@@ -170,7 +170,10 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
             args: [crypto.randomUUID(), id, uUrl, (u.label || '').trim(), i],
           });
         }
-      } catch { /* resource_urls table may not exist yet */ }
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : '';
+        if (!msg.includes('no such table')) throw err;
+      }
     }
 
     return new Response(JSON.stringify({ ok: true }), {
