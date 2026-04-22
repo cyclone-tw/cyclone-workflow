@@ -7,6 +7,13 @@ export interface ChangelogEntry {
 export const CHANGELOG: ChangelogEntry[] = [
   {
     version: '',
+    date: '2026-04-22',
+    changes: [
+      'fix(#51): 討論區軟刪除 placeholder 刷新後消失 — GET messages 不再過濾 deleted_at，保留已刪除留言的 placeholder 顯示',
+    ],
+  },
+  {
+    version: '',
     date: '2026-04-21',
     changes: [
       'fix(#60): 多人認領 — 認領按鈕條件修正，claimed 狀態也可認領',

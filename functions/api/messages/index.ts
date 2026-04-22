@@ -51,7 +51,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
               WHERE parent_id IS NOT NULL AND deleted_at IS NULL
               GROUP BY parent_id
             ) rc ON rc.parent_id = m.id
-            WHERE m.deleted_at IS NULL AND m.parent_id IS NULL
+            WHERE m.parent_id IS NULL
             ORDER BY m.pinned DESC, m.created_at DESC LIMIT 100`,
       args: [],
     });
@@ -75,8 +75,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
                   WHERE status = 'pending'
                   GROUP BY message_id
                 ) mr ON mr.message_id = m.id
-                WHERE m.deleted_at IS NULL
-                  AND m.parent_id IN (${topLevelIds.map(() => '?').join(', ')})
+                WHERE m.parent_id IN (${topLevelIds.map(() => '?').join(', ')})
                 ORDER BY m.created_at ASC`,
           args: topLevelIds,
         })
