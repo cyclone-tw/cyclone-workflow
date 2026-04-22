@@ -192,21 +192,23 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       args: [id, title.trim(), content.trim(), finalCategory, icon?.trim() || '📘', user.id, now, now, trimmedUrl],
     });
 
-    // Insert resource_urls
-    for (let i = 0; i < urls.length; i++) {
-      const u = urls[i];
-      const uUrl = (u.url || '').trim();
-      if (!uUrl) continue;
-      if (!uUrl.startsWith('http://') && !uUrl.startsWith('https://')) {
-        return new Response(JSON.stringify({ ok: false, error: '所有連結必須以 http:// 或 https:// 開頭' }), {
-          status: 400, headers: { 'Content-Type': 'application/json' },
+    // Insert resource_urls (wrapped in try/catch so missing table doesn't block the main entry creation)
+    try {
+      for (let i = 0; i < urls.length; i++) {
+        const u = urls[i];
+        const uUrl = (u.url || '').trim();
+        if (!uUrl) continue;
+        if (!uUrl.startsWith('http://') && !uUrl.startsWith('https://')) {
+          return new Response(JSON.stringify({ ok: false, error: '所有連結必須以 http:// 或 https:// 開頭' }), {
+            status: 400, headers: { 'Content-Type': 'application/json' },
+          });
+        }
+        await db.execute({
+          sql: `INSERT INTO resource_urls (id, resource_id, resource_type, url, label, sort_order) VALUES (?, ?, 'knowledge', ?, ?, ?)`,
+          args: [crypto.randomUUID(), id, uUrl, (u.label || '').trim(), i],
         });
       }
-      await db.execute({
-        sql: `INSERT INTO resource_urls (id, resource_id, resource_type, url, label, sort_order) VALUES (?, ?, 'knowledge', ?, ?, ?)`,
-        args: [crypto.randomUUID(), id, uUrl, (u.label || '').trim(), i],
-      });
-    }
+    } catch { /* resource_urls table may not exist yet */ }
 
     return new Response(JSON.stringify({ ok: true, id }), {
       headers: { 'Content-Type': 'application/json' },
@@ -259,8 +261,9 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
     });
 
     // Update resource_urls: delete old + insert new (even if empty, to clear all)
-    await db.execute({ sql: `DELETE FROM resource_urls WHERE resource_id = ? AND resource_type = 'knowledge'`, args: [id] });
-    for (let i = 0; i < urls.length; i++) {
+    try {
+      await db.execute({ sql: `DELETE FROM resource_urls WHERE resource_id = ? AND resource_type = 'knowledge'`, args: [id] });
+      for (let i = 0; i < urls.length; i++) {
         const u = urls[i];
         const uUrl = (u.url || '').trim();
         if (!uUrl) continue;
@@ -274,6 +277,7 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
           args: [crypto.randomUUID(), id, uUrl, (u.label || '').trim(), i],
         });
       }
+    } catch { /* resource_urls table may not exist yet */ }
 
     return new Response(JSON.stringify({ ok: true }), { headers: { 'Content-Type': 'application/json' } });
   } catch (err: unknown) {

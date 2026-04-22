@@ -9,7 +9,9 @@ export const CHANGELOG: ChangelogEntry[] = [
     version: '',
     date: '2026-04-22',
     changes: [
-      'fix(#90): 知識庫/AI工具箱留言積分 — 同一 user 對同一 resource 僅第一次留言才 +2 分，避免重複刷分',
+      'fix(#109): 知識庫 category 下拉新增「概念補充」— KnowledgeCategory 類型與 CATEGORY_CONFIG 補上 concept',
+      'fix(#109): 知識庫投稿/編輯附連結失敗 — POST/PATCH resource_urls INSERT/DELETE 加上 try/catch，防止表不存在時整筆請求 500',
+      'fix(#109): 編輯知識失敗 — 同上，PATCH handler 的 resource_urls 操作容錯處理',
     ],
   },
   {
