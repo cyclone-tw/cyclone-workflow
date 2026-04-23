@@ -96,7 +96,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     // Strip content/author from soft-deleted messages (privacy)
     const stripDeleted = (row: Record<string, unknown>) => {
       if (row.deleted_at) {
-        return { ...row, content: null, author: null, tag: null };
+        return { ...row, content: null, author: null, author_id: null, tag: null };
       }
       return row;
     };

@@ -170,11 +170,11 @@ export default function MessageCard({
               className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
               style={{ background: `${color}20`, color }}
             >
-              {msg.author[0]}
+              {msg.author?.[0] || '?'}
             </span>
             <div className="min-w-0">
               <span className="text-sm font-semibold truncate" style={{ color: 'var(--color-text-primary)' }}>
-                {msg.author}
+                {msg.author || '已刪除'}
               </span>
               {msg.tag && (
                 <span className="text-xs ml-1" style={{ color: 'var(--color-text-muted)' }}>{msg.tag}</span>
