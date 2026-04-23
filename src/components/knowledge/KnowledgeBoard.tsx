@@ -853,7 +853,7 @@ export default function KnowledgeBoard() {
   const isAdmin = user ? ['captain', 'tech', 'admin'].includes(user.effectiveRole) : false;
 
   // Group by category when showing all
-  const categoryOrder: KnowledgeCategory[] = ['template', 'best-practice', 'qa', 'other'];
+  const categoryOrder: KnowledgeCategory[] = ['template', 'best-practice', 'qa', 'concept', 'other'];
   const grouped = categoryFilter === 'all'
     ? categoryOrder.map((cat) => ({
         category: cat,
