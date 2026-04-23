@@ -9,7 +9,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     version: '',
     date: '2026-04-23',
     changes: [
-      'feat(#134): 新增 sitemap.xml — 安裝 @astrojs/sitemap，整合至 astro.config.mjs，build 自動生成 sitemap-index.xml',
+      'feat(#135): 新增 HTTP Link header — public/_headers 設定所有頁面帶 Link: </.well-known/api-catalog>; rel="api-catalog"',
     ],
   },
   {
