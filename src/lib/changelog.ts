@@ -7,9 +7,9 @@ export interface ChangelogEntry {
 export const CHANGELOG: ChangelogEntry[] = [
   {
     version: '',
-    date: '2026-04-22',
+    date: '2026-04-23',
     changes: [
-      'feat(#133): 新增 robots.txt — 允許全站爬取、禁止 /api/ 與 /admin、封鎖 AI 訓練爬蟲、加入 Content-Signal 與 Sitemap',
+      'feat(#134): 新增 sitemap.xml — 安裝 @astrojs/sitemap，整合至 astro.config.mjs，build 自動生成 sitemap-index.xml',
     ],
   },
   {
