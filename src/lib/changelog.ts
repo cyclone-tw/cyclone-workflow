@@ -9,7 +9,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     version: '',
     date: '2026-04-22',
     changes: [
-      'fix(#51): 討論區軟刪除 placeholder 刷新後消失 — GET messages 不再過濾 deleted_at，保留已刪除留言的 placeholder 顯示',
+      'fix(#90): 知識庫/AI工具箱留言積分 — 同一 user 對同一 resource 僅第一次留言才 +2 分，避免重複刷分',
     ],
   },
   {
