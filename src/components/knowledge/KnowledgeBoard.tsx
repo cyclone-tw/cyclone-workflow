@@ -10,7 +10,7 @@ import { sanitizeMarkdown, sanitizeUrl, sanitizeImgSrc } from '@/lib/markdown';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type KnowledgeCategory = 'template' | 'best-practice' | 'qa' | 'other';
+type KnowledgeCategory = 'template' | 'best-practice' | 'qa' | 'concept' | 'other';
 
 interface Tag {
   id: string;
@@ -41,6 +41,7 @@ const CATEGORY_CONFIG: Record<KnowledgeCategory, { label: string; color: string 
   template: { label: '工作流模板', color: '#00F5A0' },
   'best-practice': { label: '最佳實踐', color: '#6C63FF' },
   qa: { label: '問答精華', color: '#00D9FF' },
+  concept: { label: '概念補充', color: '#FFA500' },
   other: { label: '其他', color: '#9090B0' },
 };
 
@@ -852,7 +853,7 @@ export default function KnowledgeBoard() {
   const isAdmin = user ? ['captain', 'tech', 'admin'].includes(user.effectiveRole) : false;
 
   // Group by category when showing all
-  const categoryOrder: KnowledgeCategory[] = ['template', 'best-practice', 'qa', 'other'];
+  const categoryOrder: KnowledgeCategory[] = ['template', 'best-practice', 'qa', 'concept', 'other'];
   const grouped = categoryFilter === 'all'
     ? categoryOrder.map((cat) => ({
         category: cat,

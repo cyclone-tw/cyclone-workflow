@@ -154,20 +154,25 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
 
     // Update resource_urls: always delete old, then insert new
     if (Array.isArray(body.urls)) {
-      await db.execute({ sql: `DELETE FROM resource_urls WHERE resource_id = ? AND resource_type = 'knowledge'`, args: [id] });
-      for (let i = 0; i < urls.length; i++) {
-        const u = urls[i];
-        const uUrl = (u.url || '').trim();
-        if (!uUrl) continue;
-        if (!uUrl.startsWith('http://') && !uUrl.startsWith('https://')) {
-          return new Response(JSON.stringify({ ok: false, error: '所有連結必須以 http:// 或 https:// 開頭' }), {
-            status: 400, headers: { 'Content-Type': 'application/json' },
+      try {
+        await db.execute({ sql: `DELETE FROM resource_urls WHERE resource_id = ? AND resource_type = 'knowledge'`, args: [id] });
+        for (let i = 0; i < urls.length; i++) {
+          const u = urls[i];
+          const uUrl = (u.url || '').trim();
+          if (!uUrl) continue;
+          if (!uUrl.startsWith('http://') && !uUrl.startsWith('https://')) {
+            return new Response(JSON.stringify({ ok: false, error: '所有連結必須以 http:// 或 https:// 開頭' }), {
+              status: 400, headers: { 'Content-Type': 'application/json' },
+            });
+          }
+          await db.execute({
+            sql: `INSERT INTO resource_urls (id, resource_id, resource_type, url, label, sort_order) VALUES (?, ?, 'knowledge', ?, ?, ?)`,
+            args: [crypto.randomUUID(), id, uUrl, (u.label || '').trim(), i],
           });
         }
-        await db.execute({
-          sql: `INSERT INTO resource_urls (id, resource_id, resource_type, url, label, sort_order) VALUES (?, ?, 'knowledge', ?, ?, ?)`,
-          args: [crypto.randomUUID(), id, uUrl, (u.label || '').trim(), i],
-        });
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : '';
+        if (!msg.includes('no such table')) throw err;
       }
     }
 
