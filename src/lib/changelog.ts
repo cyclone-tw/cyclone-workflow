@@ -9,10 +9,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     version: '',
     date: '2026-04-22',
     changes: [
-      'fix(#109): 知識庫 category 下拉新增「概念補充」— KnowledgeCategory 類型與 CATEGORY_CONFIG 補上 concept',
-      'fix(#109): 知識庫投稿/編輯附連結失敗 — POST/PATCH resource_urls INSERT/DELETE 加上 try/catch，防止表不存在時整筆請求 500',
-      'fix(#109): 編輯知識失敗 — 同上，PATCH handler 的 resource_urls 操作容錯處理',
-      'fix(#109): try/catch 只捕獲「表不存在」— 其他錯誤（UNIQUE 衝突、連線失敗等）改為拋出，防止 silent failure',
+      'feat(#133): 新增 robots.txt — 允許全站爬取、禁止 /api/ 與 /admin、封鎖 AI 訓練爬蟲、加入 Content-Signal 與 Sitemap',
     ],
   },
   {

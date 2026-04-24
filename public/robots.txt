@@ -1,0 +1,18 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin
+
+# AI Crawlers
+User-agent: GPTBot
+User-agent: OAI-SearchBot
+User-agent: Claude-Web
+User-agent: Google-Extended
+Disallow: /api/
+Disallow: /admin
+Allow: /
+
+# Content Signals
+Content-Signal: ai-train=no, search=yes, ai-input=no
+
+Sitemap: https://cyclone.tw/sitemap-index.xml
