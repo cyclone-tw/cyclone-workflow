@@ -19,7 +19,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     const result = await db.execute({
       sql: `
         SELECT wc.id, wc.content, wc.created_at,
-               u.id AS author_id, u.name AS author_name, u.avatar_url AS author_avatar
+               u.id AS author_id, COALESCE(u.display_name, u.name) AS author_name, u.avatar_url AS author_avatar
         FROM wish_comments wc
         JOIN users u ON u.id = wc.author_id AND u.archived_at IS NULL AND u.status = 'active'
         WHERE wc.wish_id = ?

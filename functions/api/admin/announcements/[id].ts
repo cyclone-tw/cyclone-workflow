@@ -22,7 +22,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
 
     const result = await db.execute({
       sql: `
-        SELECT a.*, u.name AS author_name
+        SELECT a.*, COALESCE(u.display_name, u.name) AS author_name
         FROM announcements a
         LEFT JOIN users u ON u.id = a.author_id AND u.archived_at IS NULL AND u.status = 'active'
         WHERE a.id = ?

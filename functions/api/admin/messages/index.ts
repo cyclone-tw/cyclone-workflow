@@ -26,7 +26,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       sql: `
         SELECT m.*,
                COALESCE(lc.like_count, 0) AS like_count,
-               u.name AS author_name
+               COALESCE(u.display_name, u.name) AS author_name
         FROM messages m
         LEFT JOIN (
           SELECT message_id, COUNT(*) AS like_count
