@@ -440,10 +440,19 @@ function ToolCard({ tool, canEdit, loggedIn, user, onEdit, onDelete, onToggleFav
 
       {/* Description */}
       <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>
-        <ReactMarkdown
-          remarkPlugins={[remarkGfm]}
-          rehypePlugins={[rehypeRaw]}
-          components={{
+        <div
+          ref={contentRef}
+          id={`tool-content-${tool.id}`}
+          style={{
+            color: '#9090B0', fontSize: '0.85rem', lineHeight: 1.6, margin: 0,
+            overflowWrap: 'anywhere', wordBreak: 'break-word',
+            ...(expanded ? {} : { maxHeight: '4.8em', overflow: 'hidden' }),
+          }}
+        >
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            rehypePlugins={[rehypeRaw]}
+            components={{
             code({ className, children, ...props }) {
               const match = /language-(\w+)/.exec(className || '');
               const isInline = !match && !String(children).includes('\n');
@@ -478,6 +487,7 @@ function ToolCard({ tool, canEdit, loggedIn, user, onEdit, onDelete, onToggleFav
         >
           {sanitizeMarkdown(tool.description)}
         </ReactMarkdown>
+        </div>
         {(!expanded && isOverflowing) && (
           <div
             style={{
@@ -551,14 +561,12 @@ function ToolCard({ tool, canEdit, loggedIn, user, onEdit, onDelete, onToggleFav
       )}
 
       {/* Comments */}
-      {expanded && (
-        <ResourceComments
-          resourceType="ai-tool"
-          resourceId={String(tool.id)}
-          user={user}
-          color={cfg.color}
-        />
-      )}
+      <ResourceComments
+        resourceType="ai-tool"
+        resourceId={String(tool.id)}
+        user={user}
+        color={cfg.color}
+      />
 
       {/* Footer */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid #2A2A4A' }}>
