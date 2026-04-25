@@ -20,7 +20,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       sql: `
         SELECT
           rc.id, rc.content, rc.created_at, rc.updated_at,
-          u.id AS author_id, u.name AS author_name, u.avatar_url AS author_avatar
+          u.id AS author_id, COALESCE(u.display_name, u.name) AS author_name, u.avatar_url AS author_avatar
         FROM resource_comments rc
         JOIN users u ON u.id = rc.user_id AND u.archived_at IS NULL AND u.status = 'active'
         WHERE rc.resource_type = 'ai-tool' AND rc.resource_id = ?
