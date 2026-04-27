@@ -320,6 +320,31 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       });
     } catch { /* no legacy claimers to migrate */ }
 
+    // --- Migrate knowledge_entries: add 'concept' to CHECK constraint ---
+    try {
+      await db.execute({ sql: `CREATE TABLE IF NOT EXISTS knowledge_entries_new (
+        id TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        content TEXT NOT NULL,
+        category TEXT DEFAULT 'template' CHECK(category IN ('template', 'best-practice', 'qa', 'concept', 'other')),
+        icon TEXT DEFAULT '📘',
+        contributor_id TEXT NOT NULL REFERENCES users(id),
+        upvotes INTEGER DEFAULT 0,
+        url TEXT DEFAULT '',
+        created_at TEXT DEFAULT (datetime('now')),
+        updated_at TEXT DEFAULT (datetime('now'))
+      )`, args: [] });
+      await db.execute({ sql: `INSERT OR IGNORE INTO knowledge_entries_new (id, title, content, category, icon, contributor_id, upvotes, url, created_at, updated_at)
+        SELECT id, title, content, category, icon, contributor_id, upvotes, url, created_at, updated_at
+        FROM knowledge_entries`, args: [] });
+      const newCount = await db.execute({ sql: `SELECT count(*) as cnt FROM knowledge_entries_new`, args: [] });
+      const oldCount = await db.execute({ sql: `SELECT count(*) as cnt FROM knowledge_entries`, args: [] });
+      if (Number(newCount.rows[0].cnt) >= Number(oldCount.rows[0].cnt)) {
+        await db.execute({ sql: `DROP TABLE knowledge_entries`, args: [] });
+        await db.execute({ sql: `ALTER TABLE knowledge_entries_new RENAME TO knowledge_entries`, args: [] });
+      }
+    } catch { /* already migrated or no old table */ }
+
     // --- Migrate wish categories: site → feature ---
     // Must rebuild table because CHECK(category IN ('personal','site')) blocks UPDATE to 'feature'
     try {
