@@ -7,6 +7,26 @@ export interface ChangelogEntry {
 export const CHANGELOG: ChangelogEntry[] = [
   {
     version: '',
+    date: '2026-04-26',
+    changes: [
+      'fix(#148): 留言區顯示自訂暱稱 — 全站 comment API 改用 COALESCE(display_name, name)',
+      'fix(#149): AI 工具箱留言功能回歸 + 過長卡片展開/收納修復',
+    ],
+  },
+  {
+    version: '',
+    date: '2026-04-25',
+    changes: [
+      'fix(#109): 知識庫投稿帶連結失敗 + 編輯失敗 + concept tag 不顯示',
+      'fix(#51): 討論區軟刪除 placeholder 刷新後消失',
+      'fix(#90): 積分防洗分 — 同一投稿每人僅首次留言加分',
+      'feat(#133): 新增 robots.txt — Agent 爬蟲規則',
+      'feat(#134): 新增 sitemap.xml — 搜尋引擎與 AI Agent 網站地圖',
+      'feat(#135): 新增 HTTP Link header — Agent 發現機制 (RFC 8288)',
+    ],
+  },
+  {
+    version: '',
     date: '2026-04-23',
     changes: [
       'feat(#135): 新增 HTTP Link header — public/_headers 設定所有頁面帶 Link: </.well-known/api-catalog>; rel="api-catalog"',
