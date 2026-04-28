@@ -88,6 +88,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       updated_at: row.updated_at,
       tags: [] as { id: string; name: string; color: string }[],
       urls: [] as { id: string; url: string; label: string }[],
+      comment_count: 0 as number,
     }));
 
     if (entries.length > 0) {
@@ -122,6 +123,18 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
           }
         }
       } catch { /* resource_urls table may not exist yet */ }
+
+        // Fetch comment counts for all entries
+        try {
+          const countResult = await db.execute({
+            sql: `SELECT resource_id, COUNT(*) as cnt FROM resource_comments WHERE resource_type = 'knowledge' AND resource_id IN (${placeholders}) GROUP BY resource_id`,
+            args: ids,
+          });
+          for (const cr of countResult.rows) {
+            const entry = entries.find((e) => e.id === cr.resource_id);
+            if (entry) entry.comment_count = Number(cr.cnt);
+          }
+        } catch { /* resource_comments table may not exist yet */ }
     }
 
     // Attach is_favorited for logged-in users

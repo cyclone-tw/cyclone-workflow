@@ -32,6 +32,7 @@ interface KnowledgeEntry {
   updated_at: string;
   tags: Tag[];
   urls: { id: string; url: string; label: string }[];
+  comment_count: number;
   is_favorited?: boolean;
 }
 
@@ -684,6 +685,12 @@ function EntryCard({
         </span>
         <span style={{ color: '#2A2A4A' }}>&#183;</span>
         <span style={{ fontSize: '0.75rem', color: '#606080' }}>{timeAgo(entry.created_at)}</span>
+        {entry.comment_count > 0 && (
+          <>
+            <span style={{ color: '#2A2A4A' }}>&#183;</span>
+            <span style={{ fontSize: '0.75rem', color: '#6C63FF' }}>{entry.comment_count} 💬</span>
+          </>
+        )}
       </div>
     </article>
   );
