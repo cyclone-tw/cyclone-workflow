@@ -662,6 +662,7 @@ function EntryCard({
         resourceId={entry.id}
         user={user}
         color={cfg.color}
+        initialCount={entry.comment_count}
       />
 
       {/* Footer */}
