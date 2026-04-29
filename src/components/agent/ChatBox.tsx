@@ -197,7 +197,7 @@ export default function ChatBox() {
     <div
       className="flex flex-col rounded-2xl overflow-hidden"
       style={{
-        background: 'rgba(18, 18, 42, 0.7)',
+        background: 'var(--color-glass-bg)',
         backdropFilter: 'blur(12px)',
         border: '1px solid var(--color-border)',
         maxHeight: '600px',

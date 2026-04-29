@@ -459,13 +459,13 @@ function ToolCard({ tool, canEdit, loggedIn, user, onEdit, onDelete, onToggleFav
               const isInline = !match && !String(children).includes('\n');
               if (isInline) {
                 return (
-                  <code style={{ background: '#2a2a4a', color: '#b0b0d0', borderRadius: '4px', padding: '0.1em 0.4em', fontSize: '0.85em', fontFamily: 'monospace' }} {...props}>
+                  <code style={{ background: 'var(--color-bg-surface)', color: 'var(--color-text-secondary)', borderRadius: '4px', padding: '0.1em 0.4em', fontSize: '0.85em', fontFamily: 'monospace' }} {...props}>
                     {children}
                   </code>
                 );
               }
               return (
-                <code style={{ background: '#1e1e3a', color: '#90b0ff', borderRadius: '6px', padding: '0.8em 1em', display: 'block', overflowX: 'auto', fontSize: '0.85em', fontFamily: 'monospace', border: '1px solid #3a3a6a' }} {...props}>
+                <code style={{ background: 'var(--color-bg-surface)', color: 'var(--color-neon-blue)', borderRadius: '6px', padding: '0.8em 1em', display: 'block', overflowX: 'auto', fontSize: '0.85em', fontFamily: 'monospace', border: '1px solid var(--color-border-light)' }} {...props}>
                   {children}
                 </code>
               );
