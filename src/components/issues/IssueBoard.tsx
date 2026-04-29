@@ -103,10 +103,10 @@ const PRIORITY_COLORS: Record<IssuePriority, { bg: string; color: string }> = {
 const inputStyle: React.CSSProperties = {
   width: '100%',
   background: 'rgba(10, 10, 26, 0.6)',
-  border: '1px solid #2A2A4A',
+  border: '1px solid var(--color-border)',
   borderRadius: '0.5rem',
   padding: '0.625rem 0.875rem',
-  color: '#F0F0FF',
+  color: 'var(--color-text-primary)',
   fontSize: '0.9rem',
   outline: 'none',
   transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
@@ -117,7 +117,7 @@ const labelStyle: React.CSSProperties = {
   display: 'block',
   fontSize: '0.8rem',
   fontWeight: 600,
-  color: '#9090B0',
+  color: 'var(--color-text-secondary)',
   marginBottom: '0.375rem',
   letterSpacing: '0.02em',
 };
@@ -128,7 +128,7 @@ function handleFocusIn(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElemen
 }
 
 function handleFocusOut(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
-  e.target.style.borderColor = '#2A2A4A';
+  e.target.style.borderColor = 'var(--color-border)';
   e.target.style.boxShadow = 'none';
 }
 
@@ -251,17 +251,17 @@ function CreateIssueForm({ onCreated, onCancel, user }: CreateFormProps) {
     <form
       onSubmit={handleSubmit}
       style={{
-        background: 'rgba(18,18,42,0.8)',
+        background: 'var(--color-glass-bg)',
         backdropFilter: 'blur(12px)',
-        border: '1px solid #2A2A4A',
+        border: '1px solid var(--color-border)',
         borderRadius: '1rem',
         padding: '1.5rem',
         marginBottom: '1.5rem',
       }}
     >
-      <h3 style={{ color: '#F0F0FF', fontWeight: 700, fontSize: '1rem', marginBottom: '1.25rem' }}>
+      <h3 style={{ color: 'var(--color-text-primary)', fontWeight: 700, fontSize: '1rem', marginBottom: '1.25rem' }}>
         建立新 Issue
-        <span className="ml-2 text-xs font-normal" style={{ color: '#9090B0' }}>
+        <span className="ml-2 text-xs font-normal" style={{ color: 'var(--color-text-secondary)' }}>
           以 {user.display_name || user.name} 發表
         </span>
       </h3>
@@ -276,7 +276,7 @@ function CreateIssueForm({ onCreated, onCancel, user }: CreateFormProps) {
           onChange={e => setTitle(e.target.value)}
           onFocus={handleFocusIn}
           onBlur={handleFocusOut}
-          style={{ ...inputStyle, borderColor: errors.title ? '#E94560' : '#2A2A4A' }}
+          style={{ ...inputStyle, borderColor: errors.title ? '#E94560' : 'var(--color-border)' }}
         />
         {errors.title && <p style={{ color: '#E94560', fontSize: '0.75rem', marginTop: '0.2rem' }}>{errors.title}</p>}
       </div>
@@ -291,7 +291,7 @@ function CreateIssueForm({ onCreated, onCancel, user }: CreateFormProps) {
           onChange={e => setDescription(e.target.value)}
           onFocus={handleFocusIn}
           onBlur={handleFocusOut}
-          style={{ ...inputStyle, resize: 'vertical', borderColor: errors.description ? '#E94560' : '#2A2A4A' }}
+          style={{ ...inputStyle, resize: 'vertical', borderColor: errors.description ? '#E94560' : 'var(--color-border)' }}
         />
         {errors.description && <p style={{ color: '#E94560', fontSize: '0.75rem', marginTop: '0.2rem' }}>{errors.description}</p>}
       </div>
@@ -307,10 +307,10 @@ function CreateIssueForm({ onCreated, onCancel, user }: CreateFormProps) {
             onBlur={handleFocusOut}
             style={{ ...inputStyle, cursor: 'pointer' }}
           >
-            <option value="bug" style={{ background: '#12122A' }}>🐛 Bug</option>
-            <option value="feature" style={{ background: '#12122A' }}>✨ 功能建議</option>
-            <option value="improvement" style={{ background: '#12122A' }}>🔧 改善</option>
-            <option value="question" style={{ background: '#12122A' }}>❓ 問題</option>
+            <option value="bug" style={{ background: 'var(--color-bg-card)' }}>🐛 Bug</option>
+            <option value="feature" style={{ background: 'var(--color-bg-card)' }}>✨ 功能建議</option>
+            <option value="improvement" style={{ background: 'var(--color-bg-card)' }}>🔧 改善</option>
+            <option value="question" style={{ background: 'var(--color-bg-card)' }}>❓ 問題</option>
           </select>
         </div>
         {/* Priority */}
@@ -323,10 +323,10 @@ function CreateIssueForm({ onCreated, onCancel, user }: CreateFormProps) {
             onBlur={handleFocusOut}
             style={{ ...inputStyle, cursor: 'pointer' }}
           >
-            <option value="low" style={{ background: '#12122A' }}>⚪ Low</option>
-            <option value="medium" style={{ background: '#12122A' }}>🟡 Medium</option>
-            <option value="high" style={{ background: '#12122A' }}>🟠 High</option>
-            <option value="critical" style={{ background: '#12122A' }}>🔴 Critical</option>
+            <option value="low" style={{ background: 'var(--color-bg-card)' }}>⚪ Low</option>
+            <option value="medium" style={{ background: 'var(--color-bg-card)' }}>🟡 Medium</option>
+            <option value="high" style={{ background: 'var(--color-bg-card)' }}>🟠 High</option>
+            <option value="critical" style={{ background: 'var(--color-bg-card)' }}>🔴 Critical</option>
           </select>
         </div>
       </div>
@@ -342,15 +342,15 @@ function CreateIssueForm({ onCreated, onCancel, user }: CreateFormProps) {
           style={{
             padding: '0.6rem 1.25rem',
             background: 'transparent',
-            border: '1px solid #2A2A4A',
+            border: '1px solid var(--color-border)',
             borderRadius: '0.5rem',
-            color: '#9090B0',
+            color: 'var(--color-text-secondary)',
             fontSize: '0.875rem',
             cursor: 'pointer',
             transition: 'border-color 0.2s',
           }}
           onMouseEnter={e => (e.currentTarget.style.borderColor = '#6C63FF')}
-          onMouseLeave={e => (e.currentTarget.style.borderColor = '#2A2A4A')}
+          onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--color-border)')}
         >
           取消
         </button>
@@ -362,7 +362,7 @@ function CreateIssueForm({ onCreated, onCancel, user }: CreateFormProps) {
             background: submitting ? 'rgba(108,99,255,0.4)' : 'linear-gradient(135deg, #6C63FF, #E94560)',
             border: 'none',
             borderRadius: '0.5rem',
-            color: '#F0F0FF',
+            color: 'var(--color-text-primary)',
             fontSize: '0.875rem',
             fontWeight: 600,
             cursor: submitting ? 'not-allowed' : 'pointer',
@@ -435,16 +435,16 @@ function DetailView({ issueId, onBack }: DetailViewProps) {
   }
 
   const cardStyle: React.CSSProperties = {
-    background: 'rgba(18,18,42,0.7)',
+    background: 'var(--color-glass-bg)',
     backdropFilter: 'blur(12px)',
-    border: '1px solid #2A2A4A',
+    border: '1px solid var(--color-border)',
     borderRadius: '1rem',
     padding: '1.5rem',
   };
 
   if (loading) {
     return (
-      <div style={{ textAlign: 'center', padding: '4rem', color: '#9090B0' }}>
+      <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--color-text-secondary)' }}>
         載入中…
       </div>
     );
@@ -452,7 +452,7 @@ function DetailView({ issueId, onBack }: DetailViewProps) {
 
   if (!issue) {
     return (
-      <div style={{ textAlign: 'center', padding: '4rem', color: '#9090B0' }}>
+      <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--color-text-secondary)' }}>
         <p>載入失敗，請稍後再試</p>
         <button onClick={onBack} style={{ marginTop: '1rem', color: '#6C63FF', background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.9rem' }}>
           ← 返回列表
@@ -470,7 +470,7 @@ function DetailView({ issueId, onBack }: DetailViewProps) {
           display: 'inline-flex',
           alignItems: 'center',
           gap: '0.4rem',
-          color: '#9090B0',
+          color: 'var(--color-text-secondary)',
           background: 'none',
           border: 'none',
           cursor: 'pointer',
@@ -480,7 +480,7 @@ function DetailView({ issueId, onBack }: DetailViewProps) {
           transition: 'color 0.2s',
         }}
         onMouseEnter={e => e.currentTarget.style.color = '#6C63FF'}
-        onMouseLeave={e => e.currentTarget.style.color = '#9090B0'}
+        onMouseLeave={e => e.currentTarget.style.color = 'var(--color-text-secondary)'}
       >
         ← 返回列表
       </button>
@@ -493,12 +493,12 @@ function DetailView({ issueId, onBack }: DetailViewProps) {
           <PriorityBadge priority={issue.priority} />
         </div>
 
-        <h2 style={{ color: '#F0F0FF', fontWeight: 700, fontSize: '1.3rem', margin: '0 0 1rem', lineHeight: 1.4 }}>
+        <h2 style={{ color: 'var(--color-text-primary)', fontWeight: 700, fontSize: '1.3rem', margin: '0 0 1rem', lineHeight: 1.4 }}>
           {issue.title}
         </h2>
 
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', fontSize: '0.8rem', color: '#9090B0' }}>
-          <span>👤 <strong style={{ color: '#F0F0FF' }}>{issue.author}</strong>{issue.author_tag && <span style={{ color: '#606080' }}> {issue.author_tag}</span>}</span>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>
+          <span>👤 <strong style={{ color: 'var(--color-text-primary)' }}>{issue.author}</strong>{issue.author_tag && <span style={{ color: 'var(--color-text-muted)' }}> {issue.author_tag}</span>}</span>
           <span>📅 建立於 {timeAgo(issue.created_at)}</span>
           {issue.updated_at !== issue.created_at && (
             <span>🔄 更新於 {timeAgo(issue.updated_at)}</span>
@@ -508,16 +508,16 @@ function DetailView({ issueId, onBack }: DetailViewProps) {
 
       {/* Description */}
       <div style={{ ...cardStyle, marginBottom: '1rem' }}>
-        <h3 style={{ color: '#9090B0', fontWeight: 600, fontSize: '0.8rem', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '0.875rem' }}>
+        <h3 style={{ color: 'var(--color-text-secondary)', fontWeight: 600, fontSize: '0.8rem', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '0.875rem' }}>
           描述
         </h3>
-        <p style={{ color: '#F0F0FF', fontSize: '0.95rem', lineHeight: 1.8, whiteSpace: 'pre-wrap', margin: 0 }}>
+        <p style={{ color: 'var(--color-text-primary)', fontSize: '0.95rem', lineHeight: 1.8, whiteSpace: 'pre-wrap', margin: 0 }}>
           {issue.description}
         </p>
 
         {issue.resolved_version && (
-          <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid #2A2A4A' }}>
-            <span style={{ color: '#9090B0', fontSize: '0.85rem' }}>已在版本 </span>
+          <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid var(--color-border)' }}>
+            <span style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem' }}>已在版本 </span>
             <a
               href="/changelog"
               style={{
@@ -537,19 +537,19 @@ function DetailView({ issueId, onBack }: DetailViewProps) {
             >
               {issue.resolved_version}
             </a>
-            <span style={{ color: '#9090B0', fontSize: '0.85rem' }}> 修復</span>
+            <span style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem' }}> 修復</span>
           </div>
         )}
       </div>
 
       {/* Comments */}
       <div style={{ ...cardStyle, marginBottom: '1rem' }}>
-        <h3 style={{ color: '#9090B0', fontWeight: 600, fontSize: '0.8rem', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '1rem' }}>
+        <h3 style={{ color: 'var(--color-text-secondary)', fontWeight: 600, fontSize: '0.8rem', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '1rem' }}>
           留言 ({issue.comments?.length ?? 0})
         </h3>
 
         {(!issue.comments || issue.comments.length === 0) ? (
-          <p style={{ color: '#606080', fontSize: '0.875rem', textAlign: 'center', padding: '1.5rem 0' }}>
+          <p style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem', textAlign: 'center', padding: '1.5rem 0' }}>
             還沒有留言，來第一個留言吧！
           </p>
         ) : (
@@ -559,17 +559,17 @@ function DetailView({ issueId, onBack }: DetailViewProps) {
                 key={comment.id}
                 style={{
                   padding: '1rem',
-                  background: 'rgba(10,10,26,0.4)',
+                  background: 'var(--color-bg-surface)',
                   borderRadius: '0.75rem',
                   border: '1px solid rgba(42,42,74,0.6)',
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '0.25rem' }}>
-                  <span style={{ color: '#F0F0FF', fontWeight: 600, fontSize: '0.875rem' }}>
+                  <span style={{ color: 'var(--color-text-primary)', fontWeight: 600, fontSize: '0.875rem' }}>
                     {comment.author}
-                    {comment.author_tag && <span style={{ color: '#606080', fontWeight: 400, marginLeft: '0.3rem' }}>{comment.author_tag}</span>}
+                    {comment.author_tag && <span style={{ color: 'var(--color-text-muted)', fontWeight: 400, marginLeft: '0.3rem' }}>{comment.author_tag}</span>}
                   </span>
-                  <span style={{ color: '#606080', fontSize: '0.75rem' }}>{timeAgo(comment.created_at)}</span>
+                  <span style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem' }}>{timeAgo(comment.created_at)}</span>
                 </div>
                 <p style={{ color: '#C0C0D8', fontSize: '0.9rem', lineHeight: 1.7, margin: 0, whiteSpace: 'pre-wrap' }}>
                   {comment.content}
@@ -587,10 +587,10 @@ function DetailView({ issueId, onBack }: DetailViewProps) {
           style={cardStyle}
         >
           <p className="text-2xl">💬</p>
-          <p className="text-sm font-medium" style={{ color: '#F0F0FF' }}>
+          <p className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
             登入後即可留言
           </p>
-          <p className="text-xs" style={{ color: '#9090B0' }}>
+          <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
             已有帳號的隊員才能發表留言
           </p>
           <button
@@ -603,9 +603,9 @@ function DetailView({ issueId, onBack }: DetailViewProps) {
         </div>
       ) : !authLoading && user ? (
         <div style={cardStyle}>
-          <h3 style={{ color: '#9090B0', fontWeight: 600, fontSize: '0.8rem', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '1rem' }}>
+          <h3 style={{ color: 'var(--color-text-secondary)', fontWeight: 600, fontSize: '0.8rem', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '1rem' }}>
             新增留言
-            <span className="ml-2 text-xs font-normal" style={{ color: '#9090B0' }}>
+            <span className="ml-2 text-xs font-normal" style={{ color: 'var(--color-text-secondary)' }}>
               以 {user.display_name || user.name} 發表
             </span>
           </h3>
@@ -619,7 +619,7 @@ function DetailView({ issueId, onBack }: DetailViewProps) {
                 onChange={e => setCommentContent(e.target.value)}
                 onFocus={handleFocusIn}
                 onBlur={handleFocusOut}
-                style={{ ...inputStyle, resize: 'vertical', borderColor: commentErrors.content ? '#E94560' : '#2A2A4A' }}
+                style={{ ...inputStyle, resize: 'vertical', borderColor: commentErrors.content ? '#E94560' : 'var(--color-border)' }}
               />
               {commentErrors.content && <p style={{ color: '#E94560', fontSize: '0.75rem', marginTop: '0.2rem' }}>{commentErrors.content}</p>}
             </div>
@@ -633,7 +633,7 @@ function DetailView({ issueId, onBack }: DetailViewProps) {
                   background: submittingComment ? 'rgba(108,99,255,0.4)' : 'linear-gradient(135deg, #6C63FF, #E94560)',
                   border: 'none',
                   borderRadius: '0.5rem',
-                  color: '#F0F0FF',
+                  color: 'var(--color-text-primary)',
                   fontSize: '0.875rem',
                   fontWeight: 600,
                   cursor: submittingComment ? 'not-allowed' : 'pointer',
@@ -659,7 +659,7 @@ const GITHUB_LABEL_COLORS: Record<string, { bg: string; color: string }> = {
   'good first issue': { bg: 'rgba(0,255,160,0.12)', color: '#00F5A0' },
   help: { bg: 'rgba(255,195,0,0.15)', color: '#FFC300' },
   question: { bg: 'rgba(255,195,0,0.15)', color: '#FFC300' },
-  wontfix: { bg: 'rgba(96,96,128,0.2)', color: '#606080' },
+  wontfix: { bg: 'rgba(96,96,128,0.2)', color: 'var(--color-text-muted)' },
 };
 
 function getGitHubLabelStyle(label: string): { bg: string; color: string } {
@@ -732,9 +732,9 @@ function GitHubIssuesTab() {
   );
 
   const cardBase: React.CSSProperties = {
-    background: 'rgba(18,18,42,0.7)',
+    background: 'var(--color-glass-bg)',
     backdropFilter: 'blur(12px)',
-    border: '1px solid #2A2A4A',
+    border: '1px solid var(--color-border)',
     borderRadius: '0.75rem',
     padding: '1rem 1.25rem',
     cursor: 'pointer',
@@ -748,8 +748,8 @@ function GitHubIssuesTab() {
           <div
             key={i}
             style={{
-              background: 'rgba(18,18,42,0.5)',
-              border: '1px solid #2A2A4A',
+              background: 'var(--color-glass-bg)',
+              border: '1px solid var(--color-border)',
               borderRadius: '0.75rem',
               padding: '1.25rem',
               animation: 'pulse 1.5s ease-in-out infinite',
@@ -774,10 +774,10 @@ function GitHubIssuesTab() {
           style={{
             textAlign: 'center',
             padding: '4rem 2rem',
-            background: 'rgba(18,18,42,0.5)',
-            border: '1px solid #2A2A4A',
+            background: 'var(--color-glass-bg)',
+            border: '1px solid var(--color-border)',
             borderRadius: '1rem',
-            color: '#9090B0',
+            color: 'var(--color-text-secondary)',
           }}
         >
           <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>⚠️</div>
@@ -795,10 +795,10 @@ function GitHubIssuesTab() {
           style={{
             textAlign: 'center',
             padding: '4rem 2rem',
-            background: 'rgba(18,18,42,0.5)',
-            border: '1px solid #2A2A4A',
+            background: 'var(--color-glass-bg)',
+            border: '1px solid var(--color-border)',
             borderRadius: '1rem',
-            color: '#606080',
+            color: 'var(--color-text-muted)',
           }}
         >
           <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🎉</div>
@@ -822,8 +822,8 @@ function GitHubIssuesTab() {
               e.currentTarget.style.borderColor = 'rgba(108,99,255,0.3)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(18,18,42,0.7)';
-              e.currentTarget.style.borderColor = '#2A2A4A';
+              e.currentTarget.style.background = 'var(--color-glass-bg)';
+              e.currentTarget.style.borderColor = 'var(--color-border)';
             }}
           >
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.875rem' }}>
@@ -838,7 +838,7 @@ function GitHubIssuesTab() {
                     borderRadius: '50%',
                     flexShrink: 0,
                     marginTop: '0.1rem',
-                    border: '1px solid #2A2A4A',
+                    border: '1px solid var(--color-border)',
                   }}
                 />
               )}
@@ -846,8 +846,8 @@ function GitHubIssuesTab() {
               <div style={{ flex: 1, minWidth: 0 }}>
                 {/* Title row */}
                 <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.4rem', marginBottom: '0.35rem' }}>
-                  <span style={{ color: '#606080', fontSize: '0.8rem', fontWeight: 600 }}>#{issue.number}</span>
-                  <span style={{ color: '#F0F0FF', fontWeight: 600, fontSize: '0.95rem', lineHeight: 1.4 }}>
+                  <span style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', fontWeight: 600 }}>#{issue.number}</span>
+                  <span style={{ color: 'var(--color-text-primary)', fontWeight: 600, fontSize: '0.95rem', lineHeight: 1.4 }}>
                     {issue.title}
                   </span>
                 </div>
@@ -878,7 +878,7 @@ function GitHubIssuesTab() {
                 )}
 
                 {/* Meta row */}
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', fontSize: '0.75rem', color: '#606080', alignItems: 'center' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', fontSize: '0.75rem', color: 'var(--color-text-muted)', alignItems: 'center' }}>
                   <span>{issue.user}</span>
                   <span>{timeAgo(issue.created_at)}</span>
                 </div>
@@ -891,7 +891,7 @@ function GitHubIssuesTab() {
                     display: 'flex',
                     alignItems: 'center',
                     gap: '0.3rem',
-                    color: '#606080',
+                    color: 'var(--color-text-muted)',
                     fontSize: '0.8rem',
                     flexShrink: 0,
                     marginTop: '0.15rem',
@@ -1013,9 +1013,9 @@ export default function IssueBoard() {
           display: 'flex',
           gap: '0.25rem',
           marginBottom: '1.25rem',
-          background: 'rgba(18,18,42,0.7)',
+          background: 'var(--color-glass-bg)',
           backdropFilter: 'blur(12px)',
-          border: '1px solid #2A2A4A',
+          border: '1px solid var(--color-border)',
           borderRadius: '0.75rem',
           padding: '0.3rem',
         }}
@@ -1033,14 +1033,14 @@ export default function IssueBoard() {
               borderRadius: '0.5rem',
               border: 'none',
               background: sourceTab === tab.key ? 'rgba(108,99,255,0.2)' : 'transparent',
-              color: sourceTab === tab.key ? '#8B83FF' : '#9090B0',
+              color: sourceTab === tab.key ? '#8B83FF' : 'var(--color-text-secondary)',
               fontSize: '0.875rem',
               fontWeight: sourceTab === tab.key ? 600 : 400,
               cursor: 'pointer',
               transition: 'all 0.15s',
             }}
-            onMouseEnter={e => { if (sourceTab !== tab.key) e.currentTarget.style.color = '#F0F0FF'; }}
-            onMouseLeave={e => { if (sourceTab !== tab.key) e.currentTarget.style.color = '#9090B0'; }}
+            onMouseEnter={e => { if (sourceTab !== tab.key) e.currentTarget.style.color = 'var(--color-text-primary)'; }}
+            onMouseLeave={e => { if (sourceTab !== tab.key) e.currentTarget.style.color = 'var(--color-text-secondary)'; }}
           >
             {tab.label}
           </button>
@@ -1053,9 +1053,9 @@ export default function IssueBoard() {
         <>
           {/* Top action row */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
-            <div style={{ fontSize: '0.875rem', color: '#9090B0' }}>
+            <div style={{ fontSize: '0.875rem', color: 'var(--color-text-secondary)' }}>
               <span style={{ color: '#00F5A0', fontWeight: 600 }}>{notClosedCount} 個 open</span>
-              <span style={{ margin: '0 0.5rem', color: '#2A2A4A' }}>·</span>
+              <span style={{ margin: '0 0.5rem', color: 'var(--color-border)' }}>·</span>
               <span>{closedCount} 個 closed</span>
             </div>
             {!authLoading && !user ? (
@@ -1069,7 +1069,7 @@ export default function IssueBoard() {
                   background: 'linear-gradient(135deg, #6C63FF, #E94560)',
                   border: 'none',
                   borderRadius: '0.5rem',
-                  color: '#F0F0FF',
+                  color: 'var(--color-text-primary)',
                   fontSize: '0.875rem',
                   fontWeight: 600,
                   cursor: 'pointer',
@@ -1091,7 +1091,7 @@ export default function IssueBoard() {
                   background: showCreateForm ? 'rgba(108,99,255,0.15)' : 'linear-gradient(135deg, #6C63FF, #E94560)',
                   border: showCreateForm ? '1px solid rgba(108,99,255,0.4)' : 'none',
                   borderRadius: '0.5rem',
-                  color: '#F0F0FF',
+                  color: 'var(--color-text-primary)',
                   fontSize: '0.875rem',
                   fontWeight: 600,
                   cursor: 'pointer',
@@ -1120,9 +1120,9 @@ export default function IssueBoard() {
           {/* Filter bar */}
           <div
             style={{
-              background: 'rgba(18,18,42,0.7)',
+              background: 'var(--color-glass-bg)',
               backdropFilter: 'blur(12px)',
-              border: '1px solid #2A2A4A',
+              border: '1px solid var(--color-border)',
               borderRadius: '0.75rem',
               padding: '0.75rem 1rem',
               marginBottom: '0.75rem',
@@ -1144,14 +1144,14 @@ export default function IssueBoard() {
                     borderRadius: '0.5rem',
                     border: 'none',
                     background: statusFilter === tab.key ? 'rgba(108,99,255,0.2)' : 'transparent',
-                    color: statusFilter === tab.key ? '#8B83FF' : '#9090B0',
+                    color: statusFilter === tab.key ? '#8B83FF' : 'var(--color-text-secondary)',
                     fontSize: '0.85rem',
                     fontWeight: statusFilter === tab.key ? 600 : 400,
                     cursor: 'pointer',
                     transition: 'all 0.15s',
                   }}
-                  onMouseEnter={e => { if (statusFilter !== tab.key) e.currentTarget.style.color = '#F0F0FF'; }}
-                  onMouseLeave={e => { if (statusFilter !== tab.key) e.currentTarget.style.color = '#9090B0'; }}
+                  onMouseEnter={e => { if (statusFilter !== tab.key) e.currentTarget.style.color = 'var(--color-text-primary)'; }}
+                  onMouseLeave={e => { if (statusFilter !== tab.key) e.currentTarget.style.color = 'var(--color-text-secondary)'; }}
                 >
                   {tab.label}
                 </button>
@@ -1165,27 +1165,27 @@ export default function IssueBoard() {
               onFocus={handleFocusIn}
               onBlur={handleFocusOut}
               style={{
-                background: 'rgba(10,10,26,0.6)',
-                border: '1px solid #2A2A4A',
+                background: 'var(--color-bg-surface)',
+                border: '1px solid var(--color-border)',
                 borderRadius: '0.5rem',
                 padding: '0.375rem 0.75rem',
-                color: '#9090B0',
+                color: 'var(--color-text-secondary)',
                 fontSize: '0.85rem',
                 cursor: 'pointer',
                 outline: 'none',
               }}
             >
-              <option value="all" style={{ background: '#12122A' }}>所有類別</option>
-              <option value="bug" style={{ background: '#12122A' }}>🐛 Bug</option>
-              <option value="feature" style={{ background: '#12122A' }}>✨ 功能</option>
-              <option value="improvement" style={{ background: '#12122A' }}>🔧 改善</option>
-              <option value="question" style={{ background: '#12122A' }}>❓ 問題</option>
+              <option value="all" style={{ background: 'var(--color-bg-card)' }}>所有類別</option>
+              <option value="bug" style={{ background: 'var(--color-bg-card)' }}>🐛 Bug</option>
+              <option value="feature" style={{ background: 'var(--color-bg-card)' }}>✨ 功能</option>
+              <option value="improvement" style={{ background: 'var(--color-bg-card)' }}>🔧 改善</option>
+              <option value="question" style={{ background: 'var(--color-bg-card)' }}>❓ 問題</option>
             </select>
           </div>
 
           {/* Issue list */}
           {loading ? (
-            <div style={{ textAlign: 'center', padding: '4rem', color: '#9090B0' }}>
+            <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--color-text-secondary)' }}>
               載入中…
             </div>
           ) : issues.length === 0 ? (
@@ -1193,10 +1193,10 @@ export default function IssueBoard() {
               style={{
                 textAlign: 'center',
                 padding: '4rem 2rem',
-                background: 'rgba(18,18,42,0.5)',
-                border: '1px solid #2A2A4A',
+                background: 'var(--color-glass-bg)',
+                border: '1px solid var(--color-border)',
                 borderRadius: '1rem',
-                color: '#606080',
+                color: 'var(--color-text-muted)',
               }}
             >
               <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>📭</div>
@@ -1205,7 +1205,7 @@ export default function IssueBoard() {
           ) : (
             <div
               style={{
-                border: '1px solid #2A2A4A',
+                border: '1px solid var(--color-border)',
                 borderRadius: '0.75rem',
                 overflow: 'hidden',
               }}
@@ -1219,13 +1219,13 @@ export default function IssueBoard() {
                     alignItems: 'flex-start',
                     gap: '0.875rem',
                     padding: '1rem 1.25rem',
-                    background: 'rgba(18,18,42,0.6)',
-                    borderBottom: idx < issues.length - 1 ? '1px solid #2A2A4A' : 'none',
+                    background: 'var(--color-glass-bg)',
+                    borderBottom: idx < issues.length - 1 ? '1px solid var(--color-border)' : 'none',
                     cursor: 'pointer',
                     transition: 'background 0.15s',
                   }}
                   onMouseEnter={e => (e.currentTarget.style.background = 'rgba(26,26,62,0.8)')}
-                  onMouseLeave={e => (e.currentTarget.style.background = 'rgba(18,18,42,0.6)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'var(--color-glass-bg)')}
                 >
                   {/* Status dot */}
                   <div style={{ marginTop: '0.35rem', flexShrink: 0 }}>
@@ -1235,7 +1235,7 @@ export default function IssueBoard() {
                   {/* Main content */}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.4rem', marginBottom: '0.3rem' }}>
-                      <span style={{ color: '#F0F0FF', fontWeight: 600, fontSize: '0.95rem', lineHeight: 1.4 }}>
+                      <span style={{ color: 'var(--color-text-primary)', fontWeight: 600, fontSize: '0.95rem', lineHeight: 1.4 }}>
                         {issue.title}
                       </span>
                       <CategoryBadge category={issue.category} />
@@ -1261,12 +1261,12 @@ export default function IssueBoard() {
                     </div>
 
                     {issue.description && (
-                      <p style={{ color: '#9090B0', fontSize: '0.825rem', margin: '0 0 0.4rem', lineHeight: 1.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.825rem', margin: '0 0 0.4rem', lineHeight: 1.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {issue.description.slice(0, 100)}{issue.description.length > 100 ? '…' : ''}
                       </p>
                     )}
 
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', fontSize: '0.75rem', color: '#606080', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', fontSize: '0.75rem', color: 'var(--color-text-muted)', alignItems: 'center' }}>
                       <span>{issue.author}{issue.author_tag && <span> · {issue.author_tag}</span>}</span>
                       <span>{timeAgo(issue.created_at)}</span>
                     </div>
@@ -1279,7 +1279,7 @@ export default function IssueBoard() {
                         display: 'flex',
                         alignItems: 'center',
                         gap: '0.3rem',
-                        color: '#606080',
+                        color: 'var(--color-text-muted)',
                         fontSize: '0.8rem',
                         flexShrink: 0,
                         marginTop: '0.15rem',

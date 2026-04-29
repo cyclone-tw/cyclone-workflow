@@ -53,10 +53,10 @@ const CATEGORY_CONFIG: Record<ToolCategory, { label: string; icon: string; color
 const inputStyle: React.CSSProperties = {
   width: '100%',
   background: 'rgba(10, 10, 26, 0.6)',
-  border: '1px solid #2A2A4A',
+  border: '1px solid var(--color-border)',
   borderRadius: '0.5rem',
   padding: '0.625rem 0.875rem',
-  color: '#F0F0FF',
+  color: 'var(--color-text-primary)',
   fontSize: '0.9rem',
   outline: 'none',
   transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
@@ -67,7 +67,7 @@ const labelStyle: React.CSSProperties = {
   display: 'block',
   fontSize: '0.8rem',
   fontWeight: 600,
-  color: '#9090B0',
+  color: 'var(--color-text-secondary)',
   marginBottom: '0.375rem',
   letterSpacing: '0.02em',
 };
@@ -78,7 +78,7 @@ function handleFocusIn(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElemen
 }
 
 function handleFocusOut(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
-  e.target.style.borderColor = '#2A2A4A';
+  e.target.style.borderColor = 'var(--color-border)';
   e.target.style.boxShadow = 'none';
 }
 
@@ -173,13 +173,13 @@ function ToolModal({ tool, onClose, onSaved }: ModalProps) {
       <div
         onClick={e => e.stopPropagation()}
         style={{
-          background: 'rgba(18,18,42,0.95)', backdropFilter: 'blur(16px)',
-          border: '1px solid #2A2A4A', borderRadius: '1rem',
+          background: 'var(--color-bg-card)', backdropFilter: 'blur(16px)',
+          border: '1px solid var(--color-border)', borderRadius: '1rem',
           padding: '1.75rem', width: '100%', maxWidth: '480px',
           maxHeight: '90vh', overflowY: 'auto',
         }}
       >
-        <h3 style={{ color: '#F0F0FF', fontWeight: 700, fontSize: '1.1rem', marginBottom: '1.25rem' }}>
+        <h3 style={{ color: 'var(--color-text-primary)', fontWeight: 700, fontSize: '1.1rem', marginBottom: '1.25rem' }}>
           {isEdit ? '編輯工具' : '新增工具'}
         </h3>
 
@@ -190,7 +190,7 @@ function ToolModal({ tool, onClose, onSaved }: ModalProps) {
               <label style={labelStyle}>工具名稱 <span style={{ color: '#E94560' }}>*</span></label>
               <input type="text" placeholder="e.g. Claude Code" value={name}
                 onChange={e => setName(e.target.value)} onFocus={handleFocusIn} onBlur={handleFocusOut}
-                style={{ ...inputStyle, borderColor: errors.name ? '#E94560' : '#2A2A4A' }} />
+                style={{ ...inputStyle, borderColor: errors.name ? '#E94560' : 'var(--color-border)' }} />
               {errors.name && <p style={{ color: '#E94560', fontSize: '0.75rem', marginTop: '0.2rem' }}>{errors.name}</p>}
             </div>
             <div>
@@ -199,7 +199,7 @@ function ToolModal({ tool, onClose, onSaved }: ModalProps) {
                 onFocus={handleFocusIn} onBlur={handleFocusOut}
                 style={{ ...inputStyle, cursor: 'pointer' }}>
                 {(Object.entries(CATEGORY_CONFIG) as [ToolCategory, typeof CATEGORY_CONFIG[ToolCategory]][]).map(([key, cfg]) => (
-                  <option key={key} value={key} style={{ background: '#12122A' }}>{cfg.icon} {cfg.label}</option>
+                  <option key={key} value={key} style={{ background: 'var(--color-bg-card)' }}>{cfg.icon} {cfg.label}</option>
                 ))}
               </select>
             </div>
@@ -210,16 +210,16 @@ function ToolModal({ tool, onClose, onSaved }: ModalProps) {
             <label style={labelStyle}>連結 <span style={{ color: '#E94560' }}>*</span></label>
             <input type="url" placeholder="https://..." value={url}
               onChange={e => setUrl(e.target.value)} onFocus={handleFocusIn} onBlur={handleFocusOut}
-              style={{ ...inputStyle, borderColor: errors.url ? '#E94560' : '#2A2A4A' }} />
+              style={{ ...inputStyle, borderColor: errors.url ? '#E94560' : 'var(--color-border)' }} />
             {errors.url && <p style={{ color: '#E94560', fontSize: '0.75rem', marginTop: '0.2rem' }}>{errors.url}</p>}
           </div>
 
           {/* GitHub URL */}
           <div style={{ marginBottom: '0.75rem' }}>
-            <label style={labelStyle}>GitHub Repo <span style={{ color: '#9090B0', fontWeight: 400 }}>(選填)</span></label>
+            <label style={labelStyle}>GitHub Repo <span style={{ color: 'var(--color-text-secondary)', fontWeight: 400 }}>(選填)</span></label>
             <input type="url" placeholder="https://github.com/..." value={githubUrl}
               onChange={e => setGithubUrl(e.target.value)} onFocus={handleFocusIn} onBlur={handleFocusOut}
-              style={{ ...inputStyle, borderColor: errors.githubUrl ? '#E94560' : '#2A2A4A' }} />
+              style={{ ...inputStyle, borderColor: errors.githubUrl ? '#E94560' : 'var(--color-border)' }} />
             {errors.githubUrl && <p style={{ color: '#E94560', fontSize: '0.75rem', marginTop: '0.2rem' }}>{errors.githubUrl}</p>}
           </div>
 
@@ -228,12 +228,12 @@ function ToolModal({ tool, onClose, onSaved }: ModalProps) {
             <label style={labelStyle}>簡介 <span style={{ color: '#E94560' }}>*</span></label>
             <textarea placeholder="簡短描述這個工具的用途和特色..." rows={3} value={description}
               onChange={e => setDescription(e.target.value)} onFocus={handleFocusIn} onBlur={handleFocusOut}
-              style={{ ...inputStyle, resize: 'vertical', borderColor: errors.description ? '#E94560' : '#2A2A4A' }} />
+              style={{ ...inputStyle, resize: 'vertical', borderColor: errors.description ? '#E94560' : 'var(--color-border)' }} />
             {errors.description && <p style={{ color: '#E94560', fontSize: '0.75rem', marginTop: '0.2rem' }}>{errors.description}</p>}
           </div>
 
           {!isEdit && user && (
-            <p style={{ fontSize: '0.8rem', color: '#606080', marginBottom: '0.75rem' }}>
+            <p style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', marginBottom: '0.75rem' }}>
               投稿者：{user.display_name || user.name}
             </p>
           )}
@@ -245,12 +245,12 @@ function ToolModal({ tool, onClose, onSaved }: ModalProps) {
           <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
             <button type="button" onClick={onClose}
               style={{
-                padding: '0.6rem 1.25rem', background: 'transparent', border: '1px solid #2A2A4A',
-                borderRadius: '0.5rem', color: '#9090B0', fontSize: '0.875rem', cursor: 'pointer',
+                padding: '0.6rem 1.25rem', background: 'transparent', border: '1px solid var(--color-border)',
+                borderRadius: '0.5rem', color: 'var(--color-text-secondary)', fontSize: '0.875rem', cursor: 'pointer',
                 transition: 'border-color 0.2s',
               }}
               onMouseEnter={e => (e.currentTarget.style.borderColor = '#6C63FF')}
-              onMouseLeave={e => (e.currentTarget.style.borderColor = '#2A2A4A')}
+              onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--color-border)')}
             >
               取消
             </button>
@@ -258,7 +258,7 @@ function ToolModal({ tool, onClose, onSaved }: ModalProps) {
               style={{
                 padding: '0.6rem 1.5rem',
                 background: submitting ? 'rgba(108,99,255,0.4)' : 'linear-gradient(135deg, #6C63FF, #00D9FF)',
-                border: 'none', borderRadius: '0.5rem', color: '#F0F0FF',
+                border: 'none', borderRadius: '0.5rem', color: 'var(--color-text-primary)',
                 fontSize: '0.875rem', fontWeight: 600,
                 cursor: submitting ? 'not-allowed' : 'pointer',
               }}
@@ -304,20 +304,20 @@ function DeleteConfirm({ tool, onConfirm, onCancel }: { tool: Tool; onConfirm: (
       <div
         onClick={e => e.stopPropagation()}
         style={{
-          background: 'rgba(18,18,42,0.95)', border: '1px solid #E9456040',
+          background: 'var(--color-bg-card)', border: '1px solid #E9456040',
           borderRadius: '1rem', padding: '1.75rem', width: '100%', maxWidth: '380px', textAlign: 'center',
         }}
       >
         <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🗑️</div>
-        <h3 style={{ color: '#F0F0FF', fontWeight: 700, fontSize: '1rem', marginBottom: '0.5rem' }}>
+        <h3 style={{ color: 'var(--color-text-primary)', fontWeight: 700, fontSize: '1rem', marginBottom: '0.5rem' }}>
           確定要刪除「{tool.name}」嗎？
         </h3>
-        <p style={{ color: '#9090B0', fontSize: '0.85rem', marginBottom: '1.5rem' }}>此操作無法復原</p>
+        <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>此操作無法復原</p>
         <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
           <button onClick={onCancel}
             style={{
-              padding: '0.6rem 1.25rem', background: 'transparent', border: '1px solid #2A2A4A',
-              borderRadius: '0.5rem', color: '#9090B0', fontSize: '0.875rem', cursor: 'pointer',
+              padding: '0.6rem 1.25rem', background: 'transparent', border: '1px solid var(--color-border)',
+              borderRadius: '0.5rem', color: 'var(--color-text-secondary)', fontSize: '0.875rem', cursor: 'pointer',
             }}
           >
             取消
@@ -326,7 +326,7 @@ function DeleteConfirm({ tool, onConfirm, onCancel }: { tool: Tool; onConfirm: (
             style={{
               padding: '0.6rem 1.5rem',
               background: deleting ? 'rgba(233,69,96,0.4)' : '#E94560',
-              border: 'none', borderRadius: '0.5rem', color: '#F0F0FF',
+              border: 'none', borderRadius: '0.5rem', color: 'var(--color-text-primary)',
               fontSize: '0.875rem', fontWeight: 600,
               cursor: deleting ? 'not-allowed' : 'pointer',
             }}
@@ -364,8 +364,8 @@ function ToolCard({ tool, canEdit, loggedIn, user, onEdit, onDelete, onToggleFav
   return (
     <article
       style={{
-        background: 'rgba(18,18,42,0.7)', backdropFilter: 'blur(12px)',
-        border: '1px solid #2A2A4A', borderRadius: '0.875rem',
+        background: 'var(--color-glass-bg)', backdropFilter: 'blur(12px)',
+        border: '1px solid var(--color-border)', borderRadius: '0.875rem',
         padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem',
         transition: 'transform 0.2s, box-shadow 0.2s',
         cursor: 'default', overflow: 'hidden',
@@ -396,7 +396,7 @@ function ToolCard({ tool, canEdit, loggedIn, user, onEdit, onDelete, onToggleFav
               title={tool.is_favorited ? '取消收藏' : '收藏'}
               style={{
                 background: tool.is_favorited ? 'rgba(255,107,129,0.15)' : 'transparent',
-                border: `1px solid ${tool.is_favorited ? 'rgba(255,107,129,0.3)' : '#2A2A4A'}`,
+                border: `1px solid ${tool.is_favorited ? 'rgba(255,107,129,0.3)' : 'var(--color-border)'}`,
                 borderRadius: '0.375rem', fontSize: '0.8rem',
                 padding: '0.2rem 0.45rem', cursor: favBusy ? 'not-allowed' : 'pointer',
                 transition: 'all 0.2s', opacity: favBusy ? 0.5 : 1,
@@ -435,7 +435,7 @@ function ToolCard({ tool, canEdit, loggedIn, user, onEdit, onDelete, onToggleFav
       </div>
 
       {/* Name */}
-      <h3 style={{ color: '#F0F0FF', fontWeight: 700, fontSize: '1rem', lineHeight: 1.4, margin: 0 }}>
+      <h3 style={{ color: 'var(--color-text-primary)', fontWeight: 700, fontSize: '1rem', lineHeight: 1.4, margin: 0 }}>
         {tool.name}
       </h3>
 
@@ -445,7 +445,7 @@ function ToolCard({ tool, canEdit, loggedIn, user, onEdit, onDelete, onToggleFav
           ref={contentRef}
           id={`tool-content-${tool.id}`}
           style={{
-            color: '#9090B0', fontSize: '0.85rem', lineHeight: 1.6, margin: 0,
+            color: 'var(--color-text-secondary)', fontSize: '0.85rem', lineHeight: 1.6, margin: 0,
             overflowWrap: 'anywhere', wordBreak: 'break-word',
             ...(expanded ? {} : { maxHeight: '4.8em', overflow: 'hidden' }),
           }}
@@ -493,7 +493,7 @@ function ToolCard({ tool, canEdit, loggedIn, user, onEdit, onDelete, onToggleFav
           <div
             style={{
               position: 'absolute', bottom: 0, left: 0, right: 0, height: '1.6em',
-              background: 'linear-gradient(transparent, rgba(18,18,42,0.9))',
+              background: 'linear-gradient(transparent, var(--color-bg-card))',
               pointerEvents: 'none',
             }}
           />
@@ -524,10 +524,10 @@ function ToolCard({ tool, canEdit, loggedIn, user, onEdit, onDelete, onToggleFav
         const display = validUrl ? validUrl.hostname : tool.url;
         const linkStyle: React.CSSProperties = {
           display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
-          fontSize: '0.8rem', color: validUrl ? cfg.color : '#606080', textDecoration: 'none',
+          fontSize: '0.8rem', color: validUrl ? cfg.color : 'var(--color-text-muted)', textDecoration: 'none',
           padding: '0.35rem 0.65rem', borderRadius: '0.375rem',
-          background: `${validUrl ? cfg.color : '#606080'}10`,
-          border: `1px solid ${validUrl ? cfg.color : '#606080'}20`,
+          background: `${validUrl ? cfg.color : 'var(--color-text-muted)'}10`,
+          border: `1px solid ${validUrl ? cfg.color : 'var(--color-text-muted)'}20`,
           transition: 'background 0.2s', alignSelf: 'flex-start',
         };
         if (validUrl) {
@@ -571,7 +571,7 @@ function ToolCard({ tool, canEdit, loggedIn, user, onEdit, onDelete, onToggleFav
       />
 
       {/* Footer */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid #2A2A4A' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid var(--color-border)' }}>
         {tool.contributor_avatar ? (
           <img
             src={tool.contributor_avatar}
@@ -581,14 +581,14 @@ function ToolCard({ tool, canEdit, loggedIn, user, onEdit, onDelete, onToggleFav
         ) : (
           <span style={{ fontSize: '1rem' }}>🤖</span>
         )}
-        <span style={{ fontSize: '0.75rem', color: '#9090B0' }}>
+        <span style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>
           {tool.contributor_name || tool.author}
         </span>
-        <span style={{ color: '#2A2A4A' }}>·</span>
-        <span style={{ fontSize: '0.75rem', color: '#606080' }}>{timeAgo(tool.created_at)}</span>
+        <span style={{ color: 'var(--color-border)' }}>·</span>
+        <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>{timeAgo(tool.created_at)}</span>
         {tool.comment_count > 0 && (
           <>
-            <span style={{ color: '#2A2A4A' }}>·</span>
+            <span style={{ color: 'var(--color-border)' }}>·</span>
             <span style={{ fontSize: '0.75rem', color: '#6C63FF' }}>{tool.comment_count} 💬</span>
           </>
         )}
@@ -687,7 +687,7 @@ export default function ToolCardBoard() {
     <div>
       {/* Top action row */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
-        <div style={{ fontSize: '0.875rem', color: '#9090B0' }}>
+        <div style={{ fontSize: '0.875rem', color: 'var(--color-text-secondary)' }}>
           <span style={{ color: '#00F5A0', fontWeight: 600 }}>{tools.length} 個工具</span>
         </div>
         {user && (
@@ -697,7 +697,7 @@ export default function ToolCardBoard() {
               display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
               padding: '0.6rem 1.25rem',
               background: 'linear-gradient(135deg, #6C63FF, #00D9FF)',
-              border: 'none', borderRadius: '0.5rem', color: '#F0F0FF',
+              border: 'none', borderRadius: '0.5rem', color: 'var(--color-text-primary)',
               fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer',
               transition: 'opacity 0.2s, transform 0.2s',
             }}
@@ -712,8 +712,8 @@ export default function ToolCardBoard() {
       {/* Category filter tabs */}
       <div
         style={{
-          background: 'rgba(18,18,42,0.7)', backdropFilter: 'blur(12px)',
-          border: '1px solid #2A2A4A', borderRadius: '0.75rem',
+          background: 'var(--color-glass-bg)', backdropFilter: 'blur(12px)',
+          border: '1px solid var(--color-border)', borderRadius: '0.75rem',
           padding: '0.5rem', marginBottom: '0.75rem',
           display: 'flex', gap: '0.25rem', flexWrap: 'wrap',
         }}
@@ -728,12 +728,12 @@ export default function ToolCardBoard() {
               style={{
                 padding: '0.4rem 0.875rem', borderRadius: '0.5rem', border: 'none',
                 background: active ? (cfg ? `${cfg.color}20` : 'rgba(108,99,255,0.2)') : 'transparent',
-                color: active ? (cfg ? cfg.color : '#8B83FF') : '#9090B0',
+                color: active ? (cfg ? cfg.color : '#8B83FF') : 'var(--color-text-secondary)',
                 fontSize: '0.85rem', fontWeight: active ? 600 : 400,
                 cursor: 'pointer', transition: 'all 0.15s',
               }}
-              onMouseEnter={e => { if (!active) e.currentTarget.style.color = '#F0F0FF'; }}
-              onMouseLeave={e => { if (!active) e.currentTarget.style.color = '#9090B0'; }}
+              onMouseEnter={e => { if (!active) e.currentTarget.style.color = 'var(--color-text-primary)'; }}
+              onMouseLeave={e => { if (!active) e.currentTarget.style.color = 'var(--color-text-secondary)'; }}
             >
               {tab.icon} {tab.label}
             </button>
@@ -758,7 +758,7 @@ export default function ToolCardBoard() {
         >
           <option value="">全部成員</option>
           {members.map((m) => (
-            <option key={m.id} value={m.id} style={{ background: '#12122A' }}>
+            <option key={m.id} value={m.id} style={{ background: 'var(--color-bg-card)' }}>
               {m.avatar} {m.name}
             </option>
           ))}
@@ -779,7 +779,7 @@ export default function ToolCardBoard() {
         >
           <option value="">全部標籤</option>
           {availableTags.map((t) => (
-            <option key={t.id} value={t.name} style={{ background: '#12122A' }}>
+            <option key={t.id} value={t.name} style={{ background: 'var(--color-bg-card)' }}>
               {t.name}
             </option>
           ))}
@@ -788,7 +788,7 @@ export default function ToolCardBoard() {
 
       {/* Card grid */}
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '4rem', color: '#9090B0' }}>載入中…</div>
+        <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--color-text-secondary)' }}>載入中…</div>
       ) : loadError ? (
         <div
           style={{
@@ -813,8 +813,8 @@ export default function ToolCardBoard() {
         <div
           style={{
             textAlign: 'center', padding: '4rem 2rem',
-            background: 'rgba(18,18,42,0.5)', border: '1px solid #2A2A4A',
-            borderRadius: '1rem', color: '#606080',
+            background: 'var(--color-glass-bg)', border: '1px solid var(--color-border)',
+            borderRadius: '1rem', color: 'var(--color-text-muted)',
           }}
         >
           <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🤖</div>
