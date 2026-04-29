@@ -35,6 +35,7 @@ interface Tool {
   tags: Tag[];
   is_favorited?: boolean;
   github_url?: string;
+  comment_count?: number;
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -566,6 +567,7 @@ function ToolCard({ tool, canEdit, loggedIn, user, onEdit, onDelete, onToggleFav
         resourceId={String(tool.id)}
         user={user}
         color={cfg.color}
+        initialCommentCount={tool.comment_count ?? 0}
       />
 
       {/* Footer */}

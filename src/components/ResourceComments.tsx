@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { timeAgo } from '@/lib/time';
 
 interface Comment {
@@ -24,6 +24,7 @@ interface ResourceCommentsProps {
   resourceId: string;
   user: User | null;
   color?: string;
+  initialCommentCount?: number;
 }
 
 const inputStyle: React.CSSProperties = {
@@ -80,14 +81,21 @@ function Avatar({ name, avatarUrl, size = 24 }: { name: string; avatarUrl: strin
   );
 }
 
-export default function ResourceComments({ resourceType, resourceId, user, color = '#6C63FF' }: ResourceCommentsProps) {
+export default function ResourceComments({ resourceType, resourceId, user, color = '#6C63FF', initialCommentCount = 0 }: ResourceCommentsProps) {
   const [open, setOpen] = useState(false);
   const [comments, setComments] = useState<Comment[]>([]);
+  const [commentCount, setCommentCount] = useState(initialCommentCount);
   const [loading, setLoading] = useState(false);
   const [content, setContent] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   const isAdmin = user ? ['captain', 'tech', 'admin'].includes(user.effectiveRole) : false;
+
+  useEffect(() => {
+    if (!open && comments.length === 0) {
+      setCommentCount(initialCommentCount);
+    }
+  }, [comments.length, initialCommentCount, open]);
 
   const loadComments = useCallback(async () => {
     if (comments.length > 0) return;
@@ -95,7 +103,11 @@ export default function ResourceComments({ resourceType, resourceId, user, color
     try {
       const res = await fetch(`/api/${resourceType === 'knowledge' ? 'knowledge' : 'ai-tools'}/${resourceId}/comments`);
       const data = await res.json();
-      if (data.ok) setComments(data.comments || []);
+      if (data.ok) {
+        const nextComments = data.comments || [];
+        setComments(nextComments);
+        setCommentCount(nextComments.length);
+      }
     } catch { /* ignore */ }
     setLoading(false);
   }, [comments.length, resourceType, resourceId]);
@@ -119,7 +131,11 @@ export default function ResourceComments({ resourceType, resourceId, user, color
         setContent('');
         const reloadRes = await fetch(`/api/${resourceType === 'knowledge' ? 'knowledge' : 'ai-tools'}/${resourceId}/comments`);
         const reloadData = await reloadRes.json();
-        if (reloadData.ok) setComments(reloadData.comments || []);
+        if (reloadData.ok) {
+          const nextComments = reloadData.comments || [];
+          setComments(nextComments);
+          setCommentCount(nextComments.length);
+        }
       }
     } catch { /* ignore */ }
     setSubmitting(false);
@@ -131,7 +147,11 @@ export default function ResourceComments({ resourceType, resourceId, user, color
       const res = await fetch(`/api/comments/${commentId}`, { method: 'DELETE' });
       const data = await res.json();
       if (data.ok) {
-        setComments(prev => prev.filter(c => c.id !== commentId));
+        setComments(prev => {
+          const nextComments = prev.filter(c => c.id !== commentId);
+          setCommentCount(nextComments.length);
+          return nextComments;
+        });
       }
     } catch { /* ignore */ }
   };
@@ -155,7 +175,7 @@ export default function ResourceComments({ resourceType, resourceId, user, color
           justifyContent: 'space-between',
         }}
       >
-        <span>💬 留言 ({comments.length})</span>
+        <span>💬 留言 ({commentCount})</span>
         <span style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>▼</span>
       </button>
 

@@ -32,6 +32,7 @@ interface KnowledgeEntry {
   updated_at: string;
   tags: Tag[];
   urls: { id: string; url: string; label: string }[];
+  comment_count?: number;
   is_favorited?: boolean;
 }
 
@@ -661,6 +662,7 @@ function EntryCard({
         resourceId={entry.id}
         user={user}
         color={cfg.color}
+        initialCommentCount={entry.comment_count ?? 0}
       />
 
       {/* Footer */}

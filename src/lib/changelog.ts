@@ -7,6 +7,13 @@ export interface ChangelogEntry {
 export const CHANGELOG: ChangelogEntry[] = [
   {
     version: '',
+    date: '2026-04-29',
+    changes: [
+      'fix(#90): 知識庫與 AI 工具箱卡片留言數預載，重整後不再歸 0',
+    ],
+  },
+  {
+    version: '',
     date: '2026-04-26',
     changes: [
       'fix(#148): 留言區顯示自訂暱稱 — 全站 comment API 改用 COALESCE(display_name, name)',

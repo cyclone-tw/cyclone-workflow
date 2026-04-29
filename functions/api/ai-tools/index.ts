@@ -81,6 +81,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       contributor_name: row.contributor_name || row.author,
       contributor_avatar: row.contributor_avatar,
       tags: [] as { id: string; name: string; color: string }[],
+      comment_count: 0,
     }));
 
     // Fetch tags for all returned tools
@@ -103,6 +104,18 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
           tool.tags.push({ id: tr.tag_id as string, name: tr.name as string, color: tr.color as string });
         }
       }
+
+      // Fetch comment counts for all tools so cards do not show 0 before expansion.
+      try {
+        const commentResult = await db.execute({
+          sql: `SELECT resource_id, COUNT(*) AS cnt FROM resource_comments WHERE resource_type = 'ai-tool' AND resource_id IN (${placeholders}) GROUP BY resource_id`,
+          args: ids,
+        });
+        for (const cr of commentResult.rows) {
+          const tool = toolMap.get(String(cr.resource_id));
+          if (tool) tool.comment_count = Number(cr.cnt);
+        }
+      } catch { /* resource_comments table may not exist yet */ }
     }
 
     // Attach is_favorited for logged-in users
