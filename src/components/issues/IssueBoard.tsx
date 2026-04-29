@@ -102,7 +102,7 @@ const PRIORITY_COLORS: Record<IssuePriority, { bg: string; color: string }> = {
 
 const inputStyle: React.CSSProperties = {
   width: '100%',
-  background: 'rgba(10, 10, 26, 0.6)',
+  background: 'var(--color-bg-surface)',
   border: '1px solid var(--color-border)',
   borderRadius: '0.5rem',
   padding: '0.625rem 0.875rem',
@@ -561,7 +561,7 @@ function DetailView({ issueId, onBack }: DetailViewProps) {
                   padding: '1rem',
                   background: 'var(--color-bg-surface)',
                   borderRadius: '0.75rem',
-                  border: '1px solid rgba(42,42,74,0.6)',
+                  border: '1px solid var(--color-border)',
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '0.25rem' }}>
@@ -571,7 +571,7 @@ function DetailView({ issueId, onBack }: DetailViewProps) {
                   </span>
                   <span style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem' }}>{timeAgo(comment.created_at)}</span>
                 </div>
-                <p style={{ color: '#C0C0D8', fontSize: '0.9rem', lineHeight: 1.7, margin: 0, whiteSpace: 'pre-wrap' }}>
+                <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem', lineHeight: 1.7, margin: 0, whiteSpace: 'pre-wrap' }}>
                   {comment.content}
                 </p>
               </div>
@@ -756,11 +756,11 @@ function GitHubIssuesTab() {
             }}
           >
             <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', marginBottom: '0.75rem' }}>
-              <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(42,42,74,0.6)' }} />
-              <div style={{ width: '80px', height: '12px', borderRadius: '4px', background: 'rgba(42,42,74,0.6)' }} />
-              <div style={{ width: '60%', height: '14px', borderRadius: '4px', background: 'rgba(42,42,74,0.6)' }} />
+              <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--color-border)' }} />
+              <div style={{ width: '80px', height: '12px', borderRadius: '4px', background: 'var(--color-border)' }} />
+              <div style={{ width: '60%', height: '14px', borderRadius: '4px', background: 'var(--color-border)' }} />
             </div>
-            <div style={{ width: '40%', height: '10px', borderRadius: '4px', background: 'rgba(42,42,74,0.4)' }} />
+            <div style={{ width: '40%', height: '10px', borderRadius: '4px', background: 'var(--color-border)' }} />
           </div>
         ))}
       </div>
@@ -818,8 +818,8 @@ function GitHubIssuesTab() {
             onClick={() => window.open(issue.html_url, '_blank', 'noopener')}
             style={cardBase}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(26,26,62,0.8)';
-              e.currentTarget.style.borderColor = 'rgba(108,99,255,0.3)';
+              e.currentTarget.style.background = 'var(--color-bg-card-hover)';
+              e.currentTarget.style.borderColor = 'var(--color-info-primary-border)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.background = 'var(--color-glass-bg)';
@@ -1224,7 +1224,7 @@ export default function IssueBoard() {
                     cursor: 'pointer',
                     transition: 'background 0.15s',
                   }}
-                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(26,26,62,0.8)')}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-bg-card-hover)')}
                   onMouseLeave={e => (e.currentTarget.style.background = 'var(--color-glass-bg)')}
                 >
                   {/* Status dot */}

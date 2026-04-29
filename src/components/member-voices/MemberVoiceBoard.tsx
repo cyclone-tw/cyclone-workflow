@@ -54,7 +54,7 @@ const PAIN_CATEGORIES = [
 
 const inputStyle: React.CSSProperties = {
   width: '100%',
-  background: 'rgba(10, 10, 26, 0.6)',
+  background: 'var(--color-bg-surface)',
   border: '1px solid var(--color-border)',
   borderRadius: '0.5rem',
   padding: '0.625rem 0.875rem',
@@ -85,7 +85,7 @@ function handleFocusOut(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaEleme
 }
 
 const glassStyle: React.CSSProperties = {
-  background: 'rgba(10, 10, 26, 0.6)',
+  background: 'var(--color-bg-surface)',
   backdropFilter: 'blur(12px)',
   WebkitBackdropFilter: 'blur(12px)',
   border: '1px solid rgba(108, 99, 255, 0.15)',

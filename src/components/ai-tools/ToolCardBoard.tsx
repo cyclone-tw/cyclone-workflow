@@ -52,7 +52,7 @@ const CATEGORY_CONFIG: Record<ToolCategory, { label: string; icon: string; color
 
 const inputStyle: React.CSSProperties = {
   width: '100%',
-  background: 'rgba(10, 10, 26, 0.6)',
+  background: 'var(--color-bg-surface)',
   border: '1px solid var(--color-border)',
   borderRadius: '0.5rem',
   padding: '0.625rem 0.875rem',
@@ -526,8 +526,8 @@ function ToolCard({ tool, canEdit, loggedIn, user, onEdit, onDelete, onToggleFav
           display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
           fontSize: '0.8rem', color: validUrl ? cfg.color : 'var(--color-text-muted)', textDecoration: 'none',
           padding: '0.35rem 0.65rem', borderRadius: '0.375rem',
-          background: `${validUrl ? cfg.color : 'var(--color-text-muted)'}10`,
-          border: `1px solid ${validUrl ? cfg.color : 'var(--color-text-muted)'}20`,
+          background: validUrl ? `${cfg.color}10` : 'var(--color-overlay-neutral-weak)',
+          border: validUrl ? `1px solid ${cfg.color}20` : '1px solid var(--color-border)',
           transition: 'background 0.2s', alignSelf: 'flex-start',
         };
         if (validUrl) {
