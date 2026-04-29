@@ -10,6 +10,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     date: '2026-04-29',
     changes: [
       'fix(#51): 知識庫留言區 soft-delete placeholder — 與討論區行為一致',
+      'fix(#149): AI 工具箱 comment_count 預載 + 留言區初始數量同步',
     ],
   },
   {
