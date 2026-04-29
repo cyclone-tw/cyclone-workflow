@@ -11,8 +11,6 @@ export default function AdminAIInsights({ analytics }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [quotaExceeded, setQuotaExceeded] = useState(false);
 
-  if (!analytics || analytics.error) return null;
-
   async function fetchInsights() {
     setLoading(true);
     setError(null);
