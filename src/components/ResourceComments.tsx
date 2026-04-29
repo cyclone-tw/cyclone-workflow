@@ -6,6 +6,7 @@ interface Comment {
   content: string;
   created_at: string;
   updated_at: string;
+  deleted_at?: string | null;
   author_id: string;
   author_name: string;
   author_avatar: string | null;
@@ -50,12 +51,13 @@ function handleFocusOut(e: React.FocusEvent<HTMLTextAreaElement>) {
   e.target.style.boxShadow = 'none';
 }
 
-function Avatar({ name, avatarUrl, size = 24 }: { name: string; avatarUrl: string | null; size?: number }) {
+function Avatar({ name, avatarUrl, size = 24 }: { name: string | null; avatarUrl: string | null; size?: number }) {
+  const safeName = name || '?';
   if (avatarUrl) {
     return (
       <img
         src={avatarUrl}
-        alt={name}
+        alt={safeName}
         style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover' }}
       />
     );
@@ -76,7 +78,7 @@ function Avatar({ name, avatarUrl, size = 24 }: { name: string; avatarUrl: strin
         flexShrink: 0,
       }}
     >
-      {name.charAt(0).toUpperCase()}
+      {safeName.charAt(0).toUpperCase()}
     </span>
   );
 }
@@ -134,7 +136,9 @@ export default function ResourceComments({ resourceType, resourceId, user, color
       const res = await fetch(`/api/comments/${commentId}`, { method: 'DELETE' });
       const data = await res.json();
       if (data.ok) {
-        setComments(prev => prev.filter(c => c.id !== commentId));
+        setComments(prev => prev.map(c =>
+          c.id === commentId ? { ...c, deleted_at: new Date().toISOString() } : c
+        ));
       }
     } catch { /* ignore */ }
   };
@@ -179,12 +183,16 @@ export default function ResourceComments({ resourceType, resourceId, user, color
             <div style={{ fontSize: '0.8rem', color: '#606080' }}>尚無留言，來發表第一則吧！</div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
-              {comments.map((c) => (
+              {comments.map((c) => c.deleted_at ? (
+                <div key={c.id} style={{ fontSize: '0.8rem', fontStyle: 'italic', color: '#606080', background: 'rgba(233,69,96,0.05)', border: '1px solid rgba(233,69,96,0.15)', borderRadius: '0.5rem', padding: '0.5rem 0.75rem' }}>
+                  此留言已被刪除
+                </div>
+              ) : (
                 <div key={c.id} style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
                   <Avatar name={c.author_name} avatarUrl={c.author_avatar} size={24} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                      <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#F0F0FF' }}>{c.author_name}</span>
+                      <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#F0F0FF' }}>{c.author_name || '未知使用者'}</span>
                       <span style={{ fontSize: '0.65rem', color: '#505070' }}>{timeAgo(c.created_at)}</span>
                       {(c.author_id === user?.id || isAdmin) && (
                         <button

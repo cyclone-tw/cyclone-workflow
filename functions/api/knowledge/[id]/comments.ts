@@ -19,11 +19,12 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     const result = await db.execute({
       sql: `
         SELECT
-          rc.id, rc.content, rc.created_at, rc.updated_at,
+          rc.id, rc.content, rc.created_at, rc.updated_at, rc.deleted_at,
           u.id AS author_id, COALESCE(u.display_name, u.name) AS author_name, u.avatar_url AS author_avatar
         FROM resource_comments rc
-        JOIN users u ON u.id = rc.user_id AND u.archived_at IS NULL AND u.status = 'active'
+        LEFT JOIN users u ON u.id = rc.user_id AND u.archived_at IS NULL AND u.status = 'active'
         WHERE rc.resource_type = 'knowledge' AND rc.resource_id = ?
+          AND (rc.deleted_at IS NOT NULL OR u.id IS NOT NULL)
         ORDER BY rc.created_at DESC
       `,
       args: [id],

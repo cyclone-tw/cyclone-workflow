@@ -308,6 +308,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       { sql: `ALTER TABLE messages ADD COLUMN deleted_by TEXT`, note: 'messages.deleted_by' },
       { sql: `ALTER TABLE knowledge_entries ADD COLUMN url TEXT DEFAULT ''`, note: 'knowledge_entries.url' },
       { sql: `ALTER TABLE messages ADD COLUMN parent_id INTEGER DEFAULT NULL REFERENCES messages(id)`, note: 'messages.parent_id' },
+      { sql: `ALTER TABLE resource_comments ADD COLUMN deleted_at TEXT`, note: 'resource_comments.deleted_at' },
+      { sql: `ALTER TABLE resource_comments ADD COLUMN deleted_by TEXT`, note: 'resource_comments.deleted_by' },
     ];
 
     // --- Migrate legacy wish.claimer_id → wish_claimers ---
