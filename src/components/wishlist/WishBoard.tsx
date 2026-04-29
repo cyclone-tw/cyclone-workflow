@@ -102,7 +102,7 @@ function getInitial(name: string): string {
 // ─── Inline styles ────────────────────────────────────────────────────────────
 
 const glassStyle: React.CSSProperties = {
-  background: 'rgba(10, 10, 26, 0.6)',
+  background: 'var(--color-bg-surface)',
   backdropFilter: 'blur(12px)',
   WebkitBackdropFilter: 'blur(12px)',
   border: '1px solid rgba(108, 99, 255, 0.15)',
@@ -110,11 +110,11 @@ const glassStyle: React.CSSProperties = {
 
 const inputStyle: React.CSSProperties = {
   width: '100%',
-  background: 'rgba(10, 10, 26, 0.6)',
-  border: '1px solid #2A2A4A',
+  background: 'var(--color-bg-surface)',
+  border: '1px solid var(--color-border)',
   borderRadius: '0.5rem',
   padding: '0.625rem 0.875rem',
-  color: '#F0F0FF',
+  color: 'var(--color-text-primary)',
   fontSize: '0.9rem',
   outline: 'none',
   transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
@@ -125,7 +125,7 @@ const labelStyle: React.CSSProperties = {
   display: 'block',
   fontSize: '0.8rem',
   fontWeight: 600,
-  color: '#9090B0',
+  color: 'var(--color-text-secondary)',
   marginBottom: '0.375rem',
   letterSpacing: '0.02em',
 };
@@ -149,7 +149,7 @@ function handleFocusIn(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElemen
 }
 
 function handleFocusOut(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
-  e.target.style.borderColor = '#2A2A4A';
+  e.target.style.borderColor = 'var(--color-border)';
   e.target.style.boxShadow = 'none';
 }
 
@@ -177,7 +177,7 @@ function Avatar({ name, avatarUrl, size = 28 }: { name: string; avatarUrl: strin
         fontSize: size * 0.5,
         fontWeight: 700,
         background: 'rgba(108,99,255,0.25)',
-        color: '#B8B0FF',
+        color: 'var(--color-primary-light)',
         flexShrink: 0,
       }}
     >
@@ -234,8 +234,8 @@ function CreateWishModal({ onClose, onCreated }: { onClose: () => void; onCreate
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-          <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: '#F0F0FF', margin: 0 }}>許下新願望</h3>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#9090B0', fontSize: '1.25rem', cursor: 'pointer', lineHeight: 1 }}>✕</button>
+          <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>許下新願望</h3>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', fontSize: '1.25rem', cursor: 'pointer', lineHeight: 1 }}>✕</button>
         </div>
 
         {/* Icon picker */}
@@ -247,8 +247,8 @@ function CreateWishModal({ onClose, onCreated }: { onClose: () => void; onCreate
                 key={ic}
                 onClick={() => setIcon(ic)}
                 style={{
-                  width: 36, height: 36, borderRadius: 8, border: ic === icon ? '2px solid #6C63FF' : '1px solid #2A2A4A',
-                  background: ic === icon ? 'rgba(108,99,255,0.2)' : 'rgba(10,10,26,0.4)',
+                  width: 36, height: 36, borderRadius: 8, border: ic === icon ? '2px solid #6C63FF' : '1px solid var(--color-border)',
+                  background: ic === icon ? 'rgba(108,99,255,0.2)' : 'var(--color-bg-surface)',
                   cursor: 'pointer', fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center',
                   transition: 'border-color 0.15s ease',
                 }}
@@ -268,9 +268,9 @@ function CreateWishModal({ onClose, onCreated }: { onClose: () => void; onCreate
                 key={cat}
                 onClick={() => setCategory(cat)}
                 style={{
-                  flex: 1, padding: '0.5rem', borderRadius: 8, border: category === cat ? '2px solid #6C63FF' : '1px solid #2A2A4A',
-                  background: category === cat ? 'rgba(108,99,255,0.2)' : 'rgba(10,10,26,0.4)',
-                  color: category === cat ? '#F0F0FF' : '#9090B0', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600,
+                  flex: 1, padding: '0.5rem', borderRadius: 8, border: category === cat ? '2px solid #6C63FF' : '1px solid var(--color-border)',
+                  background: category === cat ? 'rgba(108,99,255,0.2)' : 'var(--color-bg-surface)',
+                  color: category === cat ? 'var(--color-text-primary)' : 'var(--color-text-secondary)', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600,
                   transition: 'all 0.15s ease',
                 }}
               >
@@ -313,7 +313,7 @@ function CreateWishModal({ onClose, onCreated }: { onClose: () => void; onCreate
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
           <button
             onClick={onClose}
-            style={{ padding: '0.625rem 1rem', borderRadius: '0.75rem', border: '1px solid #2A2A4A', background: 'transparent', color: '#9090B0', cursor: 'pointer', fontSize: '0.875rem' }}
+            style={{ padding: '0.625rem 1rem', borderRadius: '0.75rem', border: '1px solid var(--color-border)', background: 'transparent', color: 'var(--color-text-secondary)', cursor: 'pointer', fontSize: '0.875rem' }}
           >
             取消
           </button>
@@ -351,14 +351,14 @@ function DeleteConfirmModal({ wish, onClose, onDeleted }: { wish: Wish; onClose:
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div style={{ ...glassStyle, borderRadius: '1rem', padding: '1.5rem', maxWidth: 400, width: '100%' }}>
-        <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: '#F0F0FF', marginBottom: '0.75rem' }}>確認刪除</h3>
-        <p style={{ color: '#9090B0', fontSize: '0.9rem', marginBottom: '1.25rem' }}>
+        <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: '0.75rem' }}>確認刪除</h3>
+        <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem', marginBottom: '1.25rem' }}>
           確定要刪除「{wish.title}」嗎？此操作無法復原。
         </p>
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
           <button
             onClick={onClose}
-            style={{ padding: '0.5rem 1rem', borderRadius: '0.75rem', border: '1px solid #2A2A4A', background: 'transparent', color: '#9090B0', cursor: 'pointer', fontSize: '0.85rem' }}
+            style={{ padding: '0.5rem 1rem', borderRadius: '0.75rem', border: '1px solid var(--color-border)', background: 'transparent', color: 'var(--color-text-secondary)', cursor: 'pointer', fontSize: '0.85rem' }}
           >
             取消
           </button>
@@ -436,8 +436,8 @@ function SubmitToolModal({ wishId, onClose, onSubmitted }: { wishId: string; onC
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-          <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: '#F0F0FF', margin: 0 }}>🛠️ 投稿到 AI 工具箱</h3>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#9090B0', fontSize: '1.25rem', cursor: 'pointer', lineHeight: 1 }}>✕</button>
+          <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>🛠️ 投稿到 AI 工具箱</h3>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', fontSize: '1.25rem', cursor: 'pointer', lineHeight: 1 }}>✕</button>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
@@ -502,7 +502,7 @@ function SubmitToolModal({ wishId, onClose, onSubmitted }: { wishId: string; onC
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
           <button
             onClick={onClose}
-            style={{ padding: '0.625rem 1rem', borderRadius: '0.75rem', border: '1px solid #2A2A4A', background: 'transparent', color: '#9090B0', cursor: 'pointer', fontSize: '0.875rem' }}
+            style={{ padding: '0.625rem 1rem', borderRadius: '0.75rem', border: '1px solid var(--color-border)', background: 'transparent', color: 'var(--color-text-secondary)', cursor: 'pointer', fontSize: '0.875rem' }}
           >
             取消
           </button>
@@ -689,7 +689,7 @@ function WishCard({ wish, user, onRefresh, onDelete }: { wish: Wish; user: Retur
         {(isWisher || isAdminUser) && (
           <button
             onClick={() => onDelete(wish)}
-            style={{ background: 'none', border: 'none', color: '#9090B0', cursor: 'pointer', fontSize: '0.8rem', padding: 2 }}
+            style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer', fontSize: '0.8rem', padding: 2 }}
             title="刪除"
           >
             🗑️
@@ -698,18 +698,18 @@ function WishCard({ wish, user, onRefresh, onDelete }: { wish: Wish; user: Retur
       </div>
 
       {/* Title */}
-      <h3 style={{ fontSize: '1rem', fontWeight: 600, color: '#F0F0FF', lineHeight: 1.4, margin: 0 }}>
+      <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--color-text-primary)', lineHeight: 1.4, margin: 0 }}>
         {wish.title}
       </h3>
 
       {/* Description */}
-      <p style={{ fontSize: '0.85rem', color: '#9090B0', lineHeight: 1.6, margin: 0, flex: 1 }}>
+      <p style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', lineHeight: 1.6, margin: 0, flex: 1 }}>
         {wish.description}
       </p>
 
       {/* Footer: Wisher */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '0.5rem', borderTop: '1px solid rgba(108,99,255,0.1)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.8rem', color: '#9090B0' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>
           <Avatar name={wish.wisher.name} avatarUrl={wish.wisher.avatarUrl} size={22} />
           <span>{wish.wisher.name}</span>
         </div>
@@ -717,9 +717,9 @@ function WishCard({ wish, user, onRefresh, onDelete }: { wish: Wish; user: Retur
 
       {/* Claimers Section */}
       {hasClaimers && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '0.5rem', background: 'rgba(10,10,26,0.4)', borderRadius: '0.5rem', border: '1px solid rgba(108,99,255,0.1)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '0.5rem', background: 'var(--color-bg-surface)', borderRadius: '0.5rem', border: '1px solid rgba(108,99,255,0.1)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ fontSize: '0.7rem', color: '#606080', fontWeight: 600 }}>認領者</div>
+            <div style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', fontWeight: 600 }}>認領者</div>
             {isClaimer && !isCompleted && (
               <button
                 onClick={() => setShowSubmitTool(true)}
@@ -746,7 +746,7 @@ function WishCard({ wish, user, onRefresh, onDelete }: { wish: Wish; user: Retur
               return (
                 <div key={claimer.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <Avatar name={claimer.name} avatarUrl={claimer.avatarUrl} size={24} />
-                  <span style={{ fontSize: '0.8rem', color: '#F0F0FF', fontWeight: 500 }}>{claimer.name}</span>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--color-text-primary)', fontWeight: 500 }}>{claimer.name}</span>
                   <ClaimerBadge status={claimer.status} />
                   {hasTool && (
                     <span style={{
@@ -768,7 +768,7 @@ function WishCard({ wish, user, onRefresh, onDelete }: { wish: Wish; user: Retur
           </div>
           {wish.linked_tools && wish.linked_tools.length > 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 4 }}>
-              <div style={{ fontSize: '0.7rem', color: '#606080', fontWeight: 600 }}>關聯工具</div>
+              <div style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', fontWeight: 600 }}>關聯工具</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 {wish.linked_tools.map((tool) => (
                   <a
@@ -795,13 +795,13 @@ function WishCard({ wish, user, onRefresh, onDelete }: { wish: Wish; user: Retur
             <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
               <div style={{ display: 'flex', alignItems: 'center' }}>
                 {visibleClaimers.map((c, i) => (
-                  <div key={c.id} style={{ marginLeft: i > 0 ? -8 : 0, border: '2px solid rgba(10,10,26,0.6)', borderRadius: '50%' }}>
+                  <div key={c.id} style={{ marginLeft: i > 0 ? -8 : 0, border: '2px solid var(--color-bg-surface)', borderRadius: '50%' }}>
                     <Avatar name={c.name} avatarUrl={c.avatarUrl} size={22} />
                   </div>
                 ))}
               </div>
               {hiddenClaimerCount > 0 && (
-                <span style={{ fontSize: '0.7rem', color: '#9090B0', fontWeight: 500 }}>+{hiddenClaimerCount}</span>
+                <span style={{ fontSize: '0.7rem', color: 'var(--color-text-secondary)', fontWeight: 500 }}>+{hiddenClaimerCount}</span>
               )}
             </div>
           )}
@@ -881,7 +881,7 @@ function WishCard({ wish, user, onRefresh, onDelete }: { wish: Wish; user: Retur
       )}
 
       {/* Time */}
-      <div style={{ fontSize: '0.7rem', color: '#606080', marginTop: -4 }}>
+      <div style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', marginTop: -4 }}>
         {timeAgo(wish.createdAt)}
       </div>
 
@@ -889,10 +889,10 @@ function WishCard({ wish, user, onRefresh, onDelete }: { wish: Wish; user: Retur
       {wish.history && wish.history.length > 0 && (
         <div style={{
           marginTop: '0.25rem', padding: '0.5rem 0.625rem',
-          background: 'rgba(10,10,26,0.4)', borderRadius: '0.5rem',
+          background: 'var(--color-bg-surface)', borderRadius: '0.5rem',
           border: '1px solid rgba(108,99,255,0.1)',
         }}>
-          <div style={{ fontSize: '0.65rem', color: '#606080', marginBottom: '0.35rem', fontWeight: 600 }}>
+          <div style={{ fontSize: '0.65rem', color: 'var(--color-text-muted)', marginBottom: '0.35rem', fontWeight: 600 }}>
             狀態歷程
           </div>
           {wish.history.map((h, i) => {
@@ -900,9 +900,9 @@ function WishCard({ wish, user, onRefresh, onDelete }: { wish: Wish; user: Retur
             const toCfg = STATUS_CONFIG[h.to_status as WishStatus];
             return (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.65rem', marginBottom: i < wish.history.length - 1 ? '0.25rem' : 0 }}>
-                <span style={{ color: fromCfg?.badgeText || '#9090B0' }}>{fromCfg?.label || h.from_status}</span>
-                <span style={{ color: '#606080' }}>→</span>
-                <span style={{ color: toCfg?.badgeText || '#9090B0', fontWeight: 600 }}>{toCfg?.label || h.to_status}</span>
+                <span style={{ color: fromCfg?.badgeText || 'var(--color-text-secondary)' }}>{fromCfg?.label || h.from_status}</span>
+                <span style={{ color: 'var(--color-text-muted)' }}>→</span>
+                <span style={{ color: toCfg?.badgeText || 'var(--color-text-secondary)', fontWeight: 600 }}>{toCfg?.label || h.to_status}</span>
                 <span style={{ color: '#505070', marginLeft: 'auto' }}>{timeAgo(h.created_at)}</span>
               </div>
             );
@@ -926,10 +926,10 @@ function WishCard({ wish, user, onRefresh, onDelete }: { wish: Wish; user: Retur
             width: '100%',
             textAlign: 'left',
             padding: '0.5rem 0.625rem',
-            background: 'rgba(10,10,26,0.3)',
+            background: 'var(--color-bg-surface)',
             border: '1px solid rgba(108,99,255,0.1)',
             borderRadius: '0.5rem',
-            color: '#9090B0',
+            color: 'var(--color-text-secondary)',
             fontSize: '0.75rem',
             cursor: 'pointer',
             display: 'flex',
@@ -945,7 +945,7 @@ function WishCard({ wish, user, onRefresh, onDelete }: { wish: Wish; user: Retur
           <div style={{
             marginTop: '0.5rem',
             padding: '0.75rem',
-            background: 'rgba(10,10,26,0.3)',
+            background: 'var(--color-bg-surface)',
             borderRadius: '0.5rem',
             border: '1px solid rgba(108,99,255,0.1)',
             display: 'flex',
@@ -953,9 +953,9 @@ function WishCard({ wish, user, onRefresh, onDelete }: { wish: Wish; user: Retur
             gap: '0.75rem',
           }}>
             {commentsLoading ? (
-              <div style={{ fontSize: '0.8rem', color: '#606080' }}>載入留言中...</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>載入留言中...</div>
             ) : comments.length === 0 ? (
-              <div style={{ fontSize: '0.8rem', color: '#606080' }}>尚無留言，來發表第一則吧！</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>尚無留言，來發表第一則吧！</div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
                 {comments.map((c) => (
@@ -963,10 +963,10 @@ function WishCard({ wish, user, onRefresh, onDelete }: { wish: Wish; user: Retur
                     <Avatar name={c.author_name} avatarUrl={c.author_avatar} size={24} />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                        <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#F0F0FF' }}>{c.author_name}</span>
+                        <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--color-text-primary)' }}>{c.author_name}</span>
                         <span style={{ fontSize: '0.65rem', color: '#505070' }}>{timeAgo(c.created_at)}</span>
                       </div>
-                      <div style={{ fontSize: '0.85rem', color: '#B8B0FF', lineHeight: 1.5, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--color-primary-light)', lineHeight: 1.5, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
                         {c.content}
                       </div>
                     </div>
@@ -998,7 +998,7 @@ function WishCard({ wish, user, onRefresh, onDelete }: { wish: Wish; user: Retur
                         padding: '0.4rem 1rem',
                         borderRadius: '0.5rem',
                         border: 'none',
-                        background: commentContent.trim() ? '#6C63FF' : '#2A2A4A',
+                        background: commentContent.trim() ? '#6C63FF' : 'var(--color-border)',
                         color: '#fff',
                         cursor: commentContent.trim() ? 'pointer' : 'not-allowed',
                         fontWeight: 600,
@@ -1074,7 +1074,7 @@ export default function WishBoard() {
           >
             <div style={{ fontSize: '1.5rem', marginBottom: 4 }}>{s.icon}</div>
             <div style={{ fontSize: '1.5rem', fontWeight: 700, color: s.color }}>{s.value}</div>
-            <div style={{ fontSize: '0.75rem', color: '#9090B0', marginTop: 2 }}>{s.label}</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', marginTop: 2 }}>{s.label}</div>
           </div>
         ))}
       </div>
@@ -1089,9 +1089,9 @@ export default function WishBoard() {
             style={{
               padding: '0.375rem 0.875rem',
               borderRadius: '9999px',
-              border: catFilter === f.value ? '1px solid #6C63FF' : '1px solid #2A2A4A',
+              border: catFilter === f.value ? '1px solid #6C63FF' : '1px solid var(--color-border)',
               background: catFilter === f.value ? 'rgba(108,99,255,0.2)' : 'transparent',
-              color: catFilter === f.value ? '#F0F0FF' : '#9090B0',
+              color: catFilter === f.value ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
               cursor: 'pointer',
               fontSize: '0.8rem',
               fontWeight: 500,
@@ -1134,11 +1134,11 @@ export default function WishBoard() {
 
       {/* Wish Grid */}
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '3rem 0', color: '#9090B0' }}>載入中...</div>
+        <div style={{ textAlign: 'center', padding: '3rem 0', color: 'var(--color-text-secondary)' }}>載入中...</div>
       ) : wishes.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '3rem 0' }}>
           <div style={{ fontSize: '3rem', marginBottom: '0.75rem' }}>🌟</div>
-          <p style={{ color: '#9090B0' }}>目前還沒有願望，成為第一個許願的人吧！</p>
+          <p style={{ color: 'var(--color-text-secondary)' }}>目前還沒有願望，成為第一個許願的人吧！</p>
         </div>
       ) : (
         <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))' }}>
@@ -1161,8 +1161,8 @@ export default function WishBoard() {
           }}
         >
           <div style={{ fontSize: '3rem', marginBottom: '0.75rem' }}>🌠</div>
-          <p style={{ color: '#F0F0FF', fontWeight: 600, fontSize: '1.1rem', marginBottom: '0.375rem' }}>有個想法需要幫忙嗎？</p>
-          <p style={{ color: '#9090B0', fontSize: '0.85rem', lineHeight: 1.6, marginBottom: '1rem' }}>
+          <p style={{ color: 'var(--color-text-primary)', fontWeight: 600, fontSize: '1.1rem', marginBottom: '0.375rem' }}>有個想法需要幫忙嗎？</p>
+          <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', lineHeight: 1.6, marginBottom: '1rem' }}>
             登入後即可許下願望，讓團隊夥伴一起來實現。<br />每個願望都是互相成長的機會。
           </p>
           <a

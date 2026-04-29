@@ -52,11 +52,11 @@ const ICON_OPTIONS = ['📘', '⚙️', '💻', '🎙️', '✍️', '🧠', '�
 
 const inputStyle: React.CSSProperties = {
   width: '100%',
-  background: 'rgba(10, 10, 26, 0.6)',
-  border: '1px solid #2A2A4A',
+  background: 'var(--color-bg-surface)',
+  border: '1px solid var(--color-border)',
   borderRadius: '0.5rem',
   padding: '0.625rem 0.875rem',
-  color: '#F0F0FF',
+  color: 'var(--color-text-primary)',
   fontSize: '0.9rem',
   outline: 'none',
   transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
@@ -67,7 +67,7 @@ const labelStyle: React.CSSProperties = {
   display: 'block',
   fontSize: '0.8rem',
   fontWeight: 600,
-  color: '#9090B0',
+  color: 'var(--color-text-secondary)',
   marginBottom: '0.375rem',
   letterSpacing: '0.02em',
 };
@@ -78,7 +78,7 @@ function handleFocusIn(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElemen
 }
 
 function handleFocusOut(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
-  e.target.style.borderColor = '#2A2A4A';
+  e.target.style.borderColor = 'var(--color-border)';
   e.target.style.boxShadow = 'none';
 }
 
@@ -155,13 +155,13 @@ function EntryModal({ entry, onClose, onSaved }: ModalProps) {
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: 'rgba(18,18,42,0.95)', backdropFilter: 'blur(16px)',
-          border: '1px solid #2A2A4A', borderRadius: '1rem',
+          background: 'var(--color-bg-card)', backdropFilter: 'blur(16px)',
+          border: '1px solid var(--color-border)', borderRadius: '1rem',
           padding: '1.75rem', width: '100%', maxWidth: '520px',
           maxHeight: '90vh', overflowY: 'auto',
         }}
       >
-        <h3 style={{ color: '#F0F0FF', fontWeight: 700, fontSize: '1.1rem', marginBottom: '1.25rem' }}>
+        <h3 style={{ color: 'var(--color-text-primary)', fontWeight: 700, fontSize: '1.1rem', marginBottom: '1.25rem' }}>
           {isEdit ? '編輯知識' : '投稿到知識庫'}
         </h3>
 
@@ -175,7 +175,7 @@ function EntryModal({ entry, onClose, onSaved }: ModalProps) {
                 onClick={() => setShowIconPicker(!showIconPicker)}
                 style={{
                   width: '3rem', height: '2.65rem', fontSize: '1.5rem',
-                  background: 'rgba(10,10,26,0.6)', border: '1px solid #2A2A4A',
+                  background: 'var(--color-bg-surface)', border: '1px solid var(--color-border)',
                   borderRadius: '0.5rem', cursor: 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}
@@ -186,7 +186,7 @@ function EntryModal({ entry, onClose, onSaved }: ModalProps) {
                 <div
                   style={{
                     position: 'absolute', top: '100%', left: 0, zIndex: 10,
-                    background: 'rgba(18,18,42,0.98)', border: '1px solid #2A2A4A',
+                    background: 'var(--color-bg-card)', border: '1px solid var(--color-border)',
                     borderRadius: '0.5rem', padding: '0.5rem',
                     display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '0.25rem',
                     marginTop: '0.25rem',
@@ -219,7 +219,7 @@ function EntryModal({ entry, onClose, onSaved }: ModalProps) {
                 onChange={(e) => setTitle(e.target.value)}
                 onFocus={handleFocusIn}
                 onBlur={handleFocusOut}
-                style={{ ...inputStyle, borderColor: errors.title ? '#E94560' : '#2A2A4A' }}
+                style={{ ...inputStyle, borderColor: errors.title ? '#E94560' : 'var(--color-border)' }}
               />
               {errors.title && <p style={{ color: '#E94560', fontSize: '0.75rem', marginTop: '0.2rem' }}>{errors.title}</p>}
             </div>
@@ -236,7 +236,7 @@ function EntryModal({ entry, onClose, onSaved }: ModalProps) {
               style={{ ...inputStyle, cursor: 'pointer' }}
             >
               {(Object.entries(CATEGORY_CONFIG) as [KnowledgeCategory, typeof CATEGORY_CONFIG[KnowledgeCategory]][]).map(([key, cfg]) => (
-                <option key={key} value={key} style={{ background: '#12122A' }}>{cfg.label}</option>
+                <option key={key} value={key} style={{ background: 'var(--color-bg-card)' }}>{cfg.label}</option>
               ))}
             </select>
           </div>
@@ -251,7 +251,7 @@ function EntryModal({ entry, onClose, onSaved }: ModalProps) {
               onChange={(e) => setContent(e.target.value)}
               onFocus={handleFocusIn}
               onBlur={handleFocusOut}
-              style={{ ...inputStyle, resize: 'vertical', borderColor: errors.content ? '#E94560' : '#2A2A4A' }}
+              style={{ ...inputStyle, resize: 'vertical', borderColor: errors.content ? '#E94560' : 'var(--color-border)' }}
             />
             {errors.content && <p style={{ color: '#E94560', fontSize: '0.75rem', marginTop: '0.2rem' }}>{errors.content}</p>}
           </div>
@@ -301,7 +301,7 @@ function EntryModal({ entry, onClose, onSaved }: ModalProps) {
             <button
               type="button"
               onClick={() => setUrls([...urls, { url: '', label: '' }])}
-              style={{ background: 'none', border: '1px dashed #2A2A4A', borderRadius: '0.375rem', color: '#9090B0', fontSize: '0.8rem', cursor: 'pointer', padding: '0.35rem 0.75rem', width: '100%' }}
+              style={{ background: 'none', border: '1px dashed var(--color-border)', borderRadius: '0.375rem', color: 'var(--color-text-secondary)', fontSize: '0.8rem', cursor: 'pointer', padding: '0.35rem 0.75rem', width: '100%' }}
             >
               + 新增連結
             </button>
@@ -316,12 +316,12 @@ function EntryModal({ entry, onClose, onSaved }: ModalProps) {
               type="button"
               onClick={onClose}
               style={{
-                padding: '0.6rem 1.25rem', background: 'transparent', border: '1px solid #2A2A4A',
-                borderRadius: '0.5rem', color: '#9090B0', fontSize: '0.875rem', cursor: 'pointer',
+                padding: '0.6rem 1.25rem', background: 'transparent', border: '1px solid var(--color-border)',
+                borderRadius: '0.5rem', color: 'var(--color-text-secondary)', fontSize: '0.875rem', cursor: 'pointer',
                 transition: 'border-color 0.2s',
               }}
               onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#6C63FF')}
-              onMouseLeave={(e) => (e.currentTarget.style.borderColor = '#2A2A4A')}
+              onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'var(--color-border)')}
             >
               取消
             </button>
@@ -331,7 +331,7 @@ function EntryModal({ entry, onClose, onSaved }: ModalProps) {
               style={{
                 padding: '0.6rem 1.5rem',
                 background: submitting ? 'rgba(108,99,255,0.4)' : 'linear-gradient(135deg, #6C63FF, #00D9FF)',
-                border: 'none', borderRadius: '0.5rem', color: '#F0F0FF',
+                border: 'none', borderRadius: '0.5rem', color: 'var(--color-text-primary)',
                 fontSize: '0.875rem', fontWeight: 600,
                 cursor: submitting ? 'not-allowed' : 'pointer',
               }}
@@ -385,21 +385,21 @@ function DeleteConfirm({
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: 'rgba(18,18,42,0.95)', border: '1px solid #E9456040',
+          background: 'var(--color-bg-card)', border: '1px solid #E9456040',
           borderRadius: '1rem', padding: '1.75rem', width: '100%', maxWidth: '380px', textAlign: 'center',
         }}
       >
         <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>&#128465;&#65039;</div>
-        <h3 style={{ color: '#F0F0FF', fontWeight: 700, fontSize: '1rem', marginBottom: '0.5rem' }}>
+        <h3 style={{ color: 'var(--color-text-primary)', fontWeight: 700, fontSize: '1rem', marginBottom: '0.5rem' }}>
           確定要刪除「{entry.title}」嗎？
         </h3>
-        <p style={{ color: '#9090B0', fontSize: '0.85rem', marginBottom: '1.5rem' }}>此操作無法復原</p>
+        <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>此操作無法復原</p>
         <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
           <button
             onClick={onCancel}
             style={{
-              padding: '0.6rem 1.25rem', background: 'transparent', border: '1px solid #2A2A4A',
-              borderRadius: '0.5rem', color: '#9090B0', fontSize: '0.875rem', cursor: 'pointer',
+              padding: '0.6rem 1.25rem', background: 'transparent', border: '1px solid var(--color-border)',
+              borderRadius: '0.5rem', color: 'var(--color-text-secondary)', fontSize: '0.875rem', cursor: 'pointer',
             }}
           >
             取消
@@ -410,7 +410,7 @@ function DeleteConfirm({
             style={{
               padding: '0.6rem 1.5rem',
               background: deleting ? 'rgba(233,69,96,0.4)' : '#E94560',
-              border: 'none', borderRadius: '0.5rem', color: '#F0F0FF',
+              border: 'none', borderRadius: '0.5rem', color: 'var(--color-text-primary)',
               fontSize: '0.875rem', fontWeight: 600,
               cursor: deleting ? 'not-allowed' : 'pointer',
             }}
@@ -464,8 +464,8 @@ function EntryCard({
   return (
     <article
       style={{
-        background: 'rgba(18,18,42,0.7)', backdropFilter: 'blur(12px)',
-        border: '1px solid #2A2A4A', borderLeft: `4px solid ${cfg.color}`,
+        background: 'var(--color-glass-bg)', backdropFilter: 'blur(12px)',
+        border: '1px solid var(--color-border)', borderLeft: `4px solid ${cfg.color}`,
         borderRadius: '0.875rem',
         padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem',
         transition: 'transform 0.2s, box-shadow 0.2s',
@@ -500,7 +500,7 @@ function EntryCard({
               title={entry.is_favorited ? '取消收藏' : '收藏'}
               style={{
                 background: entry.is_favorited ? 'rgba(255,107,129,0.15)' : 'transparent',
-                border: `1px solid ${entry.is_favorited ? 'rgba(255,107,129,0.3)' : '#2A2A4A'}`,
+                border: `1px solid ${entry.is_favorited ? 'rgba(255,107,129,0.3)' : 'var(--color-border)'}`,
                 borderRadius: '0.375rem', fontSize: '0.8rem',
                 padding: '0.2rem 0.45rem', cursor: favBusy ? 'not-allowed' : 'pointer',
                 transition: 'all 0.2s', opacity: favBusy ? 0.5 : 1,
@@ -543,7 +543,7 @@ function EntryCard({
       </div>
 
       {/* Title */}
-      <h3 style={{ color: '#F0F0FF', fontWeight: 700, fontSize: '1rem', lineHeight: 1.4, margin: 0 }}>
+      <h3 style={{ color: 'var(--color-text-primary)', fontWeight: 700, fontSize: '1rem', lineHeight: 1.4, margin: 0 }}>
         {entry.title}
       </h3>
 
@@ -555,7 +555,7 @@ function EntryCard({
           ref={contentRef}
           id={`knowledge-content-${entry.id}`}
           style={{
-            color: '#9090B0', fontSize: '0.85rem', lineHeight: 1.6, margin: 0,
+            color: 'var(--color-text-secondary)', fontSize: '0.85rem', lineHeight: 1.6, margin: 0,
             overflowWrap: 'anywhere', wordBreak: 'break-word',
             ...(expanded ? {} : { maxHeight: '4.8em', overflow: 'hidden' }),
           }}
@@ -591,7 +591,7 @@ function EntryCard({
           <div
             style={{
               position: 'absolute', bottom: 0, left: 0, right: 0, height: '1.6em',
-              background: 'linear-gradient(transparent, rgba(18,18,42,0.9))',
+              background: 'linear-gradient(transparent, var(--color-bg-card))',
               pointerEvents: 'none',
             }}
           />
@@ -669,7 +669,7 @@ function EntryCard({
       <div
         style={{
           display: 'flex', alignItems: 'center', gap: '0.5rem',
-          paddingTop: '0.5rem', borderTop: '1px solid #2A2A4A',
+          paddingTop: '0.5rem', borderTop: '1px solid var(--color-border)',
         }}
       >
         {entry.contributor_avatar ? (
@@ -681,14 +681,14 @@ function EntryCard({
         ) : (
           <span style={{ fontSize: '1rem' }}>&#129313;</span>
         )}
-        <span style={{ fontSize: '0.75rem', color: '#606080' }}>
-          由 <span style={{ color: '#9090B0' }}>{entry.contributor_name}</span> 貢獻
+        <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>
+          由 <span style={{ color: 'var(--color-text-secondary)' }}>{entry.contributor_name}</span> 貢獻
         </span>
-        <span style={{ color: '#2A2A4A' }}>&#183;</span>
-        <span style={{ fontSize: '0.75rem', color: '#606080' }}>{timeAgo(entry.created_at)}</span>
+        <span style={{ color: 'var(--color-border)' }}>&#183;</span>
+        <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>{timeAgo(entry.created_at)}</span>
         {entry.comment_count > 0 && (
           <>
-            <span style={{ color: '#2A2A4A' }}>&#183;</span>
+            <span style={{ color: 'var(--color-border)' }}>&#183;</span>
             <span style={{ fontSize: '0.75rem', color: '#6C63FF' }}>{entry.comment_count} 💬</span>
           </>
         )}
@@ -730,7 +730,7 @@ function CategorySection({
             background: cfg.color,
           }}
         />
-        <h2 style={{ color: '#F0F0FF', fontWeight: 700, fontSize: '1.1rem', margin: 0 }}>
+        <h2 style={{ color: 'var(--color-text-primary)', fontWeight: 700, fontSize: '1.1rem', margin: 0 }}>
           {cfg.label}
         </h2>
         <span
@@ -883,7 +883,7 @@ export default function KnowledgeBoard() {
           marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem',
         }}
       >
-        <div style={{ fontSize: '0.875rem', color: '#9090B0' }}>
+        <div style={{ fontSize: '0.875rem', color: 'var(--color-text-secondary)' }}>
           <span style={{ color: '#00F5A0', fontWeight: 600 }}>{entries.length}</span> 筆知識
         </div>
         {user && (
@@ -893,7 +893,7 @@ export default function KnowledgeBoard() {
               display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
               padding: '0.6rem 1.25rem',
               background: 'linear-gradient(135deg, #6C63FF, #00D9FF)',
-              border: 'none', borderRadius: '0.5rem', color: '#F0F0FF',
+              border: 'none', borderRadius: '0.5rem', color: 'var(--color-text-primary)',
               fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer',
               transition: 'opacity 0.2s, transform 0.2s',
             }}
@@ -908,8 +908,8 @@ export default function KnowledgeBoard() {
       {/* Category filter tabs */}
       <div
         style={{
-          background: 'rgba(18,18,42,0.7)', backdropFilter: 'blur(12px)',
-          border: '1px solid #2A2A4A', borderRadius: '0.75rem',
+          background: 'var(--color-glass-bg)', backdropFilter: 'blur(12px)',
+          border: '1px solid var(--color-border)', borderRadius: '0.75rem',
           padding: '0.5rem', marginBottom: '0.75rem',
           display: 'flex', gap: '0.25rem', flexWrap: 'wrap',
         }}
@@ -924,15 +924,15 @@ export default function KnowledgeBoard() {
               style={{
                 padding: '0.4rem 0.875rem', borderRadius: '0.5rem', border: 'none',
                 background: active ? (cfg ? `${cfg.color}20` : 'rgba(108,99,255,0.2)') : 'transparent',
-                color: active ? (cfg ? cfg.color : '#8B83FF') : '#9090B0',
+                color: active ? (cfg ? cfg.color : '#8B83FF') : 'var(--color-text-secondary)',
                 fontSize: '0.85rem', fontWeight: active ? 600 : 400,
                 cursor: 'pointer', transition: 'all 0.15s',
               }}
               onMouseEnter={(e) => {
-                if (!active) e.currentTarget.style.color = '#F0F0FF';
+                if (!active) e.currentTarget.style.color = 'var(--color-text-primary)';
               }}
               onMouseLeave={(e) => {
-                if (!active) e.currentTarget.style.color = '#9090B0';
+                if (!active) e.currentTarget.style.color = 'var(--color-text-secondary)';
               }}
             >
               {tab.label}
@@ -958,7 +958,7 @@ export default function KnowledgeBoard() {
         >
           <option value="">全部成員</option>
           {members.map((m) => (
-            <option key={m.id} value={m.id} style={{ background: '#12122A' }}>
+            <option key={m.id} value={m.id} style={{ background: 'var(--color-bg-card)' }}>
               {m.avatar} {m.name}
             </option>
           ))}
@@ -974,9 +974,9 @@ export default function KnowledgeBoard() {
                   style={{
                     padding: '0.35rem 0.75rem',
                     borderRadius: '999px',
-                    border: active ? `1px solid ${t.color}` : '1px solid #2A2A4A',
+                    border: active ? `1px solid ${t.color}` : '1px solid var(--color-border)',
                     background: active ? `${t.color}20` : 'transparent',
-                    color: active ? t.color : '#9090B0',
+                    color: active ? t.color : 'var(--color-text-secondary)',
                     cursor: 'pointer',
                     fontSize: '0.8rem',
                     fontWeight: 500,
@@ -1005,7 +1005,7 @@ export default function KnowledgeBoard() {
 
       {/* Content */}
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '4rem', color: '#9090B0' }}>載入中...</div>
+        <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--color-text-secondary)' }}>載入中...</div>
       ) : loadError ? (
         <div
           style={{
@@ -1031,8 +1031,8 @@ export default function KnowledgeBoard() {
         <div
           style={{
             textAlign: 'center', padding: '4rem 2rem',
-            background: 'rgba(18,18,42,0.5)', border: '1px solid #2A2A4A',
-            borderRadius: '1rem', color: '#606080',
+            background: 'var(--color-glass-bg)', border: '1px solid var(--color-border)',
+            borderRadius: '1rem', color: 'var(--color-text-muted)',
           }}
         >
           <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>&#128218;</div>
@@ -1072,10 +1072,10 @@ export default function KnowledgeBoard() {
           }}
         >
           <div style={{ fontSize: '1.75rem', marginBottom: '0.75rem' }}>&#10024;</div>
-          <h3 style={{ color: '#F0F0FF', fontWeight: 700, fontSize: '1.1rem', marginBottom: '0.5rem' }}>
+          <h3 style={{ color: 'var(--color-text-primary)', fontWeight: 700, fontSize: '1.1rem', marginBottom: '0.5rem' }}>
             有值得分享的知識嗎？
           </h3>
-          <p style={{ color: '#9090B0', fontSize: '0.9rem', marginBottom: '1rem' }}>
+          <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem', marginBottom: '1rem' }}>
             登入後即可投稿到知識庫，讓整個團隊都能受益！
           </p>
           <a
@@ -1084,7 +1084,7 @@ export default function KnowledgeBoard() {
               display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
               padding: '0.75rem 1.5rem', borderRadius: '0.75rem',
               background: 'linear-gradient(135deg, #6C63FF, #00D9FF)',
-              color: '#F0F0FF', textDecoration: 'none',
+              color: 'var(--color-text-primary)', textDecoration: 'none',
               fontSize: '0.9rem', fontWeight: 600,
               transition: 'opacity 0.2s',
             }}

@@ -9,6 +9,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     version: '',
     date: '2026-04-29',
     changes: [
+      'fix(#15): 淺色模式卡片暗色修正 — KnowledgeBoard/ToolCardBoard/MemberVoiceBoard/WishBoard/IssueBoard 改用 CSS 變數',
       'fix(#51): 知識庫留言區 soft-delete placeholder — 與討論區行為一致',
       'fix(#149): AI 工具箱 comment_count 預載 + 留言區初始數量同步',
     ],
