@@ -33,6 +33,7 @@ interface Tool {
   created_at: string;
   updated_at: string;
   tags: Tag[];
+  comment_count: number;
   is_favorited?: boolean;
   github_url?: string;
 }
@@ -566,6 +567,7 @@ function ToolCard({ tool, canEdit, loggedIn, user, onEdit, onDelete, onToggleFav
         resourceId={String(tool.id)}
         user={user}
         color={cfg.color}
+        initialCount={tool.comment_count}
       />
 
       {/* Footer */}
@@ -584,6 +586,12 @@ function ToolCard({ tool, canEdit, loggedIn, user, onEdit, onDelete, onToggleFav
         </span>
         <span style={{ color: '#2A2A4A' }}>·</span>
         <span style={{ fontSize: '0.75rem', color: '#606080' }}>{timeAgo(tool.created_at)}</span>
+        {tool.comment_count > 0 && (
+          <>
+            <span style={{ color: '#2A2A4A' }}>·</span>
+            <span style={{ fontSize: '0.75rem', color: '#6C63FF' }}>{tool.comment_count} 💬</span>
+          </>
+        )}
       </div>
     </article>
   );

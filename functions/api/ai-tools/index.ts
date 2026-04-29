@@ -81,6 +81,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       contributor_name: row.contributor_name || row.author,
       contributor_avatar: row.contributor_avatar,
       tags: [] as { id: string; name: string; color: string }[],
+      comment_count: 0 as number,
     }));
 
     // Fetch tags for all returned tools
@@ -103,6 +104,22 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
           tool.tags.push({ id: tr.tag_id as string, name: tr.name as string, color: tr.color as string });
         }
       }
+    }
+
+    // Fetch comment counts for all tools
+    if (tools.length > 0) {
+      const toolIds = tools.map((t) => String(t.id));
+      const placeholders = toolIds.map(() => '?').join(',');
+      try {
+        const countResult = await db.execute({
+          sql: `SELECT resource_id, COUNT(*) as cnt FROM resource_comments WHERE resource_type = 'ai-tool' AND resource_id IN (${placeholders}) GROUP BY resource_id`,
+          args: toolIds,
+        });
+        for (const cr of countResult.rows) {
+          const tool = tools.find((t) => String(t.id) === String(cr.resource_id));
+          if (tool) tool.comment_count = Number(cr.cnt);
+        }
+      } catch { /* resource_comments table may not exist yet */ }
     }
 
     // Attach is_favorited for logged-in users
