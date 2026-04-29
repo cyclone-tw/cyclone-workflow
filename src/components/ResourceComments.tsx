@@ -24,6 +24,7 @@ interface ResourceCommentsProps {
   resourceId: string;
   user: User | null;
   color?: string;
+  initialCount?: number;
 }
 
 const inputStyle: React.CSSProperties = {
@@ -80,12 +81,13 @@ function Avatar({ name, avatarUrl, size = 24 }: { name: string; avatarUrl: strin
   );
 }
 
-export default function ResourceComments({ resourceType, resourceId, user, color = '#6C63FF' }: ResourceCommentsProps) {
+export default function ResourceComments({ resourceType, resourceId, user, color = '#6C63FF', initialCount }: ResourceCommentsProps) {
   const [open, setOpen] = useState(false);
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(false);
   const [content, setContent] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
 
   const isAdmin = user ? ['captain', 'tech', 'admin'].includes(user.effectiveRole) : false;
 
@@ -97,6 +99,7 @@ export default function ResourceComments({ resourceType, resourceId, user, color
       const data = await res.json();
       if (data.ok) setComments(data.comments || []);
     } catch { /* ignore */ }
+    setHasLoaded(true);
     setLoading(false);
   }, [comments.length, resourceType, resourceId]);
 
@@ -155,7 +158,7 @@ export default function ResourceComments({ resourceType, resourceId, user, color
           justifyContent: 'space-between',
         }}
       >
-        <span>💬 留言 ({comments.length})</span>
+        <span>💬 留言 ({hasLoaded ? comments.length : (initialCount ?? 0)})</span>
         <span style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>▼</span>
       </button>
 
