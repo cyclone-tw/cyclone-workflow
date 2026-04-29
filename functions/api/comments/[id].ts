@@ -46,9 +46,10 @@ export const onRequestDelete: PagesFunction<Env> = async (context) => {
       args: [id],
     });
 
+    // Soft delete: set deleted_at and deleted_by instead of actually deleting
     await db.execute({
-      sql: 'DELETE FROM resource_comments WHERE id = ?',
-      args: [id],
+      sql: `UPDATE resource_comments SET deleted_at = datetime('now'), deleted_by = ? WHERE id = ?`,
+      args: [user.id, id],
     });
 
     return new Response(JSON.stringify({ ok: true }), {

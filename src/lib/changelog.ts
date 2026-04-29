@@ -7,6 +7,13 @@ export interface ChangelogEntry {
 export const CHANGELOG: ChangelogEntry[] = [
   {
     version: '',
+    date: '2026-04-29',
+    changes: [
+      'fix(#51): 知識庫留言區 soft-delete placeholder — 與討論區行為一致',
+    ],
+  },
+  {
+    version: '',
     date: '2026-04-26',
     changes: [
       'fix(#148): 留言區顯示自訂暱稱 — 全站 comment API 改用 COALESCE(display_name, name)',
