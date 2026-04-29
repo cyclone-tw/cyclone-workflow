@@ -51,12 +51,13 @@ function handleFocusOut(e: React.FocusEvent<HTMLTextAreaElement>) {
   e.target.style.boxShadow = 'none';
 }
 
-function Avatar({ name, avatarUrl, size = 24 }: { name: string; avatarUrl: string | null; size?: number }) {
+function Avatar({ name, avatarUrl, size = 24 }: { name: string | null; avatarUrl: string | null; size?: number }) {
+  const safeName = name || '?';
   if (avatarUrl) {
     return (
       <img
         src={avatarUrl}
-        alt={name}
+        alt={safeName}
         style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover' }}
       />
     );
@@ -77,7 +78,7 @@ function Avatar({ name, avatarUrl, size = 24 }: { name: string; avatarUrl: strin
         flexShrink: 0,
       }}
     >
-      {name.charAt(0).toUpperCase()}
+      {safeName.charAt(0).toUpperCase()}
     </span>
   );
 }
@@ -191,7 +192,7 @@ export default function ResourceComments({ resourceType, resourceId, user, color
                   <Avatar name={c.author_name} avatarUrl={c.author_avatar} size={24} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                      <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#F0F0FF' }}>{c.author_name}</span>
+                      <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#F0F0FF' }}>{c.author_name || '未知使用者'}</span>
                       <span style={{ fontSize: '0.65rem', color: '#505070' }}>{timeAgo(c.created_at)}</span>
                       {(c.author_id === user?.id || isAdmin) && (
                         <button
