@@ -7,6 +7,13 @@ export interface ChangelogEntry {
 export const CHANGELOG: ChangelogEntry[] = [
   {
     version: '',
+    date: '2026-05-01',
+    changes: [
+      'feat(#23): GA 趨勢圖表 — 30 日活躍用戶與瀏覽量線圖（Recharts）+ 後端 dailyTrend API',
+    ],
+  },
+  {
+    version: '',
     date: '2026-04-29',
     changes: [
       'fix(#15): 淺色模式卡片暗色修正 — KnowledgeBoard/ToolCardBoard/MemberVoiceBoard/WishBoard/IssueBoard 改用 CSS 變數',

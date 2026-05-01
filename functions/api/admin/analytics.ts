@@ -189,9 +189,15 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         metrics: [{ name: 'sessions' }, { name: 'activeUsers' }],
         orderBys: [{ metric: { metricName: 'sessions' }, desc: true }],
       }),
+      ga4Request(propertyId, accessToken, '/reports:runReport', {
+        dateRanges: [{ startDate: '30daysAgo', endDate: 'today' }],
+        dimensions: [{ name: 'date' }],
+        metrics: [{ name: 'activeUsers' }, { name: 'screenPageViews' }],
+        orderBys: [{ dimension: { dimensionName: 'date' }, desc: false }],
+      }),
     ]);
 
-    const [activeUsers, sessions, topPages, trafficSources] = results;
+    const [activeUsers, sessions, topPages, trafficSources, dailyTrendReport] = results;
 
     const analytics = {
       activeUsers: {
@@ -210,6 +216,11 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         source: r.dimensionValues?.[0]?.value ?? 'Unknown',
         sessions: r.metricValues?.[0]?.value ?? '0',
         users: r.metricValues?.[1]?.value ?? '0',
+      })),
+      dailyTrend: (dailyTrendReport.status === 'fulfilled' && dailyTrendReport.value.rows ? dailyTrendReport.value.rows : []).map((r) => ({
+        date: r.dimensionValues?.[0]?.value ?? '',
+        activeUsers: parseInt(r.metricValues?.[0]?.value ?? '0', 10),
+        pageviews: parseInt(r.metricValues?.[1]?.value ?? '0', 10),
       })),
       error: activeUsers.status === 'rejected'
         ? 'GA4 API 無法連線，請確認 Service Account 已啟用 Analytics Data API'

@@ -16,6 +16,7 @@ export interface Analytics {
   pageviews30d: string;
   topPages: Array<{ path: string; views: string; users: string }>;
   trafficSources: Array<{ source: string; sessions: string; users: string }>;
+  dailyTrend: Array<{ date: string; activeUsers: number; pageviews: number }>;
   error: string | null;
 }
 

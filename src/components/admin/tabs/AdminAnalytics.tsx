@@ -1,4 +1,5 @@
 import type { Analytics } from '../types';
+import AdminTrendChart from './AdminTrendChart';
 
 interface Props {
   analytics: Analytics | null;
@@ -67,6 +68,7 @@ export default function AdminAnalytics({ analytics }: Props) {
       <div className="rounded-xl px-4 py-2 text-xs" style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)', color: 'var(--color-text-muted)' }}>
         30 日總瀏覽量：{parseInt(analytics.pageviews30d).toLocaleString()}
       </div>
+      <AdminTrendChart dailyTrend={analytics.dailyTrend} />
     </section>
   );
 }
