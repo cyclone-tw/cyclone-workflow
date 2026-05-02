@@ -169,27 +169,27 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     const propertyId = getGa4PropertyId(context.env);
 
     const results = await Promise.allSettled([
-      ga4Request(propertyId, accessToken, '/reports:runReport', {
+      ga4Request(propertyId, accessToken, ':runReport', {
         dateRanges: [{ startDate: '7daysAgo', endDate: 'today' }],
         metrics: [{ name: 'activeUsers' }, { name: 'sessions' }, { name: 'averageSessionDuration' }, { name: 'bounceRate' }],
       }),
-      ga4Request(propertyId, accessToken, '/reports:runReport', {
+      ga4Request(propertyId, accessToken, ':runReport', {
         dateRanges: [{ startDate: '30daysAgo', endDate: 'today' }],
         metrics: [{ name: 'screenPageViews' }],
       }),
-      ga4Request(propertyId, accessToken, '/reports:runReport', {
+      ga4Request(propertyId, accessToken, ':runReport', {
         dateRanges: [{ startDate: '7daysAgo', endDate: 'today' }],
         dimensions: [{ name: 'pagePath' }],
         metrics: [{ name: 'screenPageViews' }, { name: 'activeUsers' }],
         limit: 10,
       }),
-      ga4Request(propertyId, accessToken, '/reports:runReport', {
+      ga4Request(propertyId, accessToken, ':runReport', {
         dateRanges: [{ startDate: '7daysAgo', endDate: 'today' }],
         dimensions: [{ name: 'sessionDefaultChannelGrouping' }],
         metrics: [{ name: 'sessions' }, { name: 'activeUsers' }],
         orderBys: [{ metric: { metricName: 'sessions' }, desc: true }],
       }),
-      ga4Request(propertyId, accessToken, '/reports:runReport', {
+      ga4Request(propertyId, accessToken, ':runReport', {
         dateRanges: [{ startDate: '30daysAgo', endDate: 'today' }],
         dimensions: [{ name: 'date' }],
         metrics: [{ name: 'activeUsers' }, { name: 'screenPageViews' }],
