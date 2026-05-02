@@ -10,6 +10,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     date: '2026-05-01',
     changes: [
       'feat(#23): GA 趨勢圖表 — 30 日活躍用戶與瀏覽量線圖（Recharts）+ 後端 dailyTrend API',
+      'fix(#23): GA4 Data API URL 路徑修正 — :runReport 取代 /reports:runReport（修正 HTML 404）',
     ],
   },
   {
