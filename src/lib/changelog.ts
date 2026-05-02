@@ -7,6 +7,13 @@ export interface ChangelogEntry {
 export const CHANGELOG: ChangelogEntry[] = [
   {
     version: '',
+    date: '2026-05-02',
+    changes: [
+      'fix(#163): /admin GA 面板 UI/UX — 數字格式化、跳出率修正、流量來源中文化、路徑可點擊',
+    ],
+  },
+  {
+    version: '',
     date: '2026-05-01',
     changes: [
       'feat(#23): GA 趨勢圖表 — 30 日活躍用戶與瀏覽量線圖（Recharts）+ 後端 dailyTrend API',
