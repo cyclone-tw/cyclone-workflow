@@ -13,6 +13,9 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     // Cloudflare Workers Cache API — key by a stable URL, not the incoming
     // request URL (so all callers share the same cached response).
     const cache = (caches as unknown as { default: Cache }).default;
+    if (!cache || typeof cache.match !== 'function') {
+      throw new Error('Cloudflare Workers caches.default unavailable; runtime / type contract changed.');
+    }
     const cacheKey = new Request('https://cyclone.tw/_cache/github-issues', {
       method: 'GET',
     });
