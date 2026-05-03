@@ -1,7 +1,10 @@
 import { test, expect } from './lambdatest-setup';
 
-// Feature detection — skip auth-gated tests if not yet deployed
+// Feature detection — auth-gated tests skip in dev (default) but FAIL when
+// E2E_STRICT=1 is set in CI. Silent skip masked the gap between
+// "feature works" and "feature absent"; strict mode surfaces it.
 let authDeployed = false;
+const strictMode = process.env.E2E_STRICT === '1';
 
 test.beforeAll(async ({ request }) => {
   // If POST without session returns 401, the auth gate is live
@@ -9,6 +12,11 @@ test.beforeAll(async ({ request }) => {
     data: { content: 'probe' },
   });
   authDeployed = res.status() === 401;
+  if (!authDeployed) {
+    const reason = `[messages-auth] auth gate not deployed (probe got ${res.status()}, expected 401)`;
+    if (strictMode) throw new Error(reason);
+    console.warn(`${reason} — auth-gated tests will skip. Set E2E_STRICT=1 in CI to fail.`);
+  }
 });
 
 test.describe('Messages Auth — E2E', () => {
