@@ -17,7 +17,10 @@ function makeJsonResponse(body: unknown, ok = true): Response {
 }
 
 describe('AdminPanel — auth gate smoke', () => {
-  afterEach(() => cleanup());
+  afterEach(() => {
+    cleanup();
+    vi.unstubAllGlobals();
+  });
 
   beforeEach(() => {
     mockUseAuth.mockReset();
