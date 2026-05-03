@@ -1,11 +1,12 @@
 // @vitest-environment jsdom
+import '@testing-library/jest-dom/vitest';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, cleanup } from '@testing-library/react';
-import AdminPanel from '@/components/admin/AdminPanel';
+import AdminPanel from '../../src/components/admin/AdminPanel';
 
 // useAuth is the auth gate. Mock it per-test to drive scenarios.
 const mockUseAuth = vi.fn();
-vi.mock('@/components/auth/useAuth', () => ({
+vi.mock('../../src/components/auth/useAuth', () => ({
   useAuth: () => mockUseAuth(),
 }));
 
