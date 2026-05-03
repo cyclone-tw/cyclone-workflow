@@ -12,16 +12,18 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   try {
     // Cloudflare Workers Cache API — key by a stable URL, not the incoming
     // request URL (so all callers share the same cached response).
-    const cache = (caches as unknown as { default: Cache }).default;
-    if (!cache || typeof cache.match !== 'function') {
-      throw new Error('Cloudflare Workers caches.default unavailable; runtime / type contract changed.');
-    }
+    // Skip cache (don't throw) when the API is unavailable — happens in
+    // wrangler local dev and certain test environments. Fetching GitHub
+    // direct each time is acceptable degradation.
+    const cache = (caches as unknown as { default?: Cache }).default;
     const cacheKey = new Request('https://cyclone.tw/_cache/github-issues', {
       method: 'GET',
     });
 
-    const cached = await cache.match(cacheKey);
-    if (cached) return cached;
+    if (cache && typeof cache.match === 'function') {
+      const cached = await cache.match(cacheKey);
+      if (cached) return cached;
+    }
 
     const headers: Record<string, string> = {
       Accept: 'application/vnd.github.v3+json',
@@ -87,7 +89,10 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     });
 
     // Cache a clone for the edge (cache.put consumes the body).
-    context.waitUntil(cache.put(cacheKey, response.clone()));
+    // Skip when cache is unavailable (matches the cache-read guard above).
+    if (cache && typeof cache.put === 'function') {
+      context.waitUntil(cache.put(cacheKey, response.clone()));
+    }
 
     return response;
   } catch (err: unknown) {
