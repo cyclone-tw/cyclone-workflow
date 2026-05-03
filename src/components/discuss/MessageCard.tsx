@@ -97,7 +97,16 @@ export default function MessageCard({
       setIsOverflowing(contentRef.current.scrollHeight > contentRef.current.clientHeight);
     }
   }, []);
-  useEffect(() => { checkOverflow(); }, [msg.content, checkOverflow]);
+  // Re-measure on async content changes (lazy images, code-block highlight,
+  // markdown re-render) and on viewport resize. Initial pass also runs.
+  useEffect(() => {
+    checkOverflow();
+    const el = contentRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(() => checkOverflow());
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [msg.content, checkOverflow]);
 
   const canModify = currentUser && (
     msg.author_id === currentUser.id ||
