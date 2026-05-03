@@ -7,6 +7,13 @@ export interface ChangelogEntry {
 export const CHANGELOG: ChangelogEntry[] = [
   {
     version: '',
+    date: '2026-05-04',
+    changes: [
+      'feat(#165): 討論區留言內容過長時加入展開 / 收納效果 — Mirror 既有 AI 工具箱 / 知識庫卡片 pattern',
+    ],
+  },
+  {
+    version: '',
     date: '2026-05-01',
     changes: [
       'feat(#23): GA 趨勢圖表 — 30 日活躍用戶與瀏覽量線圖（Recharts）+ 後端 dailyTrend API',
