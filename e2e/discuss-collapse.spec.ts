@@ -86,6 +86,7 @@ test.describe('Discussion collapse — #165', () => {
     const expandBtn = page.getByRole('button', { name: '展開更多 ↓' }).first();
     await expect(expandBtn).toBeVisible({ timeout: 5000 });
 
+    await expandBtn.scrollIntoViewIfNeeded();
     await page.screenshot({
       path: 'playwright-report/discuss-collapse-collapsed.png',
       fullPage: false,
@@ -101,6 +102,7 @@ test.describe('Discussion collapse — #165', () => {
 
     const collapseBtn = page.getByRole('button', { name: '收納 ↑' }).first();
     await expect(collapseBtn).toBeVisible({ timeout: 3000 });
+    await collapseBtn.scrollIntoViewIfNeeded();
 
     await page.screenshot({
       path: 'playwright-report/discuss-collapse-expanded.png',
@@ -115,6 +117,7 @@ test.describe('Discussion collapse — #165', () => {
     // Bob's "一行短文。" message must NOT have an expand button next to it.
     const bobCard = page.locator('text=測試員 Bob').locator('..');
     await expect(bobCard.getByRole('button', { name: /展開更多/ })).toHaveCount(0);
+    await bobCard.scrollIntoViewIfNeeded();
 
     await page.screenshot({
       path: 'playwright-report/discuss-collapse-short.png',
