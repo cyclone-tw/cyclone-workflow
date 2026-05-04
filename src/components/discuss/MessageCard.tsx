@@ -91,6 +91,12 @@ export default function MessageCard({
 
   const [expanded, setExpanded] = useState(false);
   const [isOverflowing, setIsOverflowing] = useState(false);
+
+  // Reset expanded state when content changes (e.g., after edit saves new content)
+  useEffect(() => {
+    setExpanded(false);
+  }, [msg.content]);
+
   const contentRef = useRef<HTMLDivElement>(null);
   const checkOverflow = useCallback(() => {
     if (contentRef.current) {
