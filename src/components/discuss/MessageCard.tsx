@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkBreaks from 'remark-breaks';
@@ -88,6 +88,31 @@ export default function MessageCard({
   const [reportReason, setReportReason] = useState('');
   const [reportSubmitting, setReportSubmitting] = useState(false);
   const [showReplyForm, setShowReplyForm] = useState(false);
+
+  const [expanded, setExpanded] = useState(false);
+  const [isOverflowing, setIsOverflowing] = useState(false);
+
+  // Reset expanded state when content changes (e.g., after edit saves new content)
+  useEffect(() => {
+    setExpanded(false);
+  }, [msg.content]);
+
+  const contentRef = useRef<HTMLDivElement>(null);
+  const checkOverflow = useCallback(() => {
+    if (contentRef.current) {
+      setIsOverflowing(contentRef.current.scrollHeight > contentRef.current.clientHeight);
+    }
+  }, []);
+  // Re-measure on async content changes (lazy images, code-block highlight,
+  // markdown re-render) and on viewport resize. Initial pass also runs.
+  useEffect(() => {
+    checkOverflow();
+    const el = contentRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(() => checkOverflow());
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [msg.content, checkOverflow]);
 
   const canModify = currentUser && (
     msg.author_id === currentUser.id ||
@@ -237,35 +262,70 @@ export default function MessageCard({
           </div>
         ) : (
           <>
-            <div className="text-sm leading-relaxed break-words prose prose-sm max-w-none" style={{ color: 'var(--color-text-secondary)', overflowWrap: 'anywhere' }}>
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm, remarkBreaks]}
-                rehypePlugins={[rehypeRaw]}
-                components={{
-                  code({ className, children, ...props }) {
-                    const match = /language-(\w+)/.exec(className || '');
-                    const isInline = !match && !String(children).includes('\n');
-                    if (isInline) {
-                      return <code className="px-1.5 py-0.5 rounded text-xs font-mono" style={{ background: 'rgba(255,255,255,0.08)', color: 'var(--color-neon-green)' }} {...props}>{children}</code>;
-                    }
-                    return <code className="block p-3 rounded-lg text-xs font-mono overflow-x-auto" style={{ background: 'rgba(255,255,255,0.06)', color: 'var(--color-neon-blue)' }} {...props}>{children}</code>;
-                  },
-                  a({ href, children, ...props }) {
-                    if (!href) return <span {...props}>{children}</span>;
-                    const safe = sanitizeUrl(href);
-                    if (!safe) return <span {...props}>{children}</span>;
-                    return <a href={safe} target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80" style={{ color: 'var(--color-neon-blue)' }}>{children}</a>;
-                  },
-                  img({ src, alt, ...props }) {
-                    const safeSrc = sanitizeImgSrc(src);
-                    if (!safeSrc) return null;
-                    return <img src={safeSrc} alt={alt || ''} loading="lazy" style={{ maxWidth: '100%', height: 'auto', borderRadius: '0.5rem' }} />;
-                  },
+            <div style={{ position: 'relative' }}>
+              <div
+                ref={contentRef}
+                id={`msg-content-${msg.id}`}
+                className="text-sm leading-relaxed break-words prose prose-sm max-w-none"
+                style={{
+                  color: 'var(--color-text-secondary)',
+                  overflowWrap: 'anywhere',
+                  ...(expanded ? {} : { maxHeight: '4.8em', overflow: 'hidden' }),
                 }}
               >
-                {sanitizeMarkdown(msg.content)}
-              </ReactMarkdown>
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm, remarkBreaks]}
+                  rehypePlugins={[rehypeRaw]}
+                  components={{
+                    code({ className, children, ...props }) {
+                      const match = /language-(\w+)/.exec(className || '');
+                      const isInline = !match && !String(children).includes('\n');
+                      if (isInline) {
+                        return <code className="px-1.5 py-0.5 rounded text-xs font-mono" style={{ background: 'rgba(255,255,255,0.08)', color: 'var(--color-neon-green)' }} {...props}>{children}</code>;
+                      }
+                      return <code className="block p-3 rounded-lg text-xs font-mono overflow-x-auto" style={{ background: 'rgba(255,255,255,0.06)', color: 'var(--color-neon-blue)' }} {...props}>{children}</code>;
+                    },
+                    a({ href, children, ...props }) {
+                      if (!href) return <span {...props}>{children}</span>;
+                      const safe = sanitizeUrl(href);
+                      if (!safe) return <span {...props}>{children}</span>;
+                      return <a href={safe} target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80" style={{ color: 'var(--color-neon-blue)' }}>{children}</a>;
+                    },
+                    img({ src, alt }) {
+                      const safeSrc = sanitizeImgSrc(src);
+                      if (!safeSrc) return null;
+                      return <img src={safeSrc} alt={alt || ''} loading="lazy" style={{ maxWidth: '100%', height: 'auto', borderRadius: '0.5rem' }} />;
+                    },
+                  }}
+                >
+                  {sanitizeMarkdown(msg.content)}
+                </ReactMarkdown>
+              </div>
+              {(!expanded && isOverflowing) && (
+                <div
+                  aria-hidden
+                  style={{
+                    position: 'absolute', bottom: 0, left: 0, right: 0, height: '1.6em',
+                    background: 'linear-gradient(transparent, var(--color-bg-card))',
+                    pointerEvents: 'none',
+                  }}
+                />
+              )}
             </div>
+            {(isOverflowing || expanded) && (
+              <button
+                onClick={() => setExpanded(!expanded)}
+                aria-expanded={expanded}
+                aria-controls={`msg-content-${msg.id}`}
+                className="self-start"
+                style={{
+                  fontSize: '0.75rem', color, background: 'transparent',
+                  border: 'none', cursor: 'pointer', padding: '0.2rem 0',
+                }}
+              >
+                {expanded ? '收納 ↑' : '展開更多 ↓'}
+              </button>
+            )}
             {/* Action buttons */}
             <div className="flex items-center justify-end mt-2 gap-2 flex-wrap">
               {canPin && (

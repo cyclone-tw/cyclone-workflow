@@ -1,0 +1,37 @@
+project: cyclone-26
+root: /Users/eugene/cyclone-26
+roles:
+  - super
+  - pm
+  - eng1
+  - qa1
+  - shipper
+
+role_overrides:
+  qa1:
+     command:
+      - /usr/bin/env
+      - zsh
+      - -lc
+      - 'source ~/.zshrc; cc-zai'
+  pm:
+     command:
+      - /usr/bin/env
+      - zsh
+      - -lc
+      - 'source ~/.zshrc; kimi-cc'
+  eng1:
+     command:
+      - /usr/bin/env
+      - zsh
+      - -lc
+      - 'source ~/.zshrc; mini-cc'
+  super:
+    command:
+      - /usr/bin/env
+      - zsh
+      - -lc
+      - 'source ~/.zshrc; claude --dangerously-skip-permissions'
+  shipper:
+    command: ["opencode", "--continue"]
+    agent_type: opencode
