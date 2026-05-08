@@ -4,8 +4,8 @@ test.describe('Homepage', () => {
   test('loads and shows title', async ({ page }) => {
     await page.goto('/');
 
-    // Title contains "Cyclone"
-    await expect(page).toHaveTitle(/Cyclone/);
+    // Title format: "<page> | AI 工作流共學團" — match the product name suffix.
+    await expect(page).toHaveTitle(/AI 工作流共學團/);
 
     // Nav bar is visible
     await expect(page.locator('nav')).toBeVisible();
@@ -14,10 +14,14 @@ test.describe('Homepage', () => {
   test('navigation links work', async ({ page }) => {
     await page.goto('/');
 
-    // Check key nav links exist
-    const nav = page.locator('nav');
-    await expect(nav.getByText('討論區')).toBeVisible();
-    await expect(nav.getByText('團隊')).toBeVisible();
+    // Desktop nav has 3 top-level items (首頁 / 說明 / 儀表板) plus a 「更多」 dropdown
+    // for the rest. Mobile/tablet collapses everything into the hamburger menu.
+    // Assert the 3 visible top-level links exist on a desktop viewport.
+    await page.setViewportSize({ width: 1280, height: 720 });
+    const desktopNav = page.getByTestId('desktop-nav');
+    await expect(desktopNav.getByRole('link', { name: '首頁' })).toBeVisible();
+    await expect(desktopNav.getByRole('link', { name: '說明' })).toBeVisible();
+    await expect(desktopNav.getByRole('link', { name: '儀表板' })).toBeVisible();
   });
 
   test('theme toggle exists', async ({ page }) => {
