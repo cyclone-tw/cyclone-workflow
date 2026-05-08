@@ -58,7 +58,12 @@ test.describe('Issue #27 — regression gate', () => {
             createdAt: sqliteNaiveUtc(30_000),
             updatedAt: sqliteNaiveUtc(30_000),
             wisher: { id: 'u1', name: '測試者', avatarUrl: null },
-            claimer: null,
+            // WishBoard.tsx now expects `claimers: WishClaimer[]` + `history`
+            // (singular `claimer` was removed in a refactor). Without these
+            // shape-correct fields the card would throw at render time and
+            // the title would never appear.
+            claimers: [],
+            history: [],
           },
         ],
       });
