@@ -32,13 +32,14 @@ describe('AdminPanel — auth gate smoke', () => {
     };
     vi.stubGlobal(
       'fetch',
-      vi.fn().mockImplementation((url: string) => {
-        if (url.includes('/stats')) return Promise.resolve(makeJsonResponse({ stats: emptyStats }));
-        if (url.includes('/users')) return Promise.resolve(makeJsonResponse({ users: [] }));
-        if (url.includes('/analytics')) return Promise.resolve(makeJsonResponse({ analytics: null }));
-        if (url.includes('/announcements')) return Promise.resolve(makeJsonResponse({ announcements: [] }));
-        if (url.includes('/messages')) return Promise.resolve(makeJsonResponse({ messages: [], total: 0 }));
-        if (url.includes('/reports')) return Promise.resolve(makeJsonResponse({ reports: [], total: 0 }));
+      vi.fn().mockImplementation((url: unknown) => {
+        const u = typeof url === 'string' ? url : url instanceof Request ? url.url : String(url);
+        if (u.includes('/stats')) return Promise.resolve(makeJsonResponse({ stats: emptyStats }));
+        if (u.includes('/users')) return Promise.resolve(makeJsonResponse({ users: [] }));
+        if (u.includes('/analytics')) return Promise.resolve(makeJsonResponse({ analytics: null }));
+        if (u.includes('/announcements')) return Promise.resolve(makeJsonResponse({ announcements: [] }));
+        if (u.includes('/messages')) return Promise.resolve(makeJsonResponse({ messages: [], total: 0 }));
+        if (u.includes('/reports')) return Promise.resolve(makeJsonResponse({ reports: [], total: 0 }));
         return Promise.resolve(makeJsonResponse({}));
       }),
     );
