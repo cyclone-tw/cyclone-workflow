@@ -171,9 +171,13 @@ test.describe('Issue #27 — regression gate', () => {
     });
 
     await page.goto('/issue');
+    // "載入中…" is in SSG pre-render (loading=true initial state).
+    // Waiting for it to disappear confirms React hydrated AND fetchIssues()
+    // completed — only then are onClick handlers reliably attached.
+    await expect(page.getByText('載入中…')).toBeHidden({ timeout: 15_000 });
     await page.getByRole('button', { name: 'GitHub Issues' }).click();
 
-    await expect(page.getByText(/GitHub API 限流|無法載入 GitHub Issues/)).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/GitHub API 限流|無法載入 GitHub Issues/)).toBeVisible({ timeout: 15_000 });
     const fallback = page.getByRole('link', { name: /前往 GitHub 儲存庫/ });
     await expect(fallback).toBeVisible();
     await expect(fallback).toHaveAttribute('href', /github\.com\/cyclone-tw\/cyclone-workflow/);

@@ -20,10 +20,15 @@ test.describe('Authentication', () => {
   test('protected pages redirect when not logged in', async ({ page }) => {
     // Try accessing admin page
     await page.goto('/admin');
-    // /admin redirects to /admin/, then AdminPanel hydrates client-side and
-    // renders 登入 / 權限 text. Without networkidle, body is captured before
-    // React mounts and the assertion sees neither word.
-    await page.waitForLoadState('networkidle');
+    // AdminPanel hydrates client-side — wait until redirect completes or
+    // React renders auth text before reading body.
+    await page.waitForFunction(
+      () =>
+        !window.location.pathname.startsWith('/admin') ||
+        (document.body.textContent ?? '').includes('權限') ||
+        (document.body.textContent ?? '').includes('登入'),
+      { timeout: 10_000 },
+    );
 
     // Should either redirect or show unauthorized
     const url = page.url();

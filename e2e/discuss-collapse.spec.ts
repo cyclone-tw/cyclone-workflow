@@ -81,7 +81,6 @@ test.describe('Discussion collapse — #165', () => {
 
   test('long content collapsed by default with 展開更多 button', async ({ page }) => {
     await page.goto('/discuss');
-    await page.waitForLoadState('networkidle');
 
     const expandBtn = page.getByRole('button', { name: '展開更多 ↓' }).first();
     await expect(expandBtn).toBeVisible({ timeout: 5000 });
@@ -95,7 +94,6 @@ test.describe('Discussion collapse — #165', () => {
 
   test('clicking 展開更多 reveals full content with 收納 button', async ({ page }) => {
     await page.goto('/discuss');
-    await page.waitForLoadState('networkidle');
 
     const expandBtn = page.getByRole('button', { name: '展開更多 ↓' }).first();
     await expandBtn.click();
@@ -112,7 +110,6 @@ test.describe('Discussion collapse — #165', () => {
 
   test('short content shows no toggle button', async ({ page }) => {
     await page.goto('/discuss');
-    await page.waitForLoadState('networkidle');
 
     // Bob's "一行短文。" message must NOT have an expand button next to it.
     const bobCard = page.locator('text=測試員 Bob').locator('..');
