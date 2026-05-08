@@ -45,3 +45,14 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 
 # Claude / OMC state
 .omc/
+
+# Multi-CLI worker output (ephemeral)
+.claude/work/
+
+# Local manual deploy script (personal; auto-deploy via GitHub Actions)
+local_deploy.sh
+
+# Beads / Dolt files (added by bd init)
+.dolt/
+*.db
+.beads-credential-key
