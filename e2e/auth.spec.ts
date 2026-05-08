@@ -20,6 +20,10 @@ test.describe('Authentication', () => {
   test('protected pages redirect when not logged in', async ({ page }) => {
     // Try accessing admin page
     await page.goto('/admin');
+    // /admin redirects to /admin/, then AdminPanel hydrates client-side and
+    // renders 登入 / 權限 text. Without networkidle, body is captured before
+    // React mounts and the assertion sees neither word.
+    await page.waitForLoadState('networkidle');
 
     // Should either redirect or show unauthorized
     const url = page.url();
