@@ -20,7 +20,6 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
 
     let currentUserId: string | null = null;
     try {
-      const { requireAuth } = await import('../../../src/lib/auth.ts');
       const u = await requireAuth(context.request, context.env);
       currentUserId = u.id;
     } catch {
