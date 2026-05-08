@@ -3,6 +3,7 @@ import { test, expect } from './lambdatest-setup';
 // Feature detection — auth-gated tests skip in dev (default) but FAIL when
 // E2E_STRICT=1 is set in CI. Silent skip masked the gap between
 // "feature works" and "feature absent"; strict mode surfaces it.
+// TODO: Set E2E_STRICT=1 in CI once E2E workflow is added.
 let authDeployed = false;
 const strictMode = process.env.E2E_STRICT === '1';
 
@@ -45,6 +46,7 @@ test.describe('Messages Auth — E2E', () => {
   });
 
   // ── Auth gate — 需 auth 部署後才有效 ───────────────────────────────────────
+  // In strict mode, beforeAll throws — these skips only fire in non-strict dev mode
 
   test('POST /api/messages 未登入應 401', async ({ page }) => {
     if (!authDeployed) test.skip();

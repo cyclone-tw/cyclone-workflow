@@ -3,6 +3,7 @@ import { test, expect } from './lambdatest-setup';
 // Feature detection — announcement-dependent tests skip in dev (default) but
 // FAIL when E2E_STRICT=1 is set in CI. Silent skip used to mask the gap
 // between "table missing" and "feature green"; strict mode catches regressions.
+// TODO: Set E2E_STRICT=1 in CI once E2E workflow is added.
 let featureAvailable = false;
 const strictMode = process.env.E2E_STRICT === '1';
 
@@ -45,6 +46,7 @@ test.describe('Announcements — E2E', () => {
 
   // ── Public API — requires feature deployed ──────────────────────────────────
 
+  // In strict mode, beforeAll throws — these skips only fire in non-strict dev mode
   test('GET /api/announcements 回傳正確結構', async ({ page }) => {
     if (!featureAvailable) test.skip();
 
