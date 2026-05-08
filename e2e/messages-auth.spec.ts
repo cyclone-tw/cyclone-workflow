@@ -74,7 +74,9 @@ test.describe('Messages Auth — E2E', () => {
     if (!authDeployed) test.skip();
     await page.goto('/discuss');
     await page.waitForLoadState('networkidle');
-    const loginBtn = page.getByRole('button', { name: /登入/i });
+    // Multiple "登入" buttons exist on the page (nav LoginButton + in-page CTA);
+    // verify at least one is visible.
+    const loginBtn = page.getByRole('button', { name: /登入/i }).first();
     await expect(loginBtn).toBeVisible({ timeout: 5000 });
   });
 });
