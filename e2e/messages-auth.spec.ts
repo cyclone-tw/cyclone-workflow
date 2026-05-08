@@ -35,13 +35,12 @@ test.describe('Messages Auth — E2E', () => {
     const errors: string[] = [];
     page.on('pageerror', (err) => errors.push(err.message));
     await page.goto('/discuss');
-    await page.waitForLoadState('networkidle');
+    await page.getByRole('button', { name: '全部' }).waitFor({ state: 'visible', timeout: 10_000 });
     expect(errors).toHaveLength(0);
   });
 
   test('既有留言列表仍正常顯示', async ({ page }) => {
     await page.goto('/discuss');
-    await page.waitForLoadState('networkidle');
     await expect(page.getByRole('button', { name: '全部' })).toBeVisible({ timeout: 5000 });
   });
 
@@ -59,24 +58,21 @@ test.describe('Messages Auth — E2E', () => {
   test('未登入：看不到留言輸入框', async ({ page }) => {
     if (!authDeployed) test.skip();
     await page.goto('/discuss');
-    await page.waitForLoadState('networkidle');
-    await expect(page.locator('textarea')).not.toBeVisible({ timeout: 5000 });
+    // Wait for React to mount and resolve auth state before asserting absence
+    await page.getByText('請先登入再留言').waitFor({ state: 'visible', timeout: 10_000 });
+    await expect(page.locator('textarea')).not.toBeVisible();
   });
 
   test('未登入：顯示「請先登入再留言」提示', async ({ page }) => {
     if (!authDeployed) test.skip();
     await page.goto('/discuss');
-    await page.waitForLoadState('networkidle');
     await expect(page.getByText('請先登入再留言')).toBeVisible({ timeout: 5000 });
   });
 
   test('未登入：顯示登入按鈕', async ({ page }) => {
     if (!authDeployed) test.skip();
     await page.goto('/discuss');
-    await page.waitForLoadState('networkidle');
-    // Multiple "登入" buttons exist on the page (nav LoginButton + in-page CTA);
-    // verify at least one is visible.
-    const loginBtn = page.getByRole('button', { name: /登入/i }).first();
+    const loginBtn = page.locator('main').getByRole('button', { name: /登入/i });
     await expect(loginBtn).toBeVisible({ timeout: 5000 });
   });
 });

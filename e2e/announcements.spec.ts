@@ -39,8 +39,7 @@ test.describe('Announcements — E2E', () => {
     page.on('pageerror', (err) => errors.push(err.message));
 
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
-
+    await page.locator('main').waitFor({ state: 'visible', timeout: 10_000 });
     expect(errors).toHaveLength(0);
   });
 
@@ -93,8 +92,6 @@ test.describe('Announcements — E2E', () => {
     if (announcements.length === 0) test.skip();
 
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
-
     // AnnouncementBanner currently renders without a close button (dismiss
     // feature removed). Use the first announcement's title — coming straight
     // from the API — as proof the banner mounted with content.
@@ -113,7 +110,7 @@ test.describe('Announcements — E2E', () => {
     if (announcements.length === 0) test.skip();
 
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+
 
     const closeBtn = page.locator('[aria-label="關閉公告"]');
     await expect(closeBtn).toBeVisible({ timeout: 5000 });
@@ -134,7 +131,7 @@ test.describe('Announcements — E2E', () => {
     if (announcements.length === 0) test.skip();
 
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+
 
     const closeBtn = page.locator('[aria-label="關閉公告"]');
     await closeBtn.waitFor({ state: 'visible', timeout: 5000 });
@@ -169,7 +166,7 @@ test.describe('Announcements — E2E', () => {
     }, allIds);
 
     await page.reload();
-    await page.waitForLoadState('networkidle');
+
 
     await expect(page.locator('[aria-label="關閉公告"]')).not.toBeVisible({ timeout: 3000 });
   });
