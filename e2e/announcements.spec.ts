@@ -90,15 +90,21 @@ test.describe('Announcements — E2E', () => {
     const res = await page.request.get('/api/announcements');
     const { announcements } = await res.json();
 
+    if (announcements.length === 0) test.skip();
+
     await page.goto('/');
     await page.waitForLoadState('networkidle');
 
-    if (announcements.length > 0) {
-      await expect(page.locator('[aria-label="關閉公告"]')).toBeVisible({ timeout: 5000 });
-    }
+    // AnnouncementBanner currently renders without a close button (dismiss
+    // feature removed). Use the first announcement's title — coming straight
+    // from the API — as proof the banner mounted with content.
+    await expect(page.getByText(announcements[0].title)).toBeVisible({ timeout: 5000 });
   });
 
-  test('點關閉後 Banner 消失', async ({ page }) => {
+  // Dismiss / localStorage tests assume the banner has a `[aria-label="關閉公告"]`
+  // close button, which AnnouncementBanner.tsx no longer renders. Skipping until
+  // (and unless) the dismiss feature is reintroduced. See #174.
+  test.skip('點關閉後 Banner 消失', async ({ page }) => {
     if (!featureAvailable) test.skip();
 
     const res = await page.request.get('/api/announcements');
@@ -119,7 +125,7 @@ test.describe('Announcements — E2E', () => {
     }
   });
 
-  test('dismiss 記錄存入 localStorage', async ({ page }) => {
+  test.skip('dismiss 記錄存入 localStorage', async ({ page }) => {
     if (!featureAvailable) test.skip();
 
     const res = await page.request.get('/api/announcements');
@@ -144,7 +150,11 @@ test.describe('Announcements — E2E', () => {
     expect(dismissed.length).toBeGreaterThan(0);
   });
 
-  test('重新整理後已 dismiss 的公告不再顯示', async ({ page }) => {
+  // Misleading-green: also depends on the removed `[aria-label="關閉公告"]`
+  // element. With dismiss feature gone the close button is never rendered, so
+  // `not.toBeVisible` is trivially true and verifies nothing. Skip together
+  // with :101 / :122 until dismiss returns. See #174.
+  test.skip('重新整理後已 dismiss 的公告不再顯示', async ({ page }) => {
     if (!featureAvailable) test.skip();
 
     const res = await page.request.get('/api/announcements');
