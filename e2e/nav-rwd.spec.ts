@@ -98,7 +98,7 @@ for (const vp of viewports) {
         await expect(moreBtn).toBeVisible();
       });
 
-      test('"更多" dropdown opens with all 9 items', async ({ page }) => {
+      test('"更多" dropdown opens with all 10 items', async ({ page }) => {
         await page.goto('/');
 
         const moreBtn = page.locator('#more-menu-btn');
@@ -111,10 +111,10 @@ for (const vp of viewports) {
         await moreBtn.click();
         await expect(morePanel).toBeVisible();
 
-        // Should contain 9 dropdown links (5 功能 + 4 許願&反饋)
+        // Should contain 10 dropdown links (5 功能 + 5 許願&反饋)
         const dropdownLinks = morePanel.locator('a');
         const count = await dropdownLinks.count();
-        expect(count).toBe(9);
+        expect(count).toBe(10);
 
         // Verify group headers exist
         await expect(morePanel.getByText('功能')).toBeVisible();
