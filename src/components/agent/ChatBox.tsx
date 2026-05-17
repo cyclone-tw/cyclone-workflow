@@ -17,8 +17,6 @@ const WELCOME_MESSAGE: Message = {
   timestamp: new Date(),
 };
 
-const USER_ID = 'user-' + Math.random().toString(36).slice(2, 9);
-
 interface HistoryItem {
   id: number;
   user_id: string;
@@ -35,6 +33,7 @@ function HistoryPanel() {
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [loading, setLoading] = useState(true);
+  const [needLogin, setNeedLogin] = useState(false);
 
   const fetchHistory = async (p: number, q: string) => {
     setLoading(true);
@@ -42,6 +41,12 @@ function HistoryPanel() {
       const params = new URLSearchParams({ page: String(p) });
       if (q) params.set('search', q);
       const res = await fetch(`/api/agent/history?${params}`);
+      if (res.status === 401) {
+        setNeedLogin(true);
+        setHistory([]);
+        return;
+      }
+      setNeedLogin(false);
       const data = await res.json();
       if (data.ok) {
         setHistory(data.history);
@@ -54,6 +59,16 @@ function HistoryPanel() {
   useEffect(() => { fetchHistory(page, search); }, [page, search]);
 
   const handleSearch = () => { setPage(1); setSearch(searchInput); };
+
+  if (needLogin) {
+    return (
+      <div className="flex flex-col items-center justify-center text-center" style={{ minHeight: '380px' }}>
+        <div className="text-3xl mb-3">🔒</div>
+        <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>登入後即可查看你的對話紀錄</p>
+        <p className="text-xs mt-1" style={{ color: 'var(--color-text-muted)' }}>對話紀錄僅本人可見</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col" style={{ minHeight: '380px' }}>
@@ -156,7 +171,7 @@ export default function ChatBox() {
       const res = await fetch('/api/agent/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, userId: USER_ID }),
+        body: JSON.stringify({ message: text }),
       });
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
