@@ -7,6 +7,15 @@ export interface ChangelogEntry {
 export const CHANGELOG: ChangelogEntry[] = [
   {
     version: '',
+    date: '2026-05-18',
+    changes: [
+      'fix(#5): 管家對話歷史隱私修補 — /api/agent/history 加登入驗證,僅顯示本人對話(原本無驗證、外洩全員對話)',
+      'fix(#5): /api/agent/chat 改用 session 身份,杜絕前端偽造 userId;匿名對話不寫入歷史',
+      'feat(#5): footer 加隱私聲明;/agent 頁面措辭調整,不過度承諾私人記憶',
+    ],
+  },
+  {
+    version: '',
     date: '2026-05-04',
     changes: [
       'feat(#165): 討論區留言內容過長時加入展開 / 收納效果 — Mirror 既有 AI 工具箱 / 知識庫卡片 pattern',
