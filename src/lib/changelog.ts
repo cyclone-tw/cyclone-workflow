@@ -7,6 +7,13 @@ export interface ChangelogEntry {
 export const CHANGELOG: ChangelogEntry[] = [
   {
     version: '',
+    date: '2026-05-19',
+    changes: [
+      'feat(#184): 管家記憶隔離 Tier 2 — 每位成員專屬 Letta agent,徹底隔離長期記憶(延續 #5 Tier 1)',
+    ],
+  },
+  {
+    version: '',
     date: '2026-05-18',
     changes: [
       'fix(#5): 管家對話歷史隱私修補 — /api/agent/history 加登入驗證,僅顯示本人對話(原本無驗證、外洩全員對話)',
