@@ -1,4 +1,5 @@
 import { createClient } from '@libsql/client/web';
+import { getSessionUser } from '../../../src/lib/auth.ts';
 
 interface Env {
   TURSO_DATABASE_URL: string;
@@ -7,6 +8,13 @@ interface Env {
 
 export const onRequestGet: PagesFunction<Env> = async (context) => {
   try {
+    const sessionUser = await getSessionUser(context.request, context.env);
+    if (!sessionUser) {
+      return new Response(JSON.stringify({ ok: false, error: '請先登入' }), {
+        status: 401, headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     const db = createClient({ url: context.env.TURSO_DATABASE_URL, authToken: context.env.TURSO_AUTH_TOKEN });
 
     await db.execute({
@@ -26,17 +34,17 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     const limit = 10;
     const offset = (page - 1) * limit;
 
-    let countSql = 'SELECT COUNT(*) as total FROM chat_history';
-    let dataSql = 'SELECT * FROM chat_history';
-    const args: (string | number)[] = [];
-    const countArgs: string[] = [];
+    let countSql = 'SELECT COUNT(*) as total FROM chat_history WHERE user_id = ?';
+    let dataSql = 'SELECT * FROM chat_history WHERE user_id = ?';
+    const args: (string | number)[] = [sessionUser.id];
+    const countArgs: string[] = [sessionUser.id];
 
     if (search) {
-      const where = ' WHERE user_message LIKE ? OR agent_reply LIKE ?';
       const searchParam = `%${search}%`;
-      countSql += where;
+      const and = ' AND (user_message LIKE ? OR agent_reply LIKE ?)';
+      countSql += and;
       countArgs.push(searchParam, searchParam);
-      dataSql += where;
+      dataSql += and;
       args.push(searchParam, searchParam);
     }
 

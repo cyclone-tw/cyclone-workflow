@@ -1,4 +1,5 @@
 import { createClient } from '@libsql/client/web';
+import { getSessionUser } from '../../../src/lib/auth.ts';
 
 interface Env {
   LETTA_API_KEY: string;
@@ -130,7 +131,7 @@ async function syncPersona(apiKey: string, agentId: string): Promise<void> {
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
   try {
-    const { message, userId = 'anonymous' } = await context.request.json() as { message?: string; userId?: string };
+    const { message } = await context.request.json() as { message?: string };
 
     if (!message?.trim()) {
       return new Response(JSON.stringify({ error: '請輸入訊息' }), {
@@ -172,8 +173,11 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
     const finalReply = reply || '（管家正在思考中...）';
 
-    // Save to DB (non-blocking)
-    context.waitUntil(saveChat(context.env, userId, message, finalReply));
+    // 隱私決策:只有登入成員的對話寫入可辨識歷史;匿名訪客可聊但不留紀錄。
+    const sessionUser = await getSessionUser(context.request, context.env);
+    if (sessionUser) {
+      context.waitUntil(saveChat(context.env, sessionUser.id, message, finalReply));
+    }
 
     return new Response(
       JSON.stringify({ reply: finalReply, thoughts, agentId }),
