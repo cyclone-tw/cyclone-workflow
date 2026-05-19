@@ -72,6 +72,10 @@ export async function getOrCreateUserAgent(
     return existing.rows[0].letta_agent_id as string;
   }
 
+  // sanitize display name before it enters the agent memory block:
+  // collapse whitespace (no newline-structured prompt injection) + cap length.
+  const safeName = userName?.replace(/\s+/g, ' ').trim().slice(0, 50);
+
   // create agent via Letta API
   const res = await fetch(`${LETTA_BASE_URL}/v1/agents`, {
     method: 'POST',
@@ -86,7 +90,7 @@ export async function getOrCreateUserAgent(
       llm: 'dar-mini-code/MiniMax-M2.7',
       embedding: 'openai/text-embedding-ada-002',
       memory_blocks: [
-        { label: 'human', value: userName ? `成員:${userName}` : '共學團成員', limit: 5000 },
+        { label: 'human', value: safeName ? `成員:${safeName}` : '共學團成員', limit: 5000 },
         { label: 'persona', value: CYCLONE_BUTLER_SYSTEM, limit: 5000 },
       ],
     }),
@@ -94,7 +98,10 @@ export async function getOrCreateUserAgent(
   if (!res.ok) {
     throw new Error(`Letta API ${res.status}: ${await res.text()}`);
   }
-  const agent = (await res.json()) as { id: string };
+  const agent = (await res.json()) as { id?: unknown };
+  if (typeof agent.id !== 'string' || agent.id.length === 0) {
+    throw new Error('Letta API 回傳缺少有效的 agent id');
+  }
 
   // persist mapping (INSERT OR IGNORE for race-safety)
   await db.execute({
@@ -107,5 +114,9 @@ export async function getOrCreateUserAgent(
     sql: 'SELECT letta_agent_id FROM user_agents WHERE user_id = ?',
     args: [userKey],
   });
-  return final.rows[0].letta_agent_id as string;
+  const finalId = final.rows[0]?.letta_agent_id;
+  if (typeof finalId !== 'string' || finalId.length === 0) {
+    throw new Error('user_agents 對應寫入後仍讀不到有效的 agent id');
+  }
+  return finalId;
 }
