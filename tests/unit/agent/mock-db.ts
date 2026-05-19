@@ -1,7 +1,7 @@
 import { vi } from 'vitest';
 
 interface DbRow {
-  id: string | number;
+  id?: string | number;
   [key: string]: unknown;
 }
 
@@ -10,6 +10,7 @@ export const tables: Record<string, DbRow[]> = {
   users: [],
   user_roles: [],
   chat_history: [],
+  user_agents: [],
 };
 
 let _nextId = 100;
@@ -19,6 +20,7 @@ export function resetDb() {
   tables.users = [];
   tables.user_roles = [];
   tables.chat_history = [];
+  tables.user_agents = [];
   _nextId = 100;
 }
 
@@ -100,6 +102,23 @@ vi.mock('@libsql/client/web', () => ({
 
       // CREATE TABLE — no-op
       if (sql.includes('CREATE TABLE IF NOT EXISTS')) {
+        return { rows: [], columns: [] };
+      }
+
+      // SELECT user_agents
+      if (sql.includes('FROM user_agents') && sql.includes('SELECT')) {
+        return { rows: tables.user_agents.filter((r) => r.user_id === args[0]), columns: [] };
+      }
+
+      // INSERT user_agents (INSERT OR IGNORE)
+      if (sql.includes('user_agents') && sql.includes('INSERT')) {
+        const exists = tables.user_agents.some((r) => r.user_id === args[0]);
+        if (!exists) {
+          tables.user_agents.push({
+            user_id: args[0] as string,
+            letta_agent_id: args[1] as string,
+          });
+        }
         return { rows: [], columns: [] };
       }
 
