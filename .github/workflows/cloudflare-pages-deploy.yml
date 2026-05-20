@@ -6,6 +6,17 @@ on:
       - main
     paths-ignore:
       - 'src/lib/version.ts'
+      - '**.md'
+      - 'docs/**'
+      - '.archive/**'
+      - 'pm/**'
+      - 'qa1/**'
+      - 'shipper/**'
+      - 'super/**'
+      - 'eng1/**'
+      - '.claude/**'
+      - 'AGENTS.md'
+      - 'CLAUDE.md'
   workflow_dispatch:
 
 concurrency:
