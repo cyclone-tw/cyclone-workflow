@@ -1,9 +1,6 @@
 name: Tauri Release
 
 on:
-  push:
-    tags:
-      - 'desktop-v*'
   workflow_dispatch:
 
 jobs:
